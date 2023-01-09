@@ -1,0 +1,1081 @@
+[
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/DRJ_MCMC_Step.cpp",
+        "file_last_write": 1666278880.0,
+        "definitions": [
+            {
+                "usr": "c:@F@complete_lambda#&1I#S0_#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "complete_lambda(const int &, const int &, int, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/DRJ_MCMC_Step.cpp",
+                "line": 10,
+                "column": 11
+            },
+            {
+                "usr": "c:@F@DRJ_MCMC_singlestep#&1I#S0_#S0_#1I#1I#1I#1I#S0_#1I#1I#1I#1I#1d#S0_#1d#1d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "DRJ_MCMC_singlestep(const int &, const int &, const int &, const int, const int, const int, const int, const int &, const int, const int, const int, const int, const double, const int &, const double, const double)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/DRJ_MCMC_Step.cpp",
+                "line": 45,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@log_dNormalWishart_posterior_unnormalized#&1I#S0_#S0_#1d#1d#S0_#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "log_dNormalWishart_posterior_unnormalized(const int &, const int &, const int &, const double, const double, const int &, const int &)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/DRJ_MCMC_Step.cpp",
+                "line": 162,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@log_dNormalWishart_unnormalized#&1I#S0_#1d#1d#S0_#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "log_dNormalWishart_unnormalized(const int &, const int &, const double, const double, const int &, const int &)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/DRJ_MCMC_Step.cpp",
+                "line": 199,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@rmu_0#&1I#S0_#S0_#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "rmu_0(const int &, const int &, const int &, const int &)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/DRJ_MCMC_Step.cpp",
+                "line": 222,
+                "column": 11
+            }
+        ]
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/MHratios.cpp",
+        "file_last_write": 1638905689.0,
+        "definitions": [
+            {
+                "usr": "c:@F@log_MH_Gupdate_Rcpp#I#I#$@N@Rcpp@S@Vector>#VI14#@N@Rcpp@ST>1#T@PreserveStorage#S0_#S0_#S0_#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "log_MH_Gupdate_Rcpp(int, int, Rcpp::NumericVector, Rcpp::NumericVector, Rcpp::NumericVector, Rcpp::NumericVector, int, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/MHratios.cpp",
+                "line": 164,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@log_MH_mergesplit_Rcpp#$@N@Rcpp@S@Vector>#VI14#@N@Rcpp@ST>1#T@PreserveStorage#S0_#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "log_MH_mergesplit_Rcpp(Rcpp::NumericVector, Rcpp::NumericVector, int, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/MHratios.cpp",
+                "line": 177,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@log_transition_probability_HMM_Rcpp#$@N@Rcpp@S@Vector>#VI14#@N@Rcpp@ST>1#T@PreserveStorage#S0_#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "log_transition_probability_HMM_Rcpp(Rcpp::NumericVector, Rcpp::NumericVector, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/MHratios.cpp",
+                "line": 187,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@select_edge_from_G_prior_Rcpp#$@N@Rcpp@S@Vector>#VI14#@N@Rcpp@ST>1#T@PreserveStorage#S0_#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "select_edge_from_G_prior_Rcpp(Rcpp::NumericVector, Rcpp::NumericVector, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/MHratios.cpp",
+                "line": 198,
+                "column": 21
+            }
+        ]
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/copula.cpp",
+        "file_last_write": 1638905689.0,
+        "definitions": []
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/copula.h",
+        "file_last_write": 1638905689.0,
+        "definitions": []
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/dmvnrm_arma_mc.cpp",
+        "file_last_write": 1667255639.0,
+        "definitions": [
+            {
+                "usr": "c:@F@inplace_tri_mat_mult#&I#&1I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "inplace_tri_mat_mult(int &, const int &)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/dmvnrm_arma_mc.cpp",
+                "line": 7,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@log_dmvnrm_arma_regular#&1I#S0_#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "log_dmvnrm_arma_regular(const int &, const int &, const int &)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/dmvnrm_arma_mc.cpp",
+                "line": 19,
+                "column": 8
+            }
+        ]
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/dmvnrm_arma_mc.h",
+        "file_last_write": 1667255691.0,
+        "definitions": []
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/draw_latent_data.cpp",
+        "file_last_write": 1657721068.0,
+        "definitions": [
+            {
+                "usr": "c:@F@log_mvn_pdf#&1I#S0_#S0_#S0_#1I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "log_mvn_pdf(const int &, const int &, const int &, const int &, const int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/draw_latent_data.cpp",
+                "line": 8,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@draw_values_parallel#&1I#S0_#S0_#S0_#S0_#S0_#S0_#S0_#S0_#I#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "draw_values_parallel(const int &, const int &, const int &, const int &, const int &, const int &, const int &, const int &, const int &, int, const int &)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/draw_latent_data.cpp",
+                "line": 20,
+                "column": 11
+            },
+            {
+                "usr": "c:@F@redraw_Z_arma#&1I#S0_#S0_#I#S0_#S0_#S0_#S0_#S0_#S0_#S0_#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "redraw_Z_arma(const int &, const int &, const int &, int, const int &, const int &, const int &, const int &, const int &, const int &, const int &, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/draw_latent_data.cpp",
+                "line": 193,
+                "column": 11
+            },
+            {
+                "usr": "c:@F@redraw_Z_arma_justmissings#&1I#S0_#S0_#I#S0_#S0_#S0_#S0_#S0_#S0_#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "redraw_Z_arma_justmissings(const int &, const int &, const int &, int, const int &, const int &, const int &, const int &, const int &, const int &, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/draw_latent_data.cpp",
+                "line": 230,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@get_justmissings_density#&1I#S0_#S0_#I#S0_#S0_#S0_#S0_#S0_#S0_#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "get_justmissings_density(const int &, const int &, const int &, int, const int &, const int &, const int &, const int &, const int &, const int &, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/draw_latent_data.cpp",
+                "line": 291,
+                "column": 6
+            }
+        ]
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/graph.h",
+        "file_last_write": 1638905689.0,
+        "definitions": []
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+        "file_last_write": 1664892825.0,
+        "definitions": [
+            {
+                "usr": "c:@F@util_print_mat_dbl#*d#I#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "util_print_mat_dbl(double *, int, int, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 19,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@util_print_mat_int#*I#I#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "util_print_mat_int(int *, int, int, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 34,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@util_print_tri_mat#*d#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "util_print_tri_mat(double *, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 50,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@util_es_to_A#*I#S0_#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "util_es_to_A(int *, int *, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 68,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@transpose#I#I#*d#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "transpose(int, int, double *, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 84,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@get_upper_triangle#I#*d#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "get_upper_triangle(int, double *, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 98,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@set_mat_identity#I#*d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "set_mat_identity(int, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 113,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@invert#I#*d#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "invert(int, double *, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 122,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@log_det#I#*d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "log_det(int, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 141,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@mult_mats#I#I#I#*d#S0_#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "mult_mats(int, int, int, double *, double *, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 174,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@mult_square_mats#I#*d#S0_#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "mult_square_mats(int, double *, double *, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 209,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@chol#I#*d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "chol(int, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 224,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@get_cond_matrix#I#I#*I#S0_#*d#S1_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "get_cond_matrix(int, int, int *, int *, double *, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 248,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@copy_mats#I#I#*d#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "copy_mats(int, int, double *, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 347,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@make_sub_mat_dbl#I#I#*I#*d#S1_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "make_sub_mat_dbl(int, int, int *, double *, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 360,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@make_sub_mat_int#I#I#*I#*S0_#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "make_sub_mat_int(int, int, int *, int **, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 374,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@get_complementary_set#I#I#*I#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "get_complementary_set(int, int, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 387,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@choose#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "choose(int, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 411,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@logchoose#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "logchoose(int, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 421,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@combinations_increment#I#I#*I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "combinations_increment(int, int, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 433,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@combinations_init#I#I#*I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "combinations_init(int, int, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 449,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@test_add_var#*I#I#S0_#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "test_add_var(int *, int, int *, int, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 455,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@is_subclique#*I#I#S0_#S0_#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "is_subclique(int *, int, int *, int *, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 470,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@add_clique#*I#I#S0_#S0_#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "add_clique(int *, int, int *, int *, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 502,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@list_can_augment#*I#I#S0_#I#S0_#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "list_can_augment(int *, int, int *, int, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 526,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@get_cliques#*I#I#S0_#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "get_cliques(int *, int, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 559,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@IPF_MLE#*I#S0_#I#*d#I#d#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "IPF_MLE(int *, int *, int, double *, int, double, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 585,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@gwish_nc_complete#I#I#*d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "gwish_nc_complete(int, int, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 710,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@gwish_logC#*I#I#*d#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "gwish_logC(int *, int, double *, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 746,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@gwish_norm_laplace#I#*I#I#*d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "gwish_norm_laplace(int, int *, int, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 812,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@gwish_exact_posterior#I#I#I#*d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "gwish_exact_posterior(int, int, int, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 940,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@gwish_calculateLogPosterior#*$@S@Graph#*d#I#I#*I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "gwish_calculateLogPosterior(LPGraph, double *, int, int, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 954,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@gwish_get_psi_from_K#I#I#*d#S0_#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "gwish_get_psi_from_K(int, int, double *, double *, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 1057,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@gwish_get_f_Tsq#I#*I#*d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "gwish_get_f_Tsq(int, int *, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 1078,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@FindDecomposableNeighbors#*$@S@Graph#*I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "FindDecomposableNeighbors(LPGraph, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 1095,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@log_normalizing_g_wishart_posterior_laplace#$@N@Rcpp@S@Matrix>#VI14#@N@Rcpp@ST>1#T@PreserveStorage#S0_#I#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "log_normalizing_g_wishart_posterior_laplace(Rcpp::NumericMatrix, Rcpp::NumericMatrix, int, int, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/gwish.cpp",
+                "line": 1134,
+                "column": 6
+            }
+        ]
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+        "file_last_write": 1638905689.0,
+        "definitions": [
+            {
+                "usr": "c:@F@sub_matrix",
+                "kind": 6,
+                "parent_name": "",
+                "name": "sub_matrix(double *, double *, int *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 19,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@sub_matrix_upper",
+                "kind": 6,
+                "parent_name": "",
+                "name": "sub_matrix_upper(double *, double *, int *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 37,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@sub_row_mins",
+                "kind": 6,
+                "parent_name": "",
+                "name": "sub_row_mins(double *, double *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 56,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@sub_rows_mins",
+                "kind": 6,
+                "parent_name": "",
+                "name": "sub_rows_mins(double *, double *, int *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 69,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@sub_cols_mins",
+                "kind": 6,
+                "parent_name": "",
+                "name": "sub_cols_mins(double *, double *, int *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 97,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@sub_matrices1",
+                "kind": 6,
+                "parent_name": "",
+                "name": "sub_matrices1(double *, double *, double *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 115,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@sub_matrices",
+                "kind": 6,
+                "parent_name": "",
+                "name": "sub_matrices(double *, double *, double *, double *, int *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 148,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@sub_matrices_inv",
+                "kind": 6,
+                "parent_name": "",
+                "name": "sub_matrices_inv(double *, double *, double *, double *, int *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 217,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@inverse",
+                "kind": 6,
+                "parent_name": "",
+                "name": "inverse(double *, double *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 279,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@inverse_2x2",
+                "kind": 6,
+                "parent_name": "",
+                "name": "inverse_2x2(double *, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 297,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@cholesky",
+                "kind": 6,
+                "parent_name": "",
+                "name": "cholesky(double *, double *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 310,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@log_determinant",
+                "kind": 6,
+                "parent_name": "",
+                "name": "log_determinant(double *, double *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 331,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@select_edge",
+                "kind": 6,
+                "parent_name": "",
+                "name": "select_edge(double *, int *, double *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 348,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@select_edge_ts",
+                "kind": 6,
+                "parent_name": "",
+                "name": "select_edge_ts(long double *, int *, long double *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 391,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@select_multi_edges",
+                "kind": 6,
+                "parent_name": "",
+                "name": "select_multi_edges(double *, int *, int *, double *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 430,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@rates_bdmcmc_parallel",
+                "kind": 6,
+                "parent_name": "",
+                "name": "rates_bdmcmc_parallel(double *, double *, int *, int *, int *, int *, double *, double *, double *, double *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 503,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@rates_cbdmcmc_parallel",
+                "kind": 6,
+                "parent_name": "",
+                "name": "rates_cbdmcmc_parallel(long double *, double *, int *, int *, int *, int *, double *, double *, double *, double *, double *, double *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 615,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@log_H_ij",
+                "kind": 6,
+                "parent_name": "",
+                "name": "log_H_ij(double *, double *, double *, int *, int *, double *, double *, double *, double *, double *, double *, double *, double *, double *, double *, double *, int *, int *, int *, int *, double *, double *, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 802,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@rates_bdmcmc_dmh_parallel",
+                "kind": 6,
+                "parent_name": "",
+                "name": "rates_bdmcmc_dmh_parallel(double *, double *, int *, int *, int *, int *, double *, double *, double *, double *, double *, double *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 859,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@Hsub_row_mins",
+                "kind": 6,
+                "parent_name": "",
+                "name": "Hsub_row_mins(double *, double *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 939,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@Hsub_rows_mins",
+                "kind": 6,
+                "parent_name": "",
+                "name": "Hsub_rows_mins(double *, double *, int *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 953,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@Hsub_matrices1",
+                "kind": 6,
+                "parent_name": "",
+                "name": "Hsub_matrices1(double *, double *, double *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 979,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@Hsub_matrices",
+                "kind": 6,
+                "parent_name": "",
+                "name": "Hsub_matrices(double *, double *, double *, double *, int *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 1007,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@cinverse_2x2",
+                "kind": 6,
+                "parent_name": "",
+                "name": "cinverse_2x2(double *, double *, double *, double *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 1058,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@scale_free",
+                "kind": 6,
+                "parent_name": "",
+                "name": "scale_free(int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 1077,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@transfer_data",
+                "kind": 6,
+                "parent_name": "",
+                "name": "transfer_data(int *, int *, int *, int *, int *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.cpp",
+                "line": 1120,
+                "column": 6
+            }
+        ]
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/matrix.h",
+        "file_last_write": 1638905689.0,
+        "definitions": []
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/mixture_redraw_functions.cpp",
+        "file_last_write": 1667405885.0,
+        "definitions": [
+            {
+                "usr": "c:@F@calc_logprob_Gibbs_comp#&1I#S0_#S0_#S0_#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "calc_logprob_Gibbs_comp(const int &, const int &, const int &, const int &, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/mixture_redraw_functions.cpp",
+                "line": 12,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@gibbs_swap_btwn_two#&1I#S0_#S0_#S0_#S0_#S0_#S0_#&I#I#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "gibbs_swap_btwn_two(const int &, const int &, const int &, const int &, const int &, const int &, const int &, int &, int, int, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/mixture_redraw_functions.cpp",
+                "line": 25,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@gibbs_swap_comps#&1I#&I#S0_#$@N@Rcpp@S@Vector>#VI19#@N@Rcpp@ST>1#T@PreserveStorage#S2_#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "gibbs_swap_comps(const int &, int &, const int &, Rcpp::List, Rcpp::List, int, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/mixture_redraw_functions.cpp",
+                "line": 87,
+                "column": 11
+            }
+        ]
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+        "file_last_write": 1638905689.0,
+        "definitions": [
+            {
+                "usr": "c:@F@numeric#*1v#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "numeric(const void *, const void *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 22,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@CheckPointer#*v#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "CheckPointer(void *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 28,
+                "column": 6
+            },
+            {
+                "usr": "c:@S@Graph@F@InitGraph#I#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "InitGraph(int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 192,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@Graph@F@ReadGraph#*C#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "ReadGraph(char *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 252,
+                "column": 12
+            },
+            {
+                "usr": "c:@S@Graph@F@ReadMss#*C#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "ReadMss(char *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 285,
+                "column": 12
+            },
+            {
+                "usr": "c:@S@Graph@F@InitGraphFromMss#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "InitGraphFromMss",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 355,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@Graph@F@WriteInfo#*$@S@__sFILE#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "WriteInfo(FILE *)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 381,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@Graph@F@GenerateCliques#I#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "GenerateCliques(int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 441,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@Graph@F@CheckCliques#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "CheckCliques",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 548,
+                "column": 12
+            },
+            {
+                "usr": "c:@S@Graph@F@IsClique#*I#I#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "IsClique(int *, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 570,
+                "column": 12
+            },
+            {
+                "usr": "c:@S@Graph@F@IsSubsetMss#*I#I#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "IsSubsetMss(int *, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 588,
+                "column": 12
+            },
+            {
+                "usr": "c:@S@Graph@F@GenerateSeparators#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "GenerateSeparators",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 621,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@Graph@F@AttachLabel#I#I#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "AttachLabel(int, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 651,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@Graph@F@GenerateLabels#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "GenerateLabels",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 670,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@Graph@F@GenerateAllCliques#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "GenerateAllCliques",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 705,
+                "column": 12
+            },
+            {
+                "usr": "c:@S@Graph@F@SearchVertex#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "SearchVertex",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 902,
+                "column": 12
+            },
+            {
+                "usr": "c:@S@Graph@F@IsDecomposable#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "IsDecomposable",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 942,
+                "column": 12
+            },
+            {
+                "usr": "c:@S@Graph@F@InitConnectedComponents#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "InitConnectedComponents",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 947,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@Graph@F@GetMPSubgraphs#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "GetMPSubgraphs",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 980,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@Graph@F@FindCliqueTree#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "FindCliqueTree",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 1133,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@Graph@F@Print_A#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "Print_A",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 1331,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@SectionGraph@F@IsChain#I#I#",
+                "kind": 7,
+                "parent_name": "SectionGraph",
+                "name": "IsChain(int, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 1387,
+                "column": 19
+            },
+            {
+                "usr": "c:@S@EliminationGraph@F@EliminateVertex#I#",
+                "kind": 7,
+                "parent_name": "EliminationGraph",
+                "name": "EliminateVertex(int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 1421,
+                "column": 24
+            },
+            {
+                "usr": "c:@S@EliminationGraph@F@SearchVertex#",
+                "kind": 7,
+                "parent_name": "EliminationGraph",
+                "name": "SearchVertex",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 1455,
+                "column": 23
+            },
+            {
+                "usr": "c:@F@MakeFillInGraph",
+                "kind": 6,
+                "parent_name": "",
+                "name": "MakeFillInGraph(LPGraph)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/newgraph.cpp",
+                "line": 1499,
+                "column": 9
+            }
+        ]
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/rgwish.cpp",
+        "file_last_write": 1662730688.0,
+        "definitions": [
+            {
+                "usr": "c:@F@rmvn_Rcpp#$@N@Rcpp@S@Vector>#VI14#@N@Rcpp@ST>1#T@PreserveStorage#S0_#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "rmvn_Rcpp(Rcpp::NumericVector, Rcpp::NumericVector, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/rgwish.cpp",
+                "line": 358,
+                "column": 21
+            },
+            {
+                "usr": "c:@F@rwish_Rcpp#$@N@Rcpp@S@Vector>#VI14#@N@Rcpp@ST>1#T@PreserveStorage#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "rwish_Rcpp(Rcpp::NumericVector, int, int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/rgwish.cpp",
+                "line": 369,
+                "column": 21
+            },
+            {
+                "usr": "c:@F@rgwish_Rcpp#1$@N@Rcpp@S@Vector>#VI14#@N@Rcpp@ST>1#T@PreserveStorage#1S0_#I#I#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "rgwish_Rcpp(const Rcpp::NumericVector, const Rcpp::NumericVector, int, int, double)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/rgwish.cpp",
+                "line": 379,
+                "column": 21
+            },
+            {
+                "usr": "c:@F@log_wishart_normalizingConstant_mc_Rcpp#1$@N@Rcpp@S@Vector>#VI14#@N@Rcpp@ST>1#T@PreserveStorage#1S0_#1I#1S0_#1I#1I#1I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "log_wishart_normalizingConstant_mc_Rcpp(const Rcpp::NumericVector, const Rcpp::NumericVector, const int, const Rcpp::NumericVector, const int, const int, const int)",
+                "file": "/Users/murph/Documents/GitHub/bayesWatch/src/rgwish.cpp",
+                "line": 411,
+                "column": 21
+            }
+        ]
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/rgwish.h",
+        "file_last_write": 1638905689.0,
+        "definitions": []
+    },
+    {
+        "file": "/Users/murph/Documents/GitHub/bayesWatch/src/util.h",
+        "file_last_write": 1638905689.0,
+        "definitions": []
+    }
+]
