@@ -358,7 +358,7 @@ using namespace Rcpp;
 Rcpp::NumericVector rmvn_Rcpp( Rcpp::NumericVector mus, 
                             Rcpp::NumericVector K, int p) {
   
-  Rcpp:NumericVector rand_values(p);
+  Rcpp::NumericVector rand_values(p);
   
   rmvn_c( REAL(rand_values), REAL(mus), REAL(K), p );
     
@@ -380,7 +380,7 @@ Rcpp::NumericVector rgwish_Rcpp( const Rcpp::NumericVector G,
                                  const Rcpp::NumericVector D, 
                                  int b, int p, double threshold) {
   int pxp = p * p, failed;
-  Rcpp:NumericVector K( pxp );
+  Rcpp::NumericVector K( pxp );
   vector<double> inv_Ds( pxp ); 
   vector<double> copy_Ds( pxp ); 
   vector<double> Ts_vectorized( pxp );

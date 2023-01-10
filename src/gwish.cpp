@@ -1,10 +1,8 @@
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "util.h"
 #include "mkl_cblas.h"
-
 #include "graph.h"
 #include "Rcpp.h"
 
@@ -173,8 +171,6 @@ double log_det(int p, double* A)
 
 void mult_mats(int p_i, int p_k, int p_j, double *A, double *B, double *C)
 {
-  char trans = 'N';
-  char tranb = 'N';
   double a=1.0;
   double c=0.0;
   char CblasTrans = 'N';
@@ -562,7 +558,6 @@ int get_cliques(int *A, int p, int *clmat, int *cldims)
   int ee = p * (p - 1) /2;
   int i,k;
   int *temp_init_array;
-  int size;
   temp_init_array = new int[1];
   for(i = 0; i < ee * p; i++) clmat[i] = -1;
   for(i = 0; i < ee; i++) cldims[i] = 0;
@@ -586,14 +581,11 @@ void IPF_MLE(int *CliqueMat, int *CliqueDims, int totcliques,
          double *target, int p, double thresh, int *nonconverge_flag)
 {
 
-  int cc, cs, i, j, k, temp;
+  int i, j;
   int *clique_ID, *V_ID;
-  int e_i, e_j;
   double tempdiff, maxdiff;
-  int temp_in_clique;
 
-  int cliques,p_clique;
-  int pp;
+  int p_clique;
   int clique_num;
   double *final, *final_last;
   double *submatrix_cc, *submatrix_ccINV;
@@ -610,7 +602,7 @@ void IPF_MLE(int *CliqueMat, int *CliqueDims, int totcliques,
   //-----------------------------------------
 
   maxdiff = thresh + 1;
-  int ee = p * (p - 1) /2;
+
   // printf("entering that pesky while loop\n");
   while(maxdiff > thresh)
     {
@@ -753,7 +745,7 @@ double gwish_logC(int *A, int delta, double *T, int p)
   double d;
   double g;
   double tot;
-  double temp1,temp2;
+  double temp1;
   double dblDelta;
   double dblP;
 
@@ -813,7 +805,6 @@ double gwish_norm_laplace(int p, int *A, int delta, double *D)
 {
 
   int i,j,k,l,ee;
-  double result;
   double *M_1,*M_2,*M_3;
   double *H;
   double temp;
@@ -941,7 +932,6 @@ double gwish_exact_posterior(int p, int delta, int n,  double *D_post) // double
 {
 //I_prior,
   double  I_post;
-  double result;
   // printf("The exact n is: %i\n",n);
   //--------------------------
   //I_prior = gwish_nc_complete(delta, p, D_prior);
@@ -955,7 +945,7 @@ double gwish_calculateLogPosterior(LPGraph graph, double *D_post, int delta,int 
 {
   // Comments added by Murph 2021
   double mypost = 0;
-  int i, j, p, p_i, p_j;
+  int i, p;
   double *sub_D_post;
   // Note that I am removing the prior calculations.  In Lenkowski and Dobra, they use this method to calculate
   // the marginal posterior -- I just want the posterior normalizing constant, given the kernel of a g wishart posterior.

@@ -4,6 +4,7 @@ require(parallel)
 require(Rcpp)
 require(Matrix)
 require(CholWishart)
+require(ggplot2)
 require(Hotelling)
 source("R/helpers.R")
 
@@ -65,6 +66,7 @@ print.bayesWatch = function( x, ... )
 fit_regime_vector = function(data_woTimeValues,
                              time_of_observations,
                              time_points,
+                             variable_names = 1:ncol(data_woTimeValues),
                              not.cont = NULL,
                              iterations = 100,
                              burnin = floor(iterations / 2),
@@ -93,6 +95,20 @@ fit_regime_vector = function(data_woTimeValues,
                              determining_p_cutoff = FALSE) {
   
   model_saves_list = list()
+  if(!is.null(data_woTimeValues)){
+    variable_names = names(data_woTimeValues)
+  }
+  
+  original_p         = ncol(data_woTimeValues)
+  has_missing_values = apply(data_woTimeValues, 2, anyNA)
+  names_of_columns   = variables_names
+  for(miss_col_index in which(has_missing_values)){
+    rows_with_missing         = is.na(data_woTimeValues[,miss_col_index])
+    new_col_name              = paste(names_of_columns[miss_col_index], "NAs",sep="")
+    data_woTimeValues         = cbind(data_woTimeValues, as.numeric(rows_with_missing))
+    variable_names            = c(variable_names, new_col_name)
+    not.cont                  = c(not.cont,1)
+  }
   
   # As a sanity check, component truncation should be set to 1 when we do not allow for mixture models:
   if (!allow_for_mixture_models) {
@@ -1253,15 +1269,10 @@ fit_regime_vector = function(data_woTimeValues,
     Z_timepoint_indices = Z_timepoint_indices,
     fault_detection_logs = model_saves_list
   )
-  # class(mylist) = "bayesWatch_object"
-  
-  # print.bayesWatch_object <- function(x) {
-  #   cat("bayesWatch object\n")
-  #   cat("-----------------\n")
-  #   print(x$prop_mat)
-  # }
-  # 
+
   class(mylist) <- "bayesWatch"
+  
+  
   
   return(mylist)
 }
@@ -1309,32 +1320,33 @@ get_point_estimate = function(regime_fit_object, prob_cutoff) {
 #'
 #' @return
 #' @export
+#' @noRd
 #'
 #' @examples
-graph_changepoints = function(regime_fit_object, prob_cutoff) {
+plot.bayesWatch = function(regime_fit_object, prob_cutoff = 0.5) {
   ### Grab the change-point probabilities
-  yy = regime_fit_object
-  MVN_model_mergesplit_accepts = yy$mergesplit_accepts
-  my_states = yy$states
-  states_df = data.frame(matrix(my_states[[1]], nrow = 1))
-  for (i in 2:length(my_states)) {
-    states_df = rbind(states_df, data.frame(matrix(my_states[[i]], nrow = 1)))
-  }
-  states_df_burnt = states_df[floor(2 * nrow(states_df) / 4):nrow(states_df), ]
-  prop_mat = matrix(0, nrow = 1, ncol = (ncol(states_df_burnt) - 1))
-  number_of_segments = nrow(states_df)
-  for (j in 1:(ncol(states_df_burnt) - 1)) {
-    temp_difference = states_df_burnt[, j + 1] - states_df_burnt[, j]
-    prop_mat[1, j] = mean(temp_difference == 1)
-  }
-  changepoint_probs   = prop_mat
-  changepoints        = changepoint_probs >= prob_cutoff
-  changepoints_data   = data.frame(prob_value = changepoints,
-                                   time_point = 1:length(changepoints))
-  
-  my_plot = ggplot(changepoints_data, aes(x = time_point, y = prob_value)) + geom_bar(stat = "identity") +
-    geom_hline(yintercept = prob_cutoff, color = "red") +
-    annotate("text", label = "Probability Cutoff Value")
+  # yy = regime_fit_object
+  # MVN_model_mergesplit_accepts = yy$mergesplit_accepts
+  # my_states = yy$states
+  # states_df = data.frame(matrix(my_states[[1]], nrow = 1))
+  # for (i in 2:length(my_states)) {
+  #   states_df = rbind(states_df, data.frame(matrix(my_states[[i]], nrow = 1)))
+  # }
+  # states_df_burnt = states_df[floor(2 * nrow(states_df) / 4):nrow(states_df), ]
+  # prop_mat = matrix(0, nrow = 1, ncol = (ncol(states_df_burnt) - 1))
+  # number_of_segments = nrow(states_df)
+  # for (j in 1:(ncol(states_df_burnt) - 1)) {
+  #   temp_difference = states_df_burnt[, j + 1] - states_df_burnt[, j]
+  #   prop_mat[1, j] = mean(temp_difference == 1)
+  # }
+  changepoint_probs   = regime_fit_object$changepoint_probabilities[,2]
+  # changepoints        = changepoint_probs >= prob_cutoff
+  changepoints_data   = data.frame(prob_value = as.vector(changepoint_probs),
+                                   time_point = as.factor(1:length(as.vector(as.vector(changepoint_probs)))))
+
+  my_plot = ggplot2::ggplot(changepoints_data, aes(x = time_point, y = prob_value)) + ggplot2::geom_bar(stat = "identity", fill="blue") +
+    ggplot2::geom_hline(yintercept = prob_cutoff, color = "red") +
+    ggplot2::annotate("text", label = "Probability Cutoff Value")
   
   return(my_plot)
 }
@@ -1348,7 +1360,7 @@ graph_changepoints = function(regime_fit_object, prob_cutoff) {
 #' @export
 #'
 #' @examples
-get_fault_detection_graph = function(regime_fit_object){
+detect_faults = function(regime_fit_object){
   if(is.null(regime_fit_object$fault_graph)){
     stop("This regime fit was run without fault detection.")
   } else {

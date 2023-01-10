@@ -191,7 +191,7 @@ Graph::~Graph()
 //Should Call Function InitGraphFromMss() to properly initialize the graph
 void Graph::InitGraph(int n)
 {
-   int i, j;
+   int i;
 	
    nVertices = n;
    //alloc the matrix of vertices
@@ -979,7 +979,7 @@ void Graph::InitConnectedComponents()
 
 void Graph::GetMPSubgraphs()
 {
-   int i,j,s;
+   int i,j;
 	
    //if(IsDecomposable()) return;//easy task if the graph is decomposable
    //if not, generate the minimal fill-in graph
@@ -1499,7 +1499,7 @@ int EliminationGraph::SearchVertex()
 LPGraph MakeFillInGraph(LPGraph graph)
 {
 	int u,v;
-	int i,j;
+	int i;
 	
 	LPGraph gfill = new Graph(graph);
 	CheckPointer(gfill);

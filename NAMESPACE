@@ -1,6 +1,9 @@
 useDynLib(bayesWatch, .registration=TRUE)
 importFrom(Rcpp, evalCpp)
+import(ggplot2)
 exportPattern("^[[:alpha:]]+")
 
 export(print.bayesWatch)
 S3method(print, bayesWatch)
+export(plot.bayesWatch)
+S3method(plot, bayesWatch)
