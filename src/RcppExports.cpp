@@ -13,7 +13,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // complete_lambda
 arma::mat complete_lambda(const arma::mat& orig_chol_mat, const arma::mat& current_G, int p, int cores);
-RcppExport SEXP _palliative_changepoints_complete_lambda(SEXP orig_chol_matSEXP, SEXP current_GSEXP, SEXP pSEXP, SEXP coresSEXP) {
+RcppExport SEXP _bayesWatch_complete_lambda(SEXP orig_chol_matSEXP, SEXP current_GSEXP, SEXP pSEXP, SEXP coresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -27,7 +27,7 @@ END_RCPP
 }
 // DRJ_MCMC_singlestep
 List DRJ_MCMC_singlestep(const arma::mat& current_lambda, const arma::mat& lambda_0, const arma::mat& current_G, const int p, const int cores, const int edge_updated_i, const int edge_updated_j, const arma::mat& scale_matrix, const int n_regime, const arma::vec mean_vector_regime, const arma::mat nS2, const int b, const double spread_parameter_sd2, const arma::vec& mean_hyperparameter, const double lambda_hyperparameter, const double g_prior);
-RcppExport SEXP _palliative_changepoints_DRJ_MCMC_singlestep(SEXP current_lambdaSEXP, SEXP lambda_0SEXP, SEXP current_GSEXP, SEXP pSEXP, SEXP coresSEXP, SEXP edge_updated_iSEXP, SEXP edge_updated_jSEXP, SEXP scale_matrixSEXP, SEXP n_regimeSEXP, SEXP mean_vector_regimeSEXP, SEXP nS2SEXP, SEXP bSEXP, SEXP spread_parameter_sd2SEXP, SEXP mean_hyperparameterSEXP, SEXP lambda_hyperparameterSEXP, SEXP g_priorSEXP) {
+RcppExport SEXP _bayesWatch_DRJ_MCMC_singlestep(SEXP current_lambdaSEXP, SEXP lambda_0SEXP, SEXP current_GSEXP, SEXP pSEXP, SEXP coresSEXP, SEXP edge_updated_iSEXP, SEXP edge_updated_jSEXP, SEXP scale_matrixSEXP, SEXP n_regimeSEXP, SEXP mean_vector_regimeSEXP, SEXP nS2SEXP, SEXP bSEXP, SEXP spread_parameter_sd2SEXP, SEXP mean_hyperparameterSEXP, SEXP lambda_hyperparameterSEXP, SEXP g_priorSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -53,7 +53,7 @@ END_RCPP
 }
 // log_dNormalWishart_posterior_unnormalized
 double log_dNormalWishart_posterior_unnormalized(const arma::mat& data_matrix, const arma::vec& m_hyperparameter, const arma::mat& scale_matrix, const double lambda_hyperparameter, const double nu_wishartDF, const arma::vec& observed_mu, const arma::mat& observed_precision);
-RcppExport SEXP _palliative_changepoints_log_dNormalWishart_posterior_unnormalized(SEXP data_matrixSEXP, SEXP m_hyperparameterSEXP, SEXP scale_matrixSEXP, SEXP lambda_hyperparameterSEXP, SEXP nu_wishartDFSEXP, SEXP observed_muSEXP, SEXP observed_precisionSEXP) {
+RcppExport SEXP _bayesWatch_log_dNormalWishart_posterior_unnormalized(SEXP data_matrixSEXP, SEXP m_hyperparameterSEXP, SEXP scale_matrixSEXP, SEXP lambda_hyperparameterSEXP, SEXP nu_wishartDFSEXP, SEXP observed_muSEXP, SEXP observed_precisionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -70,7 +70,7 @@ END_RCPP
 }
 // log_dNormalWishart_unnormalized
 double log_dNormalWishart_unnormalized(const arma::vec& m_hyperparameter, const arma::mat& posterior_inv_scale, const double lambda_hyperparameter, const double nu_wishartDF, const arma::vec& observed_mu, const arma::mat& observed_precision);
-RcppExport SEXP _palliative_changepoints_log_dNormalWishart_unnormalized(SEXP m_hyperparameterSEXP, SEXP posterior_inv_scaleSEXP, SEXP lambda_hyperparameterSEXP, SEXP nu_wishartDFSEXP, SEXP observed_muSEXP, SEXP observed_precisionSEXP) {
+RcppExport SEXP _bayesWatch_log_dNormalWishart_unnormalized(SEXP m_hyperparameterSEXP, SEXP posterior_inv_scaleSEXP, SEXP lambda_hyperparameterSEXP, SEXP nu_wishartDFSEXP, SEXP observed_muSEXP, SEXP observed_precisionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -86,7 +86,7 @@ END_RCPP
 }
 // rmu_0
 arma::vec rmu_0(const arma::mat& sigma_0, const arma::mat& sum_precision_matrices, const arma::vec& sum_precision_times_mu, const arma::vec& m_hyperparameter);
-RcppExport SEXP _palliative_changepoints_rmu_0(SEXP sigma_0SEXP, SEXP sum_precision_matricesSEXP, SEXP sum_precision_times_muSEXP, SEXP m_hyperparameterSEXP) {
+RcppExport SEXP _bayesWatch_rmu_0(SEXP sigma_0SEXP, SEXP sum_precision_matricesSEXP, SEXP sum_precision_times_muSEXP, SEXP m_hyperparameterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -100,7 +100,7 @@ END_RCPP
 }
 // log_MH_Gupdate_Rcpp
 SEXP log_MH_Gupdate_Rcpp(int selected_edge_i, int selected_edge_j, Rcpp::NumericVector oldG, Rcpp::NumericVector newG, Rcpp::NumericVector oldK, Rcpp::NumericVector newK, int b, int p);
-RcppExport SEXP _palliative_changepoints_log_MH_Gupdate_Rcpp(SEXP selected_edge_iSEXP, SEXP selected_edge_jSEXP, SEXP oldGSEXP, SEXP newGSEXP, SEXP oldKSEXP, SEXP newKSEXP, SEXP bSEXP, SEXP pSEXP) {
+RcppExport SEXP _bayesWatch_log_MH_Gupdate_Rcpp(SEXP selected_edge_iSEXP, SEXP selected_edge_jSEXP, SEXP oldGSEXP, SEXP newGSEXP, SEXP oldKSEXP, SEXP newKSEXP, SEXP bSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -118,7 +118,7 @@ END_RCPP
 }
 // log_MH_mergesplit_Rcpp
 SEXP log_MH_mergesplit_Rcpp(Rcpp::NumericVector oldK, Rcpp::NumericVector newK, int b, int p);
-RcppExport SEXP _palliative_changepoints_log_MH_mergesplit_Rcpp(SEXP oldKSEXP, SEXP newKSEXP, SEXP bSEXP, SEXP pSEXP) {
+RcppExport SEXP _bayesWatch_log_MH_mergesplit_Rcpp(SEXP oldKSEXP, SEXP newKSEXP, SEXP bSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -132,7 +132,7 @@ END_RCPP
 }
 // log_transition_probability_HMM_Rcpp
 SEXP log_transition_probability_HMM_Rcpp(Rcpp::NumericVector transition_probabilities, Rcpp::NumericVector my_states, int length_of_vector);
-RcppExport SEXP _palliative_changepoints_log_transition_probability_HMM_Rcpp(SEXP transition_probabilitiesSEXP, SEXP my_statesSEXP, SEXP length_of_vectorSEXP) {
+RcppExport SEXP _bayesWatch_log_transition_probability_HMM_Rcpp(SEXP transition_probabilitiesSEXP, SEXP my_statesSEXP, SEXP length_of_vectorSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -145,7 +145,7 @@ END_RCPP
 }
 // select_edge_from_G_prior_Rcpp
 Rcpp::NumericVector select_edge_from_G_prior_Rcpp(Rcpp::NumericVector G, Rcpp::NumericVector g_prior, int p);
-RcppExport SEXP _palliative_changepoints_select_edge_from_G_prior_Rcpp(SEXP GSEXP, SEXP g_priorSEXP, SEXP pSEXP) {
+RcppExport SEXP _bayesWatch_select_edge_from_G_prior_Rcpp(SEXP GSEXP, SEXP g_priorSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -158,7 +158,7 @@ END_RCPP
 }
 // log_dmvnrm_arma_regular
 double log_dmvnrm_arma_regular(arma::mat const& data_x, arma::rowvec const& mean, arma::mat const& prec);
-RcppExport SEXP _palliative_changepoints_log_dmvnrm_arma_regular(SEXP data_xSEXP, SEXP meanSEXP, SEXP precSEXP) {
+RcppExport SEXP _bayesWatch_log_dmvnrm_arma_regular(SEXP data_xSEXP, SEXP meanSEXP, SEXP precSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -171,7 +171,7 @@ END_RCPP
 }
 // redraw_Z_arma
 arma::mat redraw_Z_arma(const arma::mat& current_data, const arma::mat& current_precision, const arma::vec& current_mu, int p, const arma::vec& lower_bounds, const arma::vec& upper_bounds, const arma::mat& lower_bound_is_equal, const arma::mat& upper_bound_is_equal, const arma::mat& is_missing, const arma::vec& is_continuous, const arma::mat& raw_data, int cores);
-RcppExport SEXP _palliative_changepoints_redraw_Z_arma(SEXP current_dataSEXP, SEXP current_precisionSEXP, SEXP current_muSEXP, SEXP pSEXP, SEXP lower_boundsSEXP, SEXP upper_boundsSEXP, SEXP lower_bound_is_equalSEXP, SEXP upper_bound_is_equalSEXP, SEXP is_missingSEXP, SEXP is_continuousSEXP, SEXP raw_dataSEXP, SEXP coresSEXP) {
+RcppExport SEXP _bayesWatch_redraw_Z_arma(SEXP current_dataSEXP, SEXP current_precisionSEXP, SEXP current_muSEXP, SEXP pSEXP, SEXP lower_boundsSEXP, SEXP upper_boundsSEXP, SEXP lower_bound_is_equalSEXP, SEXP upper_bound_is_equalSEXP, SEXP is_missingSEXP, SEXP is_continuousSEXP, SEXP raw_dataSEXP, SEXP coresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -193,7 +193,7 @@ END_RCPP
 }
 // redraw_Z_arma_justmissings
 List redraw_Z_arma_justmissings(const arma::mat& current_data, const arma::mat& current_precision, const arma::vec& current_mu, int p, const arma::vec& lower_bounds, const arma::vec& upper_bounds, const arma::mat& lower_bound_is_equal, const arma::mat& upper_bound_is_equal, const arma::mat& is_missing, const arma::vec& is_continuous, int cores);
-RcppExport SEXP _palliative_changepoints_redraw_Z_arma_justmissings(SEXP current_dataSEXP, SEXP current_precisionSEXP, SEXP current_muSEXP, SEXP pSEXP, SEXP lower_boundsSEXP, SEXP upper_boundsSEXP, SEXP lower_bound_is_equalSEXP, SEXP upper_bound_is_equalSEXP, SEXP is_missingSEXP, SEXP is_continuousSEXP, SEXP coresSEXP) {
+RcppExport SEXP _bayesWatch_redraw_Z_arma_justmissings(SEXP current_dataSEXP, SEXP current_precisionSEXP, SEXP current_muSEXP, SEXP pSEXP, SEXP lower_boundsSEXP, SEXP upper_boundsSEXP, SEXP lower_bound_is_equalSEXP, SEXP upper_bound_is_equalSEXP, SEXP is_missingSEXP, SEXP is_continuousSEXP, SEXP coresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -214,7 +214,7 @@ END_RCPP
 }
 // get_justmissings_density
 List get_justmissings_density(const arma::mat& current_data, const arma::mat& current_precision, const arma::vec& current_mu, int p, const arma::vec& lower_bounds, const arma::vec& upper_bounds, const arma::mat& lower_bound_is_equal, const arma::mat& upper_bound_is_equal, const arma::mat& is_missing, const arma::vec& is_continuous, int cores);
-RcppExport SEXP _palliative_changepoints_get_justmissings_density(SEXP current_dataSEXP, SEXP current_precisionSEXP, SEXP current_muSEXP, SEXP pSEXP, SEXP lower_boundsSEXP, SEXP upper_boundsSEXP, SEXP lower_bound_is_equalSEXP, SEXP upper_bound_is_equalSEXP, SEXP is_missingSEXP, SEXP is_continuousSEXP, SEXP coresSEXP) {
+RcppExport SEXP _bayesWatch_get_justmissings_density(SEXP current_dataSEXP, SEXP current_precisionSEXP, SEXP current_muSEXP, SEXP pSEXP, SEXP lower_boundsSEXP, SEXP upper_boundsSEXP, SEXP lower_bound_is_equalSEXP, SEXP upper_bound_is_equalSEXP, SEXP is_missingSEXP, SEXP is_continuousSEXP, SEXP coresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -235,7 +235,7 @@ END_RCPP
 }
 // log_normalizing_g_wishart_posterior_laplace
 List log_normalizing_g_wishart_posterior_laplace(NumericMatrix graph, NumericMatrix D_post, int Delta, int n, int p);
-RcppExport SEXP _palliative_changepoints_log_normalizing_g_wishart_posterior_laplace(SEXP graphSEXP, SEXP D_postSEXP, SEXP DeltaSEXP, SEXP nSEXP, SEXP pSEXP) {
+RcppExport SEXP _bayesWatch_log_normalizing_g_wishart_posterior_laplace(SEXP graphSEXP, SEXP D_postSEXP, SEXP DeltaSEXP, SEXP nSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -250,7 +250,7 @@ END_RCPP
 }
 // calc_logprob_Gibbs_comp
 double calc_logprob_Gibbs_comp(const arma::mat& current_precision, const arma::vec& current_mu, const arma::vec& regime_comp_log_probs, const arma::mat& current_data, int proposed_component);
-RcppExport SEXP _palliative_changepoints_calc_logprob_Gibbs_comp(SEXP current_precisionSEXP, SEXP current_muSEXP, SEXP regime_comp_log_probsSEXP, SEXP current_dataSEXP, SEXP proposed_componentSEXP) {
+RcppExport SEXP _bayesWatch_calc_logprob_Gibbs_comp(SEXP current_precisionSEXP, SEXP current_muSEXP, SEXP regime_comp_log_probsSEXP, SEXP current_dataSEXP, SEXP proposed_componentSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -265,7 +265,7 @@ END_RCPP
 }
 // gibbs_swap_btwn_two
 List gibbs_swap_btwn_two(const arma::mat& first_precision, const arma::mat& second_precision, const arma::vec& first_mu, const arma::vec& second_mu, const arma::vec& component_log_probs, const arma::vec& indices_of_split_component, const arma::mat& data_points_of_state, arma::vec& assignments_launch, int first_component, int second_component, int num_gibbs_sweeps);
-RcppExport SEXP _palliative_changepoints_gibbs_swap_btwn_two(SEXP first_precisionSEXP, SEXP second_precisionSEXP, SEXP first_muSEXP, SEXP second_muSEXP, SEXP component_log_probsSEXP, SEXP indices_of_split_componentSEXP, SEXP data_points_of_stateSEXP, SEXP assignments_launchSEXP, SEXP first_componentSEXP, SEXP second_componentSEXP, SEXP num_gibbs_sweepsSEXP) {
+RcppExport SEXP _bayesWatch_gibbs_swap_btwn_two(SEXP first_precisionSEXP, SEXP second_precisionSEXP, SEXP first_muSEXP, SEXP second_muSEXP, SEXP component_log_probsSEXP, SEXP indices_of_split_componentSEXP, SEXP data_points_of_stateSEXP, SEXP assignments_launchSEXP, SEXP first_componentSEXP, SEXP second_componentSEXP, SEXP num_gibbs_sweepsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -286,7 +286,7 @@ END_RCPP
 }
 // gibbs_swap_comps
 arma::vec gibbs_swap_comps(const arma::mat& data_points_of_state, arma::vec& cluster_assignments, const arma::vec& regime_comp_log_probs, List precisions, List mus, int assignments_maximum, int gibbs_sweeps);
-RcppExport SEXP _palliative_changepoints_gibbs_swap_comps(SEXP data_points_of_stateSEXP, SEXP cluster_assignmentsSEXP, SEXP regime_comp_log_probsSEXP, SEXP precisionsSEXP, SEXP musSEXP, SEXP assignments_maximumSEXP, SEXP gibbs_sweepsSEXP) {
+RcppExport SEXP _bayesWatch_gibbs_swap_comps(SEXP data_points_of_stateSEXP, SEXP cluster_assignmentsSEXP, SEXP regime_comp_log_probsSEXP, SEXP precisionsSEXP, SEXP musSEXP, SEXP assignments_maximumSEXP, SEXP gibbs_sweepsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -303,7 +303,7 @@ END_RCPP
 }
 // rmvn_Rcpp
 Rcpp::NumericVector rmvn_Rcpp(Rcpp::NumericVector mus, Rcpp::NumericVector K, int p);
-RcppExport SEXP _palliative_changepoints_rmvn_Rcpp(SEXP musSEXP, SEXP KSEXP, SEXP pSEXP) {
+RcppExport SEXP _bayesWatch_rmvn_Rcpp(SEXP musSEXP, SEXP KSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -316,7 +316,7 @@ END_RCPP
 }
 // rwish_Rcpp
 Rcpp::NumericVector rwish_Rcpp(Rcpp::NumericVector Ts, int b, int p);
-RcppExport SEXP _palliative_changepoints_rwish_Rcpp(SEXP TsSEXP, SEXP bSEXP, SEXP pSEXP) {
+RcppExport SEXP _bayesWatch_rwish_Rcpp(SEXP TsSEXP, SEXP bSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -329,7 +329,7 @@ END_RCPP
 }
 // rgwish_Rcpp
 Rcpp::NumericVector rgwish_Rcpp(const Rcpp::NumericVector G, const Rcpp::NumericVector D, int b, int p, double threshold);
-RcppExport SEXP _palliative_changepoints_rgwish_Rcpp(SEXP GSEXP, SEXP DSEXP, SEXP bSEXP, SEXP pSEXP, SEXP thresholdSEXP) {
+RcppExport SEXP _bayesWatch_rgwish_Rcpp(SEXP GSEXP, SEXP DSEXP, SEXP bSEXP, SEXP pSEXP, SEXP thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -344,7 +344,7 @@ END_RCPP
 }
 // log_wishart_normalizingConstant_mc_Rcpp
 Rcpp::NumericVector log_wishart_normalizingConstant_mc_Rcpp(const Rcpp::NumericVector G, const Rcpp::NumericVector nu, const int b, const Rcpp::NumericVector H, const int check_H, const int mc_iters, const int p);
-RcppExport SEXP _palliative_changepoints_log_wishart_normalizingConstant_mc_Rcpp(SEXP GSEXP, SEXP nuSEXP, SEXP bSEXP, SEXP HSEXP, SEXP check_HSEXP, SEXP mc_itersSEXP, SEXP pSEXP) {
+RcppExport SEXP _bayesWatch_log_wishart_normalizingConstant_mc_Rcpp(SEXP GSEXP, SEXP nuSEXP, SEXP bSEXP, SEXP HSEXP, SEXP check_HSEXP, SEXP mc_itersSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -361,31 +361,31 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_palliative_changepoints_complete_lambda", (DL_FUNC) &_palliative_changepoints_complete_lambda, 4},
-    {"_palliative_changepoints_DRJ_MCMC_singlestep", (DL_FUNC) &_palliative_changepoints_DRJ_MCMC_singlestep, 16},
-    {"_palliative_changepoints_log_dNormalWishart_posterior_unnormalized", (DL_FUNC) &_palliative_changepoints_log_dNormalWishart_posterior_unnormalized, 7},
-    {"_palliative_changepoints_log_dNormalWishart_unnormalized", (DL_FUNC) &_palliative_changepoints_log_dNormalWishart_unnormalized, 6},
-    {"_palliative_changepoints_rmu_0", (DL_FUNC) &_palliative_changepoints_rmu_0, 4},
-    {"_palliative_changepoints_log_MH_Gupdate_Rcpp", (DL_FUNC) &_palliative_changepoints_log_MH_Gupdate_Rcpp, 8},
-    {"_palliative_changepoints_log_MH_mergesplit_Rcpp", (DL_FUNC) &_palliative_changepoints_log_MH_mergesplit_Rcpp, 4},
-    {"_palliative_changepoints_log_transition_probability_HMM_Rcpp", (DL_FUNC) &_palliative_changepoints_log_transition_probability_HMM_Rcpp, 3},
-    {"_palliative_changepoints_select_edge_from_G_prior_Rcpp", (DL_FUNC) &_palliative_changepoints_select_edge_from_G_prior_Rcpp, 3},
-    {"_palliative_changepoints_log_dmvnrm_arma_regular", (DL_FUNC) &_palliative_changepoints_log_dmvnrm_arma_regular, 3},
-    {"_palliative_changepoints_redraw_Z_arma", (DL_FUNC) &_palliative_changepoints_redraw_Z_arma, 12},
-    {"_palliative_changepoints_redraw_Z_arma_justmissings", (DL_FUNC) &_palliative_changepoints_redraw_Z_arma_justmissings, 11},
-    {"_palliative_changepoints_get_justmissings_density", (DL_FUNC) &_palliative_changepoints_get_justmissings_density, 11},
-    {"_palliative_changepoints_log_normalizing_g_wishart_posterior_laplace", (DL_FUNC) &_palliative_changepoints_log_normalizing_g_wishart_posterior_laplace, 5},
-    {"_palliative_changepoints_calc_logprob_Gibbs_comp", (DL_FUNC) &_palliative_changepoints_calc_logprob_Gibbs_comp, 5},
-    {"_palliative_changepoints_gibbs_swap_btwn_two", (DL_FUNC) &_palliative_changepoints_gibbs_swap_btwn_two, 11},
-    {"_palliative_changepoints_gibbs_swap_comps", (DL_FUNC) &_palliative_changepoints_gibbs_swap_comps, 7},
-    {"_palliative_changepoints_rmvn_Rcpp", (DL_FUNC) &_palliative_changepoints_rmvn_Rcpp, 3},
-    {"_palliative_changepoints_rwish_Rcpp", (DL_FUNC) &_palliative_changepoints_rwish_Rcpp, 3},
-    {"_palliative_changepoints_rgwish_Rcpp", (DL_FUNC) &_palliative_changepoints_rgwish_Rcpp, 5},
-    {"_palliative_changepoints_log_wishart_normalizingConstant_mc_Rcpp", (DL_FUNC) &_palliative_changepoints_log_wishart_normalizingConstant_mc_Rcpp, 7},
+    {"_bayesWatch_complete_lambda", (DL_FUNC) &_bayesWatch_complete_lambda, 4},
+    {"_bayesWatch_DRJ_MCMC_singlestep", (DL_FUNC) &_bayesWatch_DRJ_MCMC_singlestep, 16},
+    {"_bayesWatch_log_dNormalWishart_posterior_unnormalized", (DL_FUNC) &_bayesWatch_log_dNormalWishart_posterior_unnormalized, 7},
+    {"_bayesWatch_log_dNormalWishart_unnormalized", (DL_FUNC) &_bayesWatch_log_dNormalWishart_unnormalized, 6},
+    {"_bayesWatch_rmu_0", (DL_FUNC) &_bayesWatch_rmu_0, 4},
+    {"_bayesWatch_log_MH_Gupdate_Rcpp", (DL_FUNC) &_bayesWatch_log_MH_Gupdate_Rcpp, 8},
+    {"_bayesWatch_log_MH_mergesplit_Rcpp", (DL_FUNC) &_bayesWatch_log_MH_mergesplit_Rcpp, 4},
+    {"_bayesWatch_log_transition_probability_HMM_Rcpp", (DL_FUNC) &_bayesWatch_log_transition_probability_HMM_Rcpp, 3},
+    {"_bayesWatch_select_edge_from_G_prior_Rcpp", (DL_FUNC) &_bayesWatch_select_edge_from_G_prior_Rcpp, 3},
+    {"_bayesWatch_log_dmvnrm_arma_regular", (DL_FUNC) &_bayesWatch_log_dmvnrm_arma_regular, 3},
+    {"_bayesWatch_redraw_Z_arma", (DL_FUNC) &_bayesWatch_redraw_Z_arma, 12},
+    {"_bayesWatch_redraw_Z_arma_justmissings", (DL_FUNC) &_bayesWatch_redraw_Z_arma_justmissings, 11},
+    {"_bayesWatch_get_justmissings_density", (DL_FUNC) &_bayesWatch_get_justmissings_density, 11},
+    {"_bayesWatch_log_normalizing_g_wishart_posterior_laplace", (DL_FUNC) &_bayesWatch_log_normalizing_g_wishart_posterior_laplace, 5},
+    {"_bayesWatch_calc_logprob_Gibbs_comp", (DL_FUNC) &_bayesWatch_calc_logprob_Gibbs_comp, 5},
+    {"_bayesWatch_gibbs_swap_btwn_two", (DL_FUNC) &_bayesWatch_gibbs_swap_btwn_two, 11},
+    {"_bayesWatch_gibbs_swap_comps", (DL_FUNC) &_bayesWatch_gibbs_swap_comps, 7},
+    {"_bayesWatch_rmvn_Rcpp", (DL_FUNC) &_bayesWatch_rmvn_Rcpp, 3},
+    {"_bayesWatch_rwish_Rcpp", (DL_FUNC) &_bayesWatch_rwish_Rcpp, 3},
+    {"_bayesWatch_rgwish_Rcpp", (DL_FUNC) &_bayesWatch_rgwish_Rcpp, 5},
+    {"_bayesWatch_log_wishart_normalizingConstant_mc_Rcpp", (DL_FUNC) &_bayesWatch_log_wishart_normalizingConstant_mc_Rcpp, 7},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_palliative_changepoints(DllInfo *dll) {
+RcppExport void R_init_bayesWatch(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

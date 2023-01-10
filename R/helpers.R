@@ -1,7 +1,7 @@
 # Helper function for bd_gc_mcmc main method.
-library(parallel)
-library(CholWishart)
-library(mvtnorm)
+require(parallel)
+# require(CholWishart)
+require(mvtnorm)
 
 #' Title
 #'
@@ -15,6 +15,7 @@ library(mvtnorm)
 #' @param min_regime_length
 #'
 #' @return
+#' @noRd
 #'
 #' @examples
 update_states_gibbs       = function(my_states,
@@ -292,7 +293,7 @@ update_states_gibbs       = function(my_states,
 #' @param data_w_missing
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 empirical_cov_w_missing   = function(data_w_missing) {
@@ -335,6 +336,7 @@ empirical_cov_w_missing   = function(data_w_missing) {
 #' @param min_regime_length
 #'
 #' @return
+#' @noRd
 #'
 #'
 #' @examples
@@ -1207,7 +1209,7 @@ update_states_mergesplit  = function(my_states,
 #' @param state_vector
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 log_Gwishart_marginals    = function(previous_model_fits,
@@ -1316,7 +1318,7 @@ log_Gwishart_marginals    = function(previous_model_fits,
 #' @param hyperparameters
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 get_pseudoprior_prior_dens = function(previous_model_fits,
@@ -1386,7 +1388,7 @@ get_pseudoprior_prior_dens = function(previous_model_fits,
 #' @param state_vector
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 log_mu_marginals          = function(previous_model_fits,
@@ -1441,7 +1443,7 @@ log_mu_marginals          = function(previous_model_fits,
 #' @param previous_model_fits
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 shift_states              = function(my_states, previous_model_fits) {
@@ -1490,7 +1492,7 @@ shift_states              = function(my_states, previous_model_fits) {
 #' @param previous_model_fits
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 shift_components          = function(current_state, previous_model_fits) {
@@ -1544,7 +1546,7 @@ shift_components          = function(current_state, previous_model_fits) {
 #' @param n.cores
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 redraw_transition_probs   = function(my_states, my_alpha, my_beta, n.cores) {
@@ -1573,7 +1575,7 @@ redraw_transition_probs   = function(my_states, my_alpha, my_beta, n.cores) {
 #' @param my_states
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 redraw_hyperparameters    = function(hyperparameters,
@@ -1879,7 +1881,7 @@ redraw_hyperparameters    = function(hyperparameters,
 #' @param scale_matrix
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 draw_mvn_parameters       = function(current_G,
@@ -1934,7 +1936,7 @@ draw_mvn_parameters       = function(current_G,
 #' @param df_of_regime
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 get_split_distribution    = function(current_G,
@@ -2135,7 +2137,7 @@ get_split_distribution    = function(current_G,
 #' @param data_points_Z
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 splitmerge_gibbs_comps    = function(my_states,
@@ -2525,7 +2527,7 @@ splitmerge_gibbs_comps    = function(my_states,
 #' @param hyperparameters
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 redraw_mixture_parameters = function(my_states,
@@ -2682,7 +2684,7 @@ redraw_mixture_parameters = function(my_states,
 #' @param g_sampling_distribution
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 redraw_G_with_mixture     = function(my_states,
@@ -2867,7 +2869,7 @@ redraw_G_with_mixture     = function(my_states,
 #' @param hyperparameters
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 draw_mix_params_justlists = function(my_states,
@@ -2947,7 +2949,7 @@ draw_mix_params_justlists = function(my_states,
 #' @param data_points_of_state
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 get_mixture_log_density   = function(current_state,
@@ -2989,7 +2991,7 @@ get_mixture_log_density   = function(current_state,
 #' @param Z_timepoint_indices
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 get_mix_log_dens_at_obs   = function(index_of_observation,
@@ -3045,7 +3047,7 @@ get_mix_log_dens_at_obs   = function(index_of_observation,
 #' @param lower_bound_is_equal_state
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 redraw_latent_data        = function(state_to_redraw,
@@ -3116,7 +3118,7 @@ redraw_latent_data        = function(state_to_redraw,
 #' @param hyperparameters
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 update_regime_components  = function(state_value_gained,
@@ -3262,7 +3264,7 @@ update_regime_components  = function(state_value_gained,
 #' @param data_of_state_changed
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 split_regime_components   = function(state_split,
@@ -3378,7 +3380,7 @@ split_regime_components   = function(state_split,
 #' @param data_in_second_state
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 merge_regime_components   = function(state_merged,
@@ -3485,7 +3487,7 @@ merge_regime_components   = function(state_merged,
 #' @param component_sticks
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 sticks_to_log_probs       = function(component_sticks) {
@@ -3510,7 +3512,7 @@ sticks_to_log_probs       = function(component_sticks) {
 #' @param transition_probabilities
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 calc_regimes_log_prob     = function(state_vector, transition_probabilities) {
@@ -3537,7 +3539,7 @@ calc_regimes_log_prob     = function(state_vector, transition_probabilities) {
 #' @param is_a_merge
 #'
 #' @return
-#'
+#' @noRd
 #'
 #' @examples
 calculate_MH_contribution_from_components = function(previous_model_fits,

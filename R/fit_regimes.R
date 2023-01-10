@@ -1,10 +1,11 @@
 # Script file for fitting a Hidden Markov Model with Dirichlet Prior
 ## Author: Alexander Murph
-library(parallel)
-library(Rcpp)
-library(Matrix)
-library(Hotelling)
-source("helpers.R")
+require(parallel)
+require(Rcpp)
+require(Matrix)
+require(CholWishart)
+require(Hotelling)
+source("R/helpers.R")
 
 
 #' Title
@@ -28,7 +29,6 @@ source("helpers.R")
 #' @param lambda
 #' @param g_sampling_distribution
 #' @param n.cores
-#' @param port_number
 #' @param scaleMatrix
 #' @param allow_for_mixture_models
 #' @param dirichlet_prior
@@ -41,6 +41,7 @@ source("helpers.R")
 #' @param determining_p_cutoff
 #'
 #' @return
+#' @import parallel
 #' @export
 #'
 #' @examples
@@ -48,7 +49,7 @@ fit_regime_vector = function(data_woTimeValues,
                              time_of_observations,
                              time_points,
                              not.cont = NULL,
-                             iterations = 1000,
+                             iterations = 100,
                              burnin = floor(iterations / 2),
                              lower_bounds = NULL,
                              upper_bounds = NULL,
@@ -57,15 +58,14 @@ fit_regime_vector = function(data_woTimeValues,
                              sparsity_parameter = NULL,
                              linger_parameter = 10,
                              move_parameter = 1,
-                             g.prior = 0.7,
+                             g.prior = 0.2,
                              set_G = NULL,
                              wishart_df_inital = 20,
                              lambda = 20,
                              g_sampling_distribution = NULL,
-                             n.cores = 20,
-                             port_number = runif(1, 11000, 11999),
+                             n.cores = 1,
                              scaleMatrix = NULL,
-                             allow_for_mixture_models = TRUE,
+                             allow_for_mixture_models = FALSE,
                              dirichlet_prior = 0.004,
                              component_truncation = 7,
                              regime_truncation = 15,
@@ -74,6 +74,9 @@ fit_regime_vector = function(data_woTimeValues,
                              simulation_iter = NULL,
                              T2_window_size = 3,
                              determining_p_cutoff = FALSE) {
+  
+  model_saves_list = list()
+  
   # As a sanity check, component truncation should be set to 1 when we do not allow for mixture models:
   if (!allow_for_mixture_models) {
     component_truncation = 1
@@ -396,7 +399,7 @@ fit_regime_vector = function(data_woTimeValues,
       "additional children."
     )
   )
-  clust              = makeCluster(n.cores_eachparent, port = port_number) #, port = port_number, outfile = 'childrencheck.txt'
+  clust              = parallel::makeCluster(n.cores_eachparent) #, port = port_number, outfile = 'childrencheck.txt'
   if (is.null(previous_model_fits)) {
     # If we don't have model fits from a previous run, we need to fit models
     # based off of the states.
@@ -420,8 +423,8 @@ fit_regime_vector = function(data_woTimeValues,
     parallel::clusterExport(clust, "component_truncation", envir = environment())
     parallel::clusterExport(clust, "wishart_df_inital", envir = environment())
     parallel::clusterExport(clust, "scaleMatrix", envir = environment())
-    models_temp = parSapply(clust, 1:(regime_truncation + 1), function(x) {
-      source("helpers.R")
+    models_temp = parallel::parSapply(clust, 1:(regime_truncation + 1), function(x) {
+      # source("R/helpers.R")
       linger_parameter         = hyperparameters$alpha
       move_parameter           = hyperparameters$beta
       not.cont                 = hyperparameters$not.cont
@@ -560,9 +563,9 @@ fit_regime_vector = function(data_woTimeValues,
     parallel::clusterExport(clust, "upper_bound_is_equal", envir = environment())
     parallel::clusterExport(clust, "is_missing", envir = environment())
     parallel::clusterExport(clust, "not.cont", envir = environment())
-    data_subsets_z = parLapply(clust, 1:max(my_states), function(x) {
+    data_subsets_z = parallel::parLapply(clust, 1:max(my_states), function(x) {
       library(palliative.changepoints)
-      source("helpers.R")
+      # source("R/helpers.R")
       print(x)
       first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
       last_index                = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
@@ -606,7 +609,7 @@ fit_regime_vector = function(data_woTimeValues,
     symmetric_scale                             = symmetric_scale + t(symmetric_scale) - diag(diag(symmetric_scale))
     D_prior_dens_trace                          = c(
       D_prior_dens_trace,
-      dWishart(
+      CholWishart::dWishart(
         symmetric_scale,
         hyperparameters$wishart_df,
         diag(hyperparameters$p),
@@ -686,8 +689,8 @@ fit_regime_vector = function(data_woTimeValues,
     parallel::clusterExport(clust, "transition_probabilities", envir = environment())
     parallel::clusterExport(clust, "hyperparameters", envir = environment())
     parallel::clusterExport(clust, "p", envir = environment())
-    models_temp = parSapply(clust, 1:regime_truncation, function(x) {
-      source("helpers.R")
+    models_temp = parallel::parSapply(clust, 1:regime_truncation, function(x) {
+      #source("R/helpers.R")
       linger_parameter          = hyperparameters$alpha
       move_parameter            = hyperparameters$beta
       not.cont                  = hyperparameters$not.cont
@@ -738,7 +741,7 @@ fit_regime_vector = function(data_woTimeValues,
     symmetric_scale                             = symmetric_scale + t(symmetric_scale) - diag(diag(symmetric_scale))
     D_prior_dens_trace                          = c(
       D_prior_dens_trace,
-      dWishart(
+      CholWishart::dWishart(
         symmetric_scale,
         hyperparameters$wishart_df,
         diag(hyperparameters$p),
@@ -762,9 +765,9 @@ fit_regime_vector = function(data_woTimeValues,
       parallel::clusterExport(clust, "is_missing", envir = environment())
       parallel::clusterExport(clust, "not.cont", envir = environment())
       parallel::clusterExport(clust, "previous_G", envir = environment())
-      new_mixture_components = parLapply(clust, 1:max(my_states), function(x) {
+      new_mixture_components = parallel::parLapply(clust, 1:max(my_states), function(x) {
         print(paste("starting", x))
-        source("helpers.R")
+        #source("R/helpers.R")
         print("redrawing the components for state")
         first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
         last_index                = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
@@ -779,7 +782,6 @@ fit_regime_vector = function(data_woTimeValues,
           Z_timepoint_indices,
           full_data_Z
         )
-        print(new_components_for_state)
         
         list(
           precisions        = new_components_for_state$precisions,
@@ -817,10 +819,10 @@ fit_regime_vector = function(data_woTimeValues,
       parallel::clusterExport(clust, "not.cont", envir = environment())
       parallel::clusterExport(clust, "previous_G", envir = environment())
       
-      new_mixture_components = parLapply(clust, 1:max(my_states), function(x) {
-        print(paste("starting", x))
-        source("helpers.R")
-        print("redrawing the components for state")
+      new_mixture_components = parallel::parLapply(clust, 1:max(my_states), function(x) {
+        # print(paste("starting", x))
+        #source("R/helpers.R")
+        # print("redrawing the components for state")
         first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
         last_index                = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
         temp_data                 = full_data_Z[first_index:last_index,]
@@ -838,8 +840,8 @@ fit_regime_vector = function(data_woTimeValues,
       for (i in 1:max(my_states)) {
         previous_model_fits[[i]]$cluster_assignments = new_mixture_components[[i]]$assigns
         previous_model_fits                          = shift_components(i, previous_model_fits)
-        print(paste("cluster assignments for regime", i, "are:"))
-        print(previous_model_fits[[i]]$cluster_assignments)
+        # print(paste("cluster assignments for regime", i, "are:"))
+        # print(previous_model_fits[[i]]$cluster_assignments)
       }
     }
     
@@ -923,8 +925,8 @@ fit_regime_vector = function(data_woTimeValues,
     parallel::clusterExport(clust, "transition_probabilities", envir = environment())
     parallel::clusterExport(clust, "hyperparameters", envir = environment())
     parallel::clusterExport(clust, "p", envir = environment())
-    models_temp = parSapply(clust, 1:regime_truncation, function(x) {
-      source("helpers.R")
+    models_temp = parallel::parSapply(clust, 1:regime_truncation, function(x) {
+      #source("R/helpers.R")
       linger_parameter          = hyperparameters$alpha
       move_parameter            = hyperparameters$beta
       not.cont                  = hyperparameters$not.cont
@@ -971,7 +973,7 @@ fit_regime_vector = function(data_woTimeValues,
       parallel::clusterExport(clust, "hyperparameters", envir = environment())
       parallel::clusterExport(clust, "g.prior", envir = environment())
       parallel::clusterExport(clust, "p", envir = environment())
-      models_temp = parSapply(clust, 1:max(my_states), function(x) {
+      models_temp = parallel::parSapply(clust, 1:max(my_states), function(x) {
         library(palliative.changepoints)
         
         state_to_redraw = x
@@ -1062,7 +1064,7 @@ fit_regime_vector = function(data_woTimeValues,
     symmetric_scale                             = symmetric_scale + t(symmetric_scale) - diag(diag(symmetric_scale))
     D_prior_dens_trace                          = c(
       D_prior_dens_trace,
-      dWishart(
+      CholWishart::dWishart(
         symmetric_scale,
         hyperparameters$wishart_df,
         diag(hyperparameters$p),
@@ -1137,7 +1139,7 @@ fit_regime_vector = function(data_woTimeValues,
         temp_list = previous_model_fits[(max(my_states) - 1):max(my_states)]
       }
       if (is.null(simulation_iter)) {
-        data_name = paste("Model_Fits/",
+        data_name = paste("Model_Fits", "/",
                           paste(my_states, collapse = ""),
                           "_",
                           iter,
@@ -1172,7 +1174,8 @@ fit_regime_vector = function(data_woTimeValues,
       
       # Usually, I only need to save the model information for the last two regimes (fault detection)
       # However, when I am searching for a reasonable probability cutoff on the posterior, I need them all.
-      saveRDS(temp_list, file = data_name)
+      model_saves_list$data_name = temp_list
+      # saveRDS(temp_list, file = data_name)
     }
     
     if (determining_p_cutoff) {
@@ -1230,7 +1233,8 @@ fit_regime_vector = function(data_woTimeValues,
     hyperparameters = hyperparameters,
     latent_data = full_data_Z,
     raw_data = data_woTimeValues,
-    Z_timepoint_indices = Z_timepoint_indices
+    Z_timepoint_indices = Z_timepoint_indices,
+    fault_detection_logs = model_saves_list
   )
   class(mylist) = "bayesWatch_object"
   

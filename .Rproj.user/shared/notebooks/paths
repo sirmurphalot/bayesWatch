@@ -1,6 +1,5 @@
 /Users/murph/Documents/GitHub/bayesWatch/.Rbuildignore="D3C9E50A"
-/Users/murph/Documents/GitHub/bayesWatch/R/create_simulated_data.R="E3CEB5A1"
+/Users/murph/Documents/GitHub/bayesWatch/DESCRIPTION="C2A6B7FF"
 /Users/murph/Documents/GitHub/bayesWatch/R/helpers.R="D21BDB99"
-/Users/murph/Documents/GitHub/bayesWatch/R/more_days_compare_simulation.R="DB748C54"
 /Users/murph/Documents/GitHub/bayesWatch/src/copula.cpp="AD8A5C32"
 /Users/murph/Documents/GitHub/bayesWatch/src/dmvnrm_arma_mc.cpp="DCC48A9E"

@@ -7,14 +7,15 @@
         "-I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include",
         "-I/Library/Developer/CommandLineTools/usr/include",
         "-I/Library/Frameworks/R.framework/Versions/4.1/Resources/library/Rcpp/include",
+        "-I/Library/Frameworks/R.framework/Versions/4.1/Resources/library/RcppArmadillo/include",
         "-std=gnu++14",
         "-I/Library/Frameworks/R.framework/Resources/include",
         "-DNDEBUG",
         "-I/usr/local/include",
         "-fPIC"
     ],
-    "pch": "Rcpp",
+    "pch": "RcppArmadillo",
     "is_cpp": true,
-    "hash": "16731919451638910984",
+    "hash": "16733729201638910984",
     "compiler": "13983030903937322761"
 }

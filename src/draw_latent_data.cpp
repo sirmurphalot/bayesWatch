@@ -194,7 +194,7 @@ arma::mat redraw_Z_arma(const arma::mat& current_data, const arma::mat& current_
                         const arma::vec& lower_bounds, const arma::vec& upper_bounds, 
                         const arma::mat& lower_bound_is_equal, const arma::mat& upper_bound_is_equal, const arma::mat& is_missing, 
                         const arma::vec& is_continuous, const arma::mat& raw_data, int cores) {
-  omp_set_num_threads( cores );
+//  omp_set_num_threads( cores );
   int n                             = current_data.n_rows;
   arma::mat new_data                = current_data;
   // arma::vec log_proposal_density_values(n);
