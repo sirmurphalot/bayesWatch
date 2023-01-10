@@ -1,5 +1,6 @@
 ~%2FDocuments%2FGitHub%2FbayesWatch%2F.Rbuildignore="DE639E3C"
 ~%2FDocuments%2FGitHub%2FbayesWatch%2FDESCRIPTION="CAE2F974"
+~%2FDocuments%2FGitHub%2FbayesWatch%2FNAMESPACE="7C56ABA4"
 ~%2FDocuments%2FGitHub%2FbayesWatch%2FR%2FT2_compare_sim_graphs.R="22EF9F21"
 ~%2FDocuments%2FGitHub%2FbayesWatch%2FR%2Fcreate_simulated_data.R="15AACA97"
 ~%2FDocuments%2FGitHub%2FbayesWatch%2FR%2Ffault_detection_graphs.R="56264123"
@@ -11,3 +12,5 @@
 ~%2FDocuments%2FGitHub%2FbayesWatch%2FR%2Fposterior_analysis.R="F5D279F9"
 ~%2FDocuments%2FGitHub%2FbayesWatch%2Fsrc%2Fcopula.cpp="940B3489"
 ~%2FDocuments%2FGitHub%2FbayesWatch%2Fsrc%2Fdmvnrm_arma_mc.cpp="3D7C5911"
+~%2FDocuments%2FGitHub%2FbayesWatch%2Fsrc%2Fgwish.cpp="8D6DC99A"
+~%2FDocuments%2FGitHub%2FbayesWatch%2Fsrc%2Fmixture_redraw_functions.cpp="36366A56"

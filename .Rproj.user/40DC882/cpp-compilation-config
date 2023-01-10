@@ -1,13 +1,15 @@
 {
     "args": [
         "-I/Library/Developer/CommandLineTools/usr/lib/clang/13.0.0/include",
-        "-I/usr/local/include",
         "-I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1",
         "-I/Library/Developer/CommandLineTools/usr/lib/clang/13.0.0/include",
         "-I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include",
         "-I/Library/Developer/CommandLineTools/usr/include",
         "-I/Library/Frameworks/R.framework/Versions/4.1/Resources/library/Rcpp/include",
         "-I/Library/Frameworks/R.framework/Versions/4.1/Resources/library/RcppArmadillo/include",
+        "-I/Library/Frameworks/R.framework/Versions/4.1/Resources/library/Matrix/include",
+        "-I/Library/Frameworks/R.framework/Versions/4.1/Resources/library/CholWishart/include",
+        "-I/Library/Frameworks/R.framework/Versions/4.1/Resources/library/mvtnorm/include",
         "-std=gnu++14",
         "-I/Library/Frameworks/R.framework/Resources/include",
         "-DNDEBUG",
@@ -16,6 +18,6 @@
     ],
     "pch": "RcppArmadillo",
     "is_cpp": true,
-    "hash": "16733729201638910984",
+    "hash": "16733744031638910984",
     "compiler": "13983030903937322761"
 }

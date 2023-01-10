@@ -1,3 +1,6 @@
 useDynLib(bayesWatch, .registration=TRUE)
 importFrom(Rcpp, evalCpp)
 exportPattern("^[[:alpha:]]+")
+
+export(print.bayesWatch)
+S3method(print, bayesWatch)

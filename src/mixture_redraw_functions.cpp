@@ -43,7 +43,7 @@ List gibbs_swap_btwn_two(const arma::mat& first_precision, const arma::mat& seco
     for(int indices_index = 0; indices_index < num_elements; indices_index++){
       data_value_index        = (int)arma::as_scalar(indices_of_split_component.at(indices_index));
       data_value              = data_points_of_state.row(data_value_index-1).t();
-      for(int count_index; count_index < length_launch; count_index++){
+      for(int count_index = 0; count_index < length_launch; count_index++){
         if( (int)arma::as_scalar(assignments_launch.at(count_index)) == first_component){
           num_equal_to_first += 1;
         }

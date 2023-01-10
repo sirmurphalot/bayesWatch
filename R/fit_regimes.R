@@ -10,6 +10,23 @@ source("R/helpers.R")
 
 #' Title
 #'
+#' @param x 
+#' @param ... 
+#'
+#' @return
+#' @export
+#' @noRd
+#'
+#' @examples
+print.bayesWatch = function( x, ... )
+{
+    cat("\n     bayesWatch object\n")
+    cat("----------------------------------\n")
+    print(x$changepoint_probabilities)
+} 
+
+#' Title
+#'
 #' @param data_woTimeValues
 #' @param time_of_observations
 #' @param time_points
@@ -1212,11 +1229,11 @@ fit_regime_vector = function(data_woTimeValues,
     temp_difference = states_df_burnt[, j + 1] - states_df_burnt[, j]
     prop_mat[1, j] = mean(temp_difference == 1)
   }
-  time_points     = matrix(1:ncol(prop_mat),
-                           ncol = ncol(prop_mat),
-                           nrow = 1)
-  prop_mat        = t(rbind(time_points, prop_mat))
-  names(prop_mat) = c("Time-point", "Change-point probability")
+  time_points        = matrix(1:ncol(prop_mat),
+                               ncol = ncol(prop_mat),
+                               nrow = 1)
+  prop_mat           = data.frame(t(rbind(time_points, prop_mat)))
+  names(prop_mat)    = c("Time-point", "Change-point probability")
   
   mylist = list(
     changepoint_probabilities = prop_mat,
@@ -1236,13 +1253,16 @@ fit_regime_vector = function(data_woTimeValues,
     Z_timepoint_indices = Z_timepoint_indices,
     fault_detection_logs = model_saves_list
   )
-  class(mylist) = "bayesWatch_object"
+  # class(mylist) = "bayesWatch_object"
   
-  print.bayesWatch_object <- function(x, ...) {
-    cat("bayesWatch object\n")
-    cat("-----------------\n")
-    print(x$prop_mat)
-  }
+  # print.bayesWatch_object <- function(x) {
+  #   cat("bayesWatch object\n")
+  #   cat("-----------------\n")
+  #   print(x$prop_mat)
+  # }
+  # 
+  class(mylist) <- "bayesWatch"
+  
   return(mylist)
 }
 
