@@ -1,6 +1,5 @@
 # Helper function for bd_gc_mcmc main method.
 require(parallel)
-# require(CholWishart)
 require(mvtnorm)
 
 #' Title
@@ -25,7 +24,8 @@ update_states_gibbs       = function(my_states,
                                      transition_probabilities,
                                      hyperparameters,
                                      n.cores,
-                                     min_regime_length = 1) {
+                                     min_regime_length = 1,
+                                     verbose_logfile = FALSE) {
   # We are going to perform sequential Gibbs updates with two restrictions:
   ## 1) This process cannot create a singleton state (UPDATE: cannot move below min_regime_length);
   ## 2) This process will not require the drawing of a new model.
@@ -61,12 +61,12 @@ update_states_gibbs       = function(my_states,
         # Now, whatever change is made will leave at least 2 observations in every state.
         first_index       = Z_timepoint_indices[[index]]$timepoint_first_index
         last_index        = Z_timepoint_indices[[index]]$timepoint_last_index
-        temp_data         = data_points_Z[first_index:last_index, ]
+        temp_data         = data_points_Z[first_index:last_index,]
         n_value           = nrow(temp_data)
         
-        upper_bound_is_equal_temp = hyperparameters$upper_bound_is_equal[first_index:last_index, ]
-        lower_bound_is_equal_temp = hyperparameters$lower_bound_is_equal[first_index:last_index, ]
-        is_missing_temp           = hyperparameters$is_missing[first_index:last_index, ]
+        upper_bound_is_equal_temp = hyperparameters$upper_bound_is_equal[first_index:last_index,]
+        lower_bound_is_equal_temp = hyperparameters$lower_bound_is_equal[first_index:last_index,]
+        is_missing_temp           = hyperparameters$is_missing[first_index:last_index,]
         
         if (my_states[index] == my_states[index - 1]) {
           new_state             = my_states[index + 1]
@@ -76,17 +76,20 @@ update_states_gibbs       = function(my_states,
           if ((sum(my_states_temp == my_states[index - 1]) < min_regime_length) |
               (sum(my_states_temp == my_states[index + 1]) < min_regime_length) |
               (sum(my_states_temp == my_states[index]) < min_regime_length)) {
-            print(
-              paste(
-                "-----> Gibbs swap attempted at timepoint",
-                index,
-                "changing from regime",
-                my_states[index],
-                "to regime",
-                new_state,
-                "but would have created a regime below the min length."
+            if (verbose_logfile)
+              cat(
+                paste(
+                  "-----> Gibbs swap attempted at timepoint",
+                  index,
+                  "changing from regime",
+                  my_states[index],
+                  "to regime",
+                  new_state,
+                  "but would have created a regime below the min length.\n"
+                ),
+                file = "verbose_log.txt",
+                append = T
               )
-            )
             next
           }
           
@@ -106,10 +109,10 @@ update_states_gibbs       = function(my_states,
           
           first_index         = Z_timepoint_indices[[index]]$timepoint_first_index
           last_index          = Z_timepoint_indices[[index]]$timepoint_last_index
-          temp_data_above     = data_points_Z[first_index:last_index, ]
-          upper_bound_at_obs  = hyperparameters$upper_bound_is_equal[first_index:last_index, ]
-          lower_bound_at_obs  = hyperparameters$lower_bound_is_equal[first_index:last_index, ]
-          is_missing_at_obs   = hyperparameters$is_missing[first_index:last_index, ]
+          temp_data_above     = data_points_Z[first_index:last_index,]
+          upper_bound_at_obs  = hyperparameters$upper_bound_is_equal[first_index:last_index,]
+          lower_bound_at_obs  = hyperparameters$lower_bound_is_equal[first_index:last_index,]
+          is_missing_at_obs   = hyperparameters$is_missing[first_index:last_index,]
           components_at_obs   = previous_model_fits_temp[[temp_my_states[index]]]$cluster_assignments
           components_at_obs   = components_at_obs[1:nrow(upper_bound_at_obs)]
           
@@ -145,20 +148,20 @@ update_states_gibbs       = function(my_states,
           if ((sum(my_states_temp == my_states[index - 1]) < min_regime_length) |
               (sum(my_states_temp == my_states[index + 1]) < min_regime_length) |
               (sum(my_states_temp == my_states[index]) < min_regime_length)) {
-            # print("-----------------")
-            # print(my_states_temp)
-            # print(my_states)
-            print(
-              paste(
-                "-----> Gibbs swap attempted at timepoint",
-                index,
-                "changing from regime",
-                my_states[index],
-                "to regime",
-                new_state,
-                "but would have created a regime below the min length."
+            if (verbose_logfile)
+              cat(
+                paste(
+                  "-----> Gibbs swap attempted at timepoint",
+                  index,
+                  "changing from regime",
+                  my_states[index],
+                  "to regime",
+                  new_state,
+                  "but would have created a regime below the min length.\n"
+                ),
+                file = "verbose_log.txt",
+                append = T
               )
-            )
             next
           }
           
@@ -178,10 +181,10 @@ update_states_gibbs       = function(my_states,
           
           first_index              = Z_timepoint_indices[[index]]$timepoint_first_index
           last_index               = Z_timepoint_indices[[index]]$timepoint_last_index
-          temp_data_below          = data_points_Z[first_index:last_index, ]
-          upper_bound_at_obs       = hyperparameters$upper_bound_is_equal[first_index:last_index, ]
-          lower_bound_at_obs       = hyperparameters$lower_bound_is_equal[first_index:last_index, ]
-          is_missing_at_obs        = hyperparameters$is_missing[first_index:last_index, ]
+          temp_data_below          = data_points_Z[first_index:last_index,]
+          upper_bound_at_obs       = hyperparameters$upper_bound_is_equal[first_index:last_index,]
+          lower_bound_at_obs       = hyperparameters$lower_bound_is_equal[first_index:last_index,]
+          is_missing_at_obs        = hyperparameters$is_missing[first_index:last_index,]
           components_at_obs        = previous_model_fits_temp[[temp_my_states[index]]]$cluster_assignments
           components_at_obs        = components_at_obs[(length(components_at_obs) - nrow(upper_bound_at_obs) + 1):length(components_at_obs)]
           
@@ -246,13 +249,22 @@ update_states_gibbs       = function(my_states,
         rand_value = log(runif(1))
         
         if ((length(alpha) == 0) | (is.na(alpha))) {
-          print("alpha is weird!")
-          print(alpha)
+          if (verbose_logfile)
+            cat("alpha is weird!\n",
+                file = "verbose_log.txt",
+                append = T)
+          if (verbose_logfile)
+            cat(alpha, file = "verbose_log.txt", append = T)
+          if (verbose_logfile)
+            cat("\n", file = "verbose_log.txt", append = T)
           stop("inside the gibbs swap function.")
         }
         if (!is.na(alpha)) {
           if (rand_value <= alpha) {
-            print("accepted!")
+            if (verbose_logfile)
+              cat("accepted!\n",
+                  file = "verbose_log.txt",
+                  append = T)
             old_state             = my_states[index]
             if (old_state != new_state) {
               previous_model_fits = update_regime_components(
@@ -268,7 +280,10 @@ update_states_gibbs       = function(my_states,
             my_states[index]      = new_state
             accepted              = 1
           } else {
-            print("did not accept!")
+            if (verbose_logfile)
+              cat("did not accept!\n",
+                  file = "verbose_log.txt",
+                  append = T)
           }
         }
         
@@ -353,7 +368,8 @@ update_states_mergesplit  = function(my_states,
                                      n.cores,
                                      launching = F,
                                      allow_mixtures = FALSE,
-                                     min_regime_length = 1) {
+                                     min_regime_length = 1,
+                                     verbose_logfile = FALSE) {
   linger_parameter         = hyperparameters$alpha
   move_parameter           = hyperparameters$beta
   mu_0                     = hyperparameters$mu_0
@@ -371,18 +387,26 @@ update_states_mergesplit  = function(my_states,
     # Choose the first state randomly.
     
     first_state           = sample(1:(max(my_states)), 1)
-    print(paste("-----> starting a SPLIT on state", first_state))
+    if (verbose_logfile)
+      cat(
+        paste("-----> starting a SPLIT on state", first_state, "\n"),
+        file = "verbose_log.txt",
+        append = T
+      )
     
     # We will begin by automatically rejecting if the state chosen only has a single
     # observation.
     if (length(which(my_states == first_state)) <= 1) {
-      print(
-        paste(
-          "-----> split automatically rejected b/c only a single instance of state",
-          first_state,
-          "exists"
+      if (verbose_logfile)
+        cat(
+          paste(
+            "-----> split automatically rejected b/c only a single instance of state",
+            first_state,
+            "exists\n"
+          ),
+          file = "verbose_log.txt",
+          append = T
         )
-      )
       return(
         list(
           my_states_item = my_states,
@@ -396,12 +420,16 @@ update_states_mergesplit  = function(my_states,
     }
     
     if (max(my_states) == hyperparameters$regime_truncation) {
-      print(
-        paste(
-          "-----> split automatically rejected b/c reached regime truncation value of ",
-          hyperparameters$regime_truncation
+      if (verbose_logfile)
+        cat(
+          paste(
+            "-----> split automatically rejected b/c reached regime truncation value of ",
+            hyperparameters$regime_truncation,
+            '\n'
+          ),
+          file = "verbose_log.txt",
+          append = T
         )
-      )
       return(
         list(
           my_states_item = my_states,
@@ -428,25 +456,57 @@ update_states_mergesplit  = function(my_states,
       n.cores,
       components_of_regime,
       hyperparameters$wishart_scale_matrix,
-      hyperparameters$wishart_df
+      hyperparameters$wishart_df,
+      verbose_logfile = verbose_logfile
     )
     
     rescale_log_values     = log(max(split_distribution))
     exp_split_distribution = exp(log(split_distribution) - rescale_log_values)
     
-    print("Rescaled and transformed split distribution:")
-    print(exp_split_distribution)
+    if (verbose_logfile)
+      cat(
+        "Rescaled and transformed split distribution:\n",
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(exp_split_distribution,
+          file = "verbose_log.txt",
+          append = T)
+    if (verbose_logfile)
+      cat("\n", file = "verbose_log.txt", append = T)
     
-    rand_value             = runif(1,
-                                   min = 0,
-                                   max = sum(exp_split_distribution))
+    suppressWarnings({
+      rand_value             = runif(1,
+                                     min = 0,
+                                     max = sum(exp_split_distribution))
+    })
+    
     if (is.na(rand_value)) {
-      print("Something was wrong with exp split distribution")
-      print(indices_of_regime)
-      print(split_distribution)
-      print(rescale_log_values)
-      print(exp_split_distribution)
-      print(rand_value)
+      if (verbose_logfile) {
+        cat(
+          "Something was wrong with exp split distribution",
+          file = "verbose_log.txt",
+          append = T
+        )
+        cat(indices_of_regime,
+            file = "verbose_log.txt",
+            append = T)
+        cat("\n", file = "verbose_log.txt", append = T)
+        cat(split_distribution,
+            file = "verbose_log.txt",
+            append = T)
+        cat("\n", file = "verbose_log.txt", append = T)
+        cat(rescale_log_values,
+            file = "verbose_log.txt",
+            append = T)
+        cat("\n", file = "verbose_log.txt", append = T)
+        cat(exp_split_distribution,
+            file = "verbose_log.txt",
+            append = T)
+        cat("\n", file = "verbose_log.txt", append = T)
+        cat(rand_value, file = "verbose_log.txt", append = T)
+      }
     }
     sum_density_values     = 0
     for (split_index in 1:length(split_distribution)) {
@@ -457,7 +517,12 @@ update_states_mergesplit  = function(my_states,
         break
       }
     }
-    print(paste("-----> Index of split is:", index_of_split))
+    if (verbose_logfile)
+      cat(
+        paste("-----> Index of split is:", index_of_split, '\n'),
+        file = "verbose_log.txt",
+        append = T
+      )
     
     indices_of_state           = which(my_states == first_state)
     indices_of_state_changed   = indices_of_state[which(indices_of_state >  index_of_split)]
@@ -467,11 +532,14 @@ update_states_mergesplit  = function(my_states,
     
     # if( (length(my_states_temp[indices_of_state_changed]) < min_regime_length) | (length(my_states_temp[indices_of_state_unchanged]) < min_regime_length)){
     if ((length(which(my_states_temp == 1)) < min_regime_length)) {
-      print(
-        paste(
-          "-----> split automatically rejected b/c it would create a regime less than the minimum regime length."
+      if (verbose_logfile)
+        cat(
+          paste(
+            "-----> split automatically rejected b/c it would create a regime less than the minimum regime length.\n"
+          ),
+          file = "verbose_log.txt",
+          append = T
         )
-      )
       return(
         list(
           my_states_item = my_states,
@@ -488,18 +556,18 @@ update_states_mergesplit  = function(my_states,
     # Find the first and last row of the data matrix the is included in this regime.
     Z_index_of_regime_start_changed     = Z_timepoint_indices[[min(indices_of_state_changed)]]$timepoint_first_index
     Z_index_of_regime_end_changed       = Z_timepoint_indices[[max(indices_of_state_changed)]]$timepoint_last_index
-    Z_values_changed                    = data_points_Z[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
-    upper_bounds_changed                = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
-    lower_bounds_changed                = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
-    is_missing_changed                  = hyperparameters$is_missing[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
+    Z_values_changed                    = data_points_Z[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
+    upper_bounds_changed                = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
+    lower_bounds_changed                = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
+    is_missing_changed                  = hyperparameters$is_missing[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
     
     #
     Z_index_of_regime_start_unchanged   = Z_timepoint_indices[[min(indices_of_state_unchanged)]]$timepoint_first_index
     Z_index_of_regime_end_unchanged     = Z_timepoint_indices[[max(indices_of_state_unchanged)]]$timepoint_last_index
-    Z_values_unchanged                  = data_points_Z[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
-    upper_bounds_unchanged              = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
-    lower_bounds_unchanged              = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
-    is_missing_unchanged                = hyperparameters$is_missing[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
+    Z_values_unchanged                  = data_points_Z[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
+    upper_bounds_unchanged              = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
+    lower_bounds_unchanged              = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
+    is_missing_unchanged                = hyperparameters$is_missing[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
     
     # Gather all the data into one matrix as well.
     z_values_of_full_group_nochange = rbind(Z_values_unchanged, Z_values_changed)
@@ -518,7 +586,6 @@ update_states_mergesplit  = function(my_states,
                                                              Z_index_of_regime_start_unchanged + 2):length(all_components)]
       comps_before                       = all_components[1:(Z_index_of_regime_end_unchanged -
                                                                Z_index_of_regime_start_unchanged + 1)]
-      # browser()
       
       previous_model_fits_temp[[first_state]]$cluster_assignments         = comps_before
       previous_model_fits_temp[[max(my_states_temp)]]$cluster_assignments = comps_after
@@ -631,7 +698,7 @@ update_states_mergesplit  = function(my_states,
         hyperparameters,
         first_state,
         my_states
-      ) - #hyperparameters$log_wishart_prior_term
+      ) -
       log_mu_marginals(
         previous_model_fits,
         Z_timepoint_indices,
@@ -669,87 +736,172 @@ update_states_mergesplit  = function(my_states,
     }
     
     log_random_unif = log(runif(1))
-    print(paste("-----> Metropolis-Hastings Ratio:", MH_ratio))
-    print(
-      paste(
-        "--------> Portion of this from beta parameters:",
-        log_leftover_value_betaterms
+    if (verbose_logfile)
+      cat(
+        paste("-----> Metropolis-Hastings Ratio:", MH_ratio, '\n'),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(
-      paste(
-        "--------> Portion of this from G wishart normalizing terms:",
-        log_leftover_value_wishartterms
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Portion of this from beta parameters:",
+          log_leftover_value_betaterms,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(
-      paste(
-        "--------> Portion of this mixture component swap:",
-        log_forward_prob_component_split - log_backward_prob_component_split
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Portion of this from G wishart normalizing terms:",
+          log_leftover_value_wishartterms,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(
-      paste(
-        "-----------> Portion of this from forward prob:",
-        log_forward_prob_component_split
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Portion of this mixture component swap:",
+          log_forward_prob_component_split - log_backward_prob_component_split,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(
-      paste(
-        "-----------> Portion of this from backwards prob:",
-        -log_backward_prob_component_split
+    if (verbose_logfile)
+      cat(
+        paste(
+          "-----------> Portion of this from forward prob:",
+          log_forward_prob_component_split,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(
-      paste(
-        "-----------> Portion of this from comp prob redraw and component vector likelihood:",
-        log_comp_prob_and_assignment_move
+    if (verbose_logfile)
+      cat(
+        paste(
+          "-----------> Portion of this from backwards prob:",-log_backward_prob_component_split,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(
-      paste(
-        "--------> Portion of this from proposal distribution:",
-        -log_prob_of_split
+    if (verbose_logfile)
+      cat(
+        paste(
+          "-----------> Portion of this from comp prob redraw and component vector likelihood:",
+          log_comp_prob_and_assignment_move,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(
-      paste(
-        "--------> Portion of this from mu distn normalizing terms:",
-        log_leftover_value_mu_distn
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Portion of this from proposal distribution:",-log_prob_of_split,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(paste(
-      "--------> Value of the new likelihood:",
-      log_likelihood_new_model
-    ))
-    print(paste(
-      "--------> Value of the old likelihood:",
-      -log_likelihood_old_model
-    ))
-    print(
-      paste(
-        "--------> Total value of likelihood ratio:",
-        log_likelihood_new_model - log_likelihood_old_model
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Portion of this from mu distn normalizing terms:",
+          log_leftover_value_mu_distn,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(paste(
-      "--------> Portion of this from regime selection:",
-      -log(M + 1) + log(M)
-    ))
-    print(paste("--------> Pseudoprior terms:", pseudoprior_values))
-    print(paste("--------> Entire log MH ratio:", MH_ratio))
-    print(paste("-----> Probability of accepting SPLIT:", min(exp(MH_ratio), 1)))
-    print(paste("-----> Log uniform random draw:", log_random_unif))
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Value of the new likelihood:",
+          log_likelihood_new_model,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Value of the old likelihood:",-log_likelihood_old_model,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Total value of likelihood ratio:",
+          log_likelihood_new_model - log_likelihood_old_model,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Portion of this from regime selection:",-log(M + 1) + log(M),
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(
+        paste("--------> Pseudoprior terms:", pseudoprior_values, '\n'),
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(
+        paste("--------> Entire log MH ratio:", MH_ratio, '\n'),
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(
+        paste("-----> Probability of accepting SPLIT:", min(exp(MH_ratio), 1), '\n'),
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(
+        paste("-----> Log uniform random draw:", log_random_unif, '\n'),
+        file = "verbose_log.txt",
+        append = T
+      )
     
     if (is.nan(MH_ratio)) {
-      cat(c(
-        "[1]  -----> The current probabities are:",
-        paste(sapply(
-          transition_probabilities, paste, collapse = ' '
-        )),
-        '\n'
-      ))
-      print("-----> completed the SPLIT (did not accept)")
+      if (verbose_logfile)
+        cat(
+          c(
+            "[1]  -----> The current probabities are:",
+            paste(sapply(
+              transition_probabilities, paste, collapse = ' '
+            )),
+            '\n'
+          ),
+          file = "verbose_log.txt",
+          append = T
+        )
+      if (verbose_logfile)
+        cat(
+          "-----> completed the SPLIT (did not accept)\n",
+          file = "verbose_log.txt",
+          append = T
+        )
       return(
         list(
           my_states_item = my_states,
@@ -761,16 +913,24 @@ update_states_mergesplit  = function(my_states,
         )
       )
     } else if (laplace_nonconverge_flag) {
-      cat(c(
-        "[1]  -----> The current probabities are:",
-        paste(sapply(
-          transition_probabilities, paste, collapse = ' '
-        )),
-        '\n'
-      ))
-      print(
-        "-----> completed the SPLIT (did not accept because the laplace algorithm failed to converge)"
-      )
+      if (verbose_logfile)
+        cat(
+          c(
+            "[1]  -----> The current probabities are:",
+            paste(sapply(
+              transition_probabilities, paste, collapse = ' '
+            )),
+            '\n'
+          ),
+          file = "verbose_log.txt",
+          append = T
+        )
+      if (verbose_logfile)
+        cat(
+          "-----> completed the SPLIT (did not accept because the laplace algorithm failed to converge) \n",
+          file = "verbose_log.txt",
+          append = T
+        )
       return(
         list(
           my_states_item = my_states,
@@ -784,16 +944,24 @@ update_states_mergesplit  = function(my_states,
     }
     
     if (log_random_unif <= MH_ratio) {
-      print("-----> completed the SPLIT (accepted)")
+      if (verbose_logfile)
+        cat("-----> completed the SPLIT (accepted) \n",
+            file = "verbose_log.txt",
+            append = T)
       my_states                = my_states_temp
       previous_model_fits      = previous_model_fits_temp
-      cat(c(
-        "[1]  -----> The current probabities are:",
-        paste(sapply(
-          transition_probabilities, paste, collapse = ' '
-        )),
-        '\n'
-      ))
+      if (verbose_logfile)
+        cat(
+          c(
+            "[1]  -----> The current probabities are:",
+            paste(sapply(
+              transition_probabilities, paste, collapse = ' '
+            )),
+            '\n'
+          ),
+          file = "verbose_log.txt",
+          append = T
+        )
       
       return(
         list(
@@ -806,14 +974,24 @@ update_states_mergesplit  = function(my_states,
         )
       )
     } else {
-      cat(c(
-        "[1]  -----> The current probabities are:",
-        paste(sapply(
-          transition_probabilities, paste, collapse = ' '
-        )),
-        '\n'
-      ))
-      print("-----> completed the SPLIT (did not accept)")
+      if (verbose_logfile)
+        cat(
+          c(
+            "[1]  -----> The current probabities are:",
+            paste(sapply(
+              transition_probabilities, paste, collapse = ' '
+            )),
+            '\n'
+          ),
+          file = "verbose_log.txt",
+          append = T
+        )
+      if (verbose_logfile)
+        cat(
+          "-----> completed the SPLIT (did not accept)\n",
+          file = "verbose_log.txt",
+          append = T
+        )
       return(
         list(
           my_states_item = my_states,
@@ -830,7 +1008,12 @@ update_states_mergesplit  = function(my_states,
     # We will begin by automatically rejecting if there is only one state, and
     # therefore no possible merges.
     if (max(my_states) == 1) {
-      print("Cannot perform a merge b/c there is only one state! (reject automatically)")
+      if (verbose_logfile)
+        cat(
+          "Cannot perform a merge b/c there is only one state! (reject automatically)\n",
+          file = "verbose_log.txt",
+          append = T
+        )
       return(
         list(
           my_states_item = my_states,
@@ -845,7 +1028,12 @@ update_states_mergesplit  = function(my_states,
     # Otherwise, choose the first state randomly.
     first_state                              = sample(1:(max(my_states) -
                                                            1), 1)
-    print(paste("-----> starting a MERGE on state", first_state))
+    if (verbose_logfile)
+      cat(
+        paste("-----> starting a MERGE on state", first_state, '\n'),
+        file = "verbose_log.txt",
+        append = T
+      )
     
     # Merge this state with the state above it, making them all equal to first_state.
     indices_of_state_changed                 = which(my_states == (first_state +
@@ -869,40 +1057,73 @@ update_states_mergesplit  = function(my_states,
       n.cores,
       components_of_regime,
       hyperparameters$wishart_scale_matrix,
-      hyperparameters$wishart_df
+      hyperparameters$wishart_df,
+      verbose_logfile = verbose_logfile
     )
     
     rescale_log_values     = log(max(split_distribution))
     exp_split_distribution = exp(log(split_distribution) - rescale_log_values)
     
     
-    print("Rescaled and transformed split distribution:")
-    print(exp_split_distribution)
-    rand_value             = runif(1,
-                                   min = 0,
-                                   max = sum(exp_split_distribution))
+    if (verbose_logfile)
+      cat(
+        "Rescaled and transformed split distribution:\n",
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(exp_split_distribution,
+          file = "verbose_log.txt",
+          append = T)
+    if (verbose_logfile)
+      cat("\n", file = "verbose_log.txt", append = T)
+    suppressWarnings({
+      rand_value             = runif(1,
+                                     min = 0,
+                                     max = sum(exp_split_distribution))
+    })
+    
     if (is.na(rand_value)) {
-      print("Something was wrong with exp split distribution")
-      print(split_distribution)
-      print(rescale_log_values)
-      print(exp_split_distribution)
-      print(rand_value)
+      if (verbose_logfile)
+        cat(
+          "Something was wrong with exp split distribution\n",
+          file = "verbose_log.txt",
+          append = T
+        )
+      if (verbose_logfile)
+        cat(split_distribution, file = "verbose_log.txt", append = T)
+      if (verbose_logfile)
+        cat("\n", file = "verbose_log.txt", append = T)
+      if (verbose_logfile)
+        cat(rescale_log_values, file = "verbose_log.txt", append = T)
+      if (verbose_logfile)
+        cat("\n", file = "verbose_log.txt", append = T)
+      if (verbose_logfile)
+        cat(exp_split_distribution,
+            file = "verbose_log.txt",
+            append = T)
+      if (verbose_logfile)
+        cat("\n", file = "verbose_log.txt", append = T)
+      if (verbose_logfile)
+        cat(rand_value, file = "verbose_log.txt", append = T)
+      if (verbose_logfile)
+        cat("\n", file = "verbose_log.txt", append = T)
     }
     log_prob_of_split      = log(exp_split_distribution[length(indices_of_state_unchanged)])
     
     # I need to get the Z values for the individual groups.
     Z_index_of_regime_start_changed   = Z_timepoint_indices[[min(indices_of_state_changed)]]$timepoint_first_index
     Z_index_of_regime_end_changed     = Z_timepoint_indices[[max(indices_of_state_changed)]]$timepoint_last_index
-    Z_values_changed                  = data_points_Z[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
-    upper_bounds_changed              = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
-    lower_bounds_changed              = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
-    is_missing_changed                = hyperparameters$is_missing[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
+    Z_values_changed                  = data_points_Z[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
+    upper_bounds_changed              = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
+    lower_bounds_changed              = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
+    is_missing_changed                = hyperparameters$is_missing[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
     Z_index_of_regime_start_unchanged = Z_timepoint_indices[[min(indices_of_state_unchanged)]]$timepoint_first_index
     Z_index_of_regime_end_unchanged   = Z_timepoint_indices[[max(indices_of_state_unchanged)]]$timepoint_last_index
-    Z_values_unchanged                = data_points_Z[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
-    upper_bounds_unchanged            = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
-    lower_bounds_unchanged            = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
-    is_missing_unchanged              = hyperparameters$is_missing[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
+    Z_values_unchanged                = data_points_Z[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
+    upper_bounds_unchanged            = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
+    lower_bounds_unchanged            = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
+    is_missing_unchanged              = hyperparameters$is_missing[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
     Z_values_of_full_group_merged     = rbind(Z_values_unchanged, Z_values_changed)
     upper_bounds_full_group           = rbind(upper_bounds_unchanged, upper_bounds_changed)
     lower_bounds_full_group           = rbind(lower_bounds_unchanged, lower_bounds_changed)
@@ -1049,76 +1270,159 @@ update_states_mergesplit  = function(my_states,
       log_forward_prob_component_split - log_backward_prob_component_split + log_comp_prob_and_assignment_move + pseudoprior_values
     if (is.infinite(log_forward_prob_component_split - log_backward_prob_component_split) |
         is.na(log_forward_prob_component_split - log_backward_prob_component_split)) {
-      print("We're getting some weird values for the component reassignments")
+      if (verbose_logfile)
+        cat(
+          "We're getting some weird values for the component reassignments\n",
+          file = "verbose_log.txt",
+          append = T
+        )
       MH_ratio      = -Inf
     }
     
-    print(paste("-----> Metropolis-Hastings Ratio:", MH_ratio))
-    print(
-      paste(
-        "--------> Portion of this from beta parameters:",
-        log_leftover_value_betaterms
+    if (verbose_logfile)
+      cat(
+        paste("-----> Metropolis-Hastings Ratio:", MH_ratio, '\n'),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(
-      paste(
-        "--------> Portion of this from G wishart parameters:",
-        log_leftover_value_wishartterms
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Portion of this from beta parameters:",
+          log_leftover_value_betaterms,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(
-      paste(
-        "--------> Portion of this mixture component swap:",
-        log_forward_prob_component_split - log_backward_prob_component_split
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Portion of this from G wishart parameters:",
+          log_leftover_value_wishartterms,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(
-      paste(
-        "-----------> Portion of this from forward prob:",
-        log_forward_prob_component_split
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Portion of this mixture component swap:",
+          log_forward_prob_component_split - log_backward_prob_component_split,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(
-      paste(
-        "-----------> Portion of this from backwards prob:",
-        -log_backward_prob_component_split
+    if (verbose_logfile)
+      cat(
+        paste(
+          "-----------> Portion of this from forward prob:",
+          log_forward_prob_component_split,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(
-      paste(
-        "-----------> Portion of this from comp prob redraw and component vector likelihood:",
-        log_comp_prob_and_assignment_move
+    if (verbose_logfile)
+      cat(
+        paste(
+          "-----------> Portion of this from backwards prob:",-log_backward_prob_component_split,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(paste(
-      "--------> Portion of this from proposal distribution:",
-      log_prob_of_split
-    ))
-    print(
-      paste(
-        "--------> Portion of this from mu distn normalizing terms:",
-        log_leftover_mu_distn
+    if (verbose_logfile)
+      cat(
+        paste(
+          "-----------> Portion of this from comp prob redraw and component vector likelihood:",
+          log_comp_prob_and_assignment_move,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
       )
-    )
-    print(paste(
-      "--------> Portion of this from regime selection:",
-      log(M) - log(M - 1)
-    ))
-    print(paste("--------> Portion from psuedoprior:", pseudoprior_values))
-    print(paste("--------> The full MH ratio is:", MH_ratio))
-    print(paste("-----> Probability of accepting MERGE:", min(exp(MH_ratio), 1)))
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Portion of this from proposal distribution:",
+          log_prob_of_split,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Portion of this from mu distn normalizing terms:",
+          log_leftover_mu_distn,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Portion of this from regime selection:",
+          log(M) - log(M - 1),
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(
+        paste(
+          "--------> Portion from psuedoprior:",
+          pseudoprior_values,
+          '\n'
+        ),
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(
+        paste("--------> The full MH ratio is:", MH_ratio, '\n'),
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(
+        paste("-----> Probability of accepting MERGE:", min(exp(MH_ratio), 1), '\n'),
+        file = "verbose_log.txt",
+        append = T
+      )
     log_random_unif       = log(runif(1))
-    print(paste("-----> Log uniform random draw:", log_random_unif))
+    if (verbose_logfile)
+      cat(
+        paste("-----> Log uniform random draw:", log_random_unif, '\n'),
+        file = "verbose_log.txt",
+        append = T
+      )
     
     if (is.na(MH_ratio)) {
-      cat(c(
-        "[1]  -----> The current probabities are:",
-        paste(sapply(
-          transition_probabilities, paste, collapse = ' '
-        )),
-        '\n'
-      ))
-      print("-----> completed the MERGE (did not accept)")
+      if (verbose_logfile)
+        cat(
+          c(
+            "[1]  -----> The current probabities are:",
+            paste(sapply(
+              transition_probabilities, paste, collapse = ' '
+            )),
+            '\n'
+          ),
+          file = "verbose_log.txt",
+          append = T
+        )
+      if (verbose_logfile)
+        cat(
+          "-----> completed the MERGE (did not accept)\n",
+          file = "verbose_log.txt",
+          append = T
+        )
       return(
         list(
           my_states_item = my_states,
@@ -1130,16 +1434,24 @@ update_states_mergesplit  = function(my_states,
         )
       )
     } else if (laplace_nonconverge_flag) {
-      cat(c(
-        "[1]  -----> The current probabities are:",
-        paste(sapply(
-          transition_probabilities, paste, collapse = ' '
-        )),
-        '\n'
-      ))
-      print(
-        "-----> completed the MERGE (did not accept because laplace approx failed to converge)"
-      )
+      if (verbose_logfile)
+        cat(
+          c(
+            "[1]  -----> The current probabities are:",
+            paste(sapply(
+              transition_probabilities, paste, collapse = ' '
+            )),
+            '\n'
+          ),
+          file = "verbose_log.txt",
+          append = T
+        )
+      if (verbose_logfile)
+        cat(
+          "-----> completed the MERGE (did not accept because laplace approx failed to converge)\n",
+          file = "verbose_log.txt",
+          append = T
+        )
       return(
         list(
           my_states_item = my_states,
@@ -1153,19 +1465,27 @@ update_states_mergesplit  = function(my_states,
     }
     
     if (log_random_unif <= MH_ratio) {
-      print("-----> completed the MERGE (accepted)")
+      if (verbose_logfile)
+        cat("-----> completed the MERGE (accepted) \n",
+            file = "verbose_log.txt",
+            append = T)
       # Accept the merge!
       # Finish by shifting the states.
       data_shifted             = shift_states(my_states_temp, previous_model_fits_temp)
       my_states                = my_states_temp
       previous_model_fits      = previous_model_fits_temp
-      cat(c(
-        "[1]  -----> The current probabities are:",
-        paste(sapply(
-          transition_probabilities, paste, collapse = ' '
-        )),
-        '\n'
-      ))
+      if (verbose_logfile)
+        cat(
+          c(
+            "[1]  -----> The current probabities are:",
+            paste(sapply(
+              transition_probabilities, paste, collapse = ' '
+            )),
+            '\n'
+          ),
+          file = "verbose_log.txt",
+          append = T
+        )
       return(
         list(
           my_states_item = my_states,
@@ -1177,14 +1497,24 @@ update_states_mergesplit  = function(my_states,
         )
       )
     } else {
-      print("-----> completed the MERGE (did not accept)")
-      cat(c(
-        "[1]  -----> The current probabities are:",
-        paste(sapply(
-          transition_probabilities, paste, collapse = ' '
-        )),
-        '\n'
-      ))
+      if (verbose_logfile)
+        cat(
+          "-----> completed the MERGE (did not accept)\n",
+          file = "verbose_log.txt",
+          append = T
+        )
+      if (verbose_logfile)
+        cat(
+          c(
+            "[1]  -----> The current probabities are:",
+            paste(sapply(
+              transition_probabilities, paste, collapse = ' '
+            )),
+            '\n'
+          ),
+          file = "verbose_log.txt",
+          append = T
+        )
       return(
         list(
           my_states_item = my_states,
@@ -1250,7 +1580,7 @@ log_Gwishart_marginals    = function(previous_model_fits,
   
   Z_index_of_regime_start_changed   = Z_timepoint_indices[[min(indices_of_state)]]$timepoint_first_index
   Z_index_of_regime_end_changed     = Z_timepoint_indices[[max(indices_of_state)]]$timepoint_last_index
-  Z_values                          = data_points_Z[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
+  Z_values                          = data_points_Z[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
   
   # Iterate over the number of possible components and add in the corresponding marginal terms.
   log_Gwishart_marginal_vals = 0
@@ -1262,7 +1592,7 @@ log_Gwishart_marginals    = function(previous_model_fits,
       next
     } else if (length(indices_of_comp) == 1) {
       # print("getting the marginal for a single obs")
-      temp_Z_values = Z_values[indices_of_comp, ]
+      temp_Z_values = Z_values[indices_of_comp,]
       temp_n        = 1
       mu            = matrix(Z_values, nrow = p, ncol = 1)
       xbar          = matrix(rep(mu, times = temp_n), temp_n, p, byrow =
@@ -1273,7 +1603,7 @@ log_Gwishart_marginals    = function(previous_model_fits,
                                                                           lambda)) * (mu - mu_0) %*% t(mu - mu_0)
     } else {
       # print("getting the marginal for a multiple obs")
-      temp_Z_values = Z_values[indices_of_comp, ]
+      temp_Z_values = Z_values[indices_of_comp,]
       temp_n        = nrow(temp_Z_values)
       mu            = apply(temp_Z_values, 2, mean)
       xbar          = matrix(rep(mu, times = temp_n), temp_n, p, byrow =
@@ -1370,10 +1700,8 @@ get_pseudoprior_prior_dens = function(previous_model_fits,
       }
     }
   }
-  print(paste("total Lambda contribution:", total_Lambda_contribution))
-  print(paste("total mu contribution:", total_mu_contribution))
-  print("-----------")
-  print("-----------")
+  cat(paste("total pseudoprior mu contribution is:", total_mu_contribution, "\n"),file="verbose_log.txt", append=T)
+  cat(paste("total pseudoprior lambda contribution is:", total_Lambda_contribution, "\n"),file="verbose_log.txt", append=T)
   return(log_prob)
 }
 
@@ -1581,7 +1909,8 @@ redraw_transition_probs   = function(my_states, my_alpha, my_beta, n.cores) {
 redraw_hyperparameters    = function(hyperparameters,
                                      transition_probs,
                                      previous_model_fits,
-                                     my_states) {
+                                     my_states,
+                                     verbose_logfile = FALSE) {
   # | ---------------------- Gather Data ---------------------------- |
   threshold      = 1e-8
   alpha          = hyperparameters$alpha
@@ -1661,10 +1990,24 @@ redraw_hyperparameters    = function(hyperparameters,
   
   if (is.na(log_prob_mass)) {
     #
-    print("ERROR: Got an NA for Log Probability Mass.")
-    print(new_alpha)
-    print(new_beta)
-    print(transition_probabilities)
+    if (verbose_logfile)
+      cat("ERROR: Got an NA for Log Probability Mass.\n",
+          file = "verbose_log.txt",
+          append = T)
+    if (verbose_logfile)
+      cat(new_alpha, file = "verbose_log.txt", append = T)
+    if (verbose_logfile)
+      cat("\n", file = "verbose_log.txt", append = T)
+    if (verbose_logfile)
+      cat(new_beta, file = "verbose_log.txt", append = T)
+    if (verbose_logfile)
+      cat("\n", file = "verbose_log.txt", append = T)
+    if (verbose_logfile)
+      cat(transition_probabilities,
+          file = "verbose_log.txt",
+          append = T)
+    if (verbose_logfile)
+      cat("\n", file = "verbose_log.txt", append = T)
     log_prob_mass = -Inf
   }
   
@@ -1773,16 +2116,45 @@ redraw_hyperparameters    = function(hyperparameters,
   if (!is.nan(MH_ratio)) {
     if ((log(runif(1)) <= MH_ratio) & (!nonconverge_flag)) {
       hyperparameters$wishart_scale_matrix = new_scale
-      print('scale matrix updated!  Mean of G-Wishart is:')
-      print(solve(new_scale) * (hyperparameters$wishart_df + hyperparameters$p -
-                                  1))
+      if (verbose_logfile)
+        cat(
+          'scale matrix updated!  Mean of G-Wishart is:\n',
+          file = "verbose_log.txt",
+          append = T
+        )
+      if (verbose_logfile)
+        cat(
+          solve(new_scale) * (hyperparameters$wishart_df + hyperparameters$p -
+                                1),
+          file = "verbose_log.txt",
+          append = T
+        )
+      if (verbose_logfile)
+        cat("\n", file = "verbose_log.txt", append = T)
     } else {
-      print("SCALE MATRIX REJECTED")
+      if (verbose_logfile)
+        cat("SCALE MATRIX REJECTED\n",
+            file = "verbose_log.txt",
+            append = T)
     }
   } else{
-    print("SCALE MATRIX REJECTED")
+    if (verbose_logfile)
+      cat("SCALE MATRIX REJECTED\n",
+          file = "verbose_log.txt",
+          append = T)
   }
-  print(paste("the MH ratio was:", MH_ratio, "using a df of:", df_of_regime))
+  if (verbose_logfile)
+    cat(
+      paste(
+        "the MH ratio was:",
+        MH_ratio,
+        "using a df of:",
+        df_of_regime,
+        "\n"
+      ),
+      file = "verbose_log.txt",
+      append = T
+    )
   
   
   # | --------------------- Redraw Degrees of Freedom b ------------------------- |
@@ -1828,13 +2200,29 @@ redraw_hyperparameters    = function(hyperparameters,
           (laplace_failure_flag == 0)) {
         hyperparameters$wishart_df = new_df
       } else if (laplace_failure_flag) {
-        print("MH ratio failed automatically since the flag was triggered")
+        if (verbose_logfile)
+          cat(
+            "MH ratio failed automatically since the flag was triggered\n",
+            file = "verbose_log.txt",
+            append = T
+          )
       }
     }
   } else{
-    print("new df was nan!!")
-    print("rate of the gamma sampling distribution was likley invalid.  It was:")
-    print(rate_of_sampling_distn)
+    if (verbose_logfile)
+      cat("new df was nan!!\n", file = "verbose_log.txt", append = T)
+    if (verbose_logfile)
+      cat(
+        "rate of the gamma sampling distribution was likley invalid.  It was:\n",
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(rate_of_sampling_distn,
+          file = "verbose_log.txt",
+          append = T)
+    if (verbose_logfile)
+      cat("\n", file = "verbose_log.txt", append = T)
   }
   
   # | ---------------------- Redraw lambda ---------------------------- |
@@ -1852,9 +2240,22 @@ redraw_hyperparameters    = function(hyperparameters,
   posterior_shape        = shape_0 + 0.5 * p * count_components
   new_lambda             = rgamma(1, shape = posterior_shape, rate = posterior_rate)
   if (!is.na(new_lambda)) {
-    print(paste("NEW LAMBDA IS:", new_lambda))
-    print(paste("posterior rate:", posterior_rate))
-    print(paste("posterior shape:", posterior_shape))
+    if (verbose_logfile)
+      cat(paste("NEW LAMBDA IS:", new_lambda, '\n'),
+          file = "verbose_log.txt",
+          append = T)
+    if (verbose_logfile)
+      cat(
+        paste("posterior rate:", posterior_rate, '\n'),
+        file = "verbose_log.txt",
+        append = T
+      )
+    if (verbose_logfile)
+      cat(
+        paste("posterior shape:", posterior_shape, '\n'),
+        file = "verbose_log.txt",
+        append = T
+      )
     hyperparameters$lambda = new_lambda
   }
   
@@ -1947,7 +2348,8 @@ get_split_distribution    = function(current_G,
                                      n.cores,
                                      components_of_regime,
                                      scale_matrix_of_regime,
-                                     df_of_regime) {
+                                     df_of_regime,
+                                     verbose_logfile = FALSE) {
   # This method assumes that the number of indices in the regime is at least 2.
   # I'll likely do at least 3, since the split point for 2 is deterministic.
   # This value can be tuned for a precision vs. runtime tradeoff.
@@ -1996,12 +2398,12 @@ get_split_distribution    = function(current_G,
     
     # Split data, draw parameters, evaluate the likelihood.
     Z_index_of_eval                       = Z_timepoint_indices[[evaluation_point]]$timepoint_last_index
-    data_before_full                      = data_points_Z[Z_index_of_regime_start:Z_index_of_eval, ]
+    data_before_full                      = data_points_Z[Z_index_of_regime_start:Z_index_of_eval,]
     likelihood_value                      = 0
     components_before                     = components_of_regime[1:(Z_index_of_eval - Z_index_of_regime_start + 1)]
     
     for (component_index in unique(components_before)) {
-      data_before          = data_before_full[which(components_before == component_index), ]
+      data_before          = data_before_full[which(components_before == component_index),]
       n_before             = nrow(data_before)
       if (is.null(n_before)) {
         n_before                  = 1
@@ -2026,10 +2428,20 @@ get_split_distribution    = function(current_G,
       
       if (is.na(max(abs(parameters_before$final_K)))) {
         likelihood_value = -1e200
-        print("SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S)")
+        if (verbose_logfile)
+          cat(
+            "SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S)\n",
+            file = "verbose_log.txt",
+            append = T
+          )
       } else if ((max(abs(parameters_before$final_K)) > 1e100)) {
         likelihood_value = -1e200
-        print("SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S)")
+        if (verbose_logfile)
+          cat(
+            "SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S)\n",
+            file = "verbose_log.txt",
+            append = T
+          )
       } else {
         precision   = parameters_before$final_K
         mu          = parameters_before$final_mu
@@ -2042,11 +2454,11 @@ get_split_distribution    = function(current_G,
     }
     
     
-    data_after_full      = data_points_Z[(Z_index_of_eval + 1):Z_index_of_regime_end,]
+    data_after_full      = data_points_Z[(Z_index_of_eval + 1):Z_index_of_regime_end, ]
     components_after     = components_of_regime[(Z_index_of_eval - Z_index_of_regime_start + 2):(length(components_of_regime))]
     
     for (component_index in unique(components_after)) {
-      data_after          = data_after_full[which(components_after == component_index), ]
+      data_after          = data_after_full[which(components_after == component_index),]
       n_after             = nrow(data_after)
       if (is.null(n_after)) {
         n_after = 1
@@ -2071,10 +2483,20 @@ get_split_distribution    = function(current_G,
       
       if (is.na(max(abs(parameters_after$final_K)))) {
         likelihood_value = -1e200
-        print("SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S)")
+        if (verbose_logfile)
+          cat(
+            "SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S)\n",
+            file = "verbose_log.txt",
+            append = T
+          )
       } else if ((max(abs(parameters_after$final_K)) > 1e100)) {
         likelihood_value = -1e200
-        print("SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S)")
+        if (verbose_logfile)
+          cat(
+            "SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S) \n",
+            file = "verbose_log.txt",
+            append = T
+          )
       } else {
         precision   = parameters_after$final_K
         mu          = parameters_after$final_mu
@@ -2146,9 +2568,9 @@ splitmerge_gibbs_comps    = function(my_states,
                                      current_state,
                                      hyperparameters,
                                      Z_timepoint_indices,
-                                     data_points_Z) {
+                                     data_points_Z,
+                                     verbose_logfile = FALSE) {
   # Method to perform the split-merge algorithm for the regime components, according to STORLIE
-  print(paste("starting component update for state:", current_state))
   num_of_gibbs_sweeps     = 2
   cluster_assignments     = previous_model_fits[[current_state]]$cluster_assignments
   precisions              = previous_model_fits[[current_state]]$precision
@@ -2166,15 +2588,14 @@ splitmerge_gibbs_comps    = function(my_states,
   if ((cluster_assignments[uniform_draw_components[1]] == cluster_assignments[uniform_draw_components[2]]) &
       (!max_achieved)) {
     # If the uniform draws are equal, we perform a split action.
-    print("starting a split")
     ####################################################################################################
     ## GET THE LAUNCH STATE VECTOR
     # I will start by acquiring a launch vector for the split proposal.
     assignments_launch   = cluster_assignments
-    data_point_of_first  = data_points_of_state[uniform_draw_components[1], ]
-    data_point_of_second = data_points_of_state[uniform_draw_components[2], ]
+    data_point_of_first  = data_points_of_state[uniform_draw_components[1],]
+    data_point_of_second = data_points_of_state[uniform_draw_components[2],]
     for (launch_index in 1:length(assignments_launch)) {
-      current_data_point = data_points_of_state[launch_index, ]
+      current_data_point = data_points_of_state[launch_index,]
       first_norm_value   = norm(current_data_point - data_point_of_first, '2')
       second_norm_value  = norm(current_data_point - data_point_of_second, '2')
       if (is.na(first_norm_value) | is.na(second_norm_value)) {
@@ -2223,7 +2644,6 @@ splitmerge_gibbs_comps    = function(my_states,
         2
       )[["assignments_launch"]]
     )
-    print("finished split all-but-last launch")
     ####################################################################################################
     ## GET PROPOSAL STATE VECTOR AND PROPOSAL PROBABILITY
     previous_model_fits_temp[[current_state]]$cluster_assignments = assignments_launch
@@ -2306,19 +2726,14 @@ splitmerge_gibbs_comps    = function(my_states,
     if (is.na(MH_prob)) {
       # Catch this case first, don't accept.
     } else if (laplace_nonconvergence_flag) {
-      print("Laplace approx. failed to converge, so we did not accept the Gibbs swap.")
+      
     } else if (MH_prob >= log_unif) {
       # Accept the new state vector.
       previous_model_fits = previous_model_fits_temp
-      print("A SPLIT WAS ACTUALLY ACCEPTED")
       print(previous_model_fits_temp[[current_state]]$cluster_assignments)
-    } else {
-      print("THE SPLIT WAS NOT ACCEPTED!")
     }
-    print("finished split MH calculation")
   } else {
     # If the uniform draws are not equal, we perform a merge action.
-    print("starting merge getting launch")
     ####################################################################################################
     ## GET THE LAUNCH STATE VECTOR
     # I will start by acquiring a launch vector for the reverse-merge proposal.
@@ -2330,10 +2745,10 @@ splitmerge_gibbs_comps    = function(my_states,
     
     # Now, do precisely what we did for the split move, to get the launch vector.
     assignments_launch    = cluster_assignments
-    data_point_of_first   = data_points_of_state[uniform_draw_components[1], ]
-    data_point_of_second  = data_points_of_state[uniform_draw_components[2], ]
+    data_point_of_first   = data_points_of_state[uniform_draw_components[1],]
+    data_point_of_second  = data_points_of_state[uniform_draw_components[2],]
     for (launch_index in 1:length(assignments_launch)) {
-      current_data_point  = data_points_of_state[launch_index, ]
+      current_data_point  = data_points_of_state[launch_index,]
       first_norm_value    = norm(current_data_point - data_point_of_first, '2')
       second_norm_value   = norm(current_data_point - data_point_of_second, '2')
       if (is.na(first_norm_value) | is.na(second_norm_value)) {
@@ -2381,7 +2796,6 @@ splitmerge_gibbs_comps    = function(my_states,
         2
       )[["assignments_launch"]]
     )
-    print("finished all but second merge launch")
     ####################################################################################################
     ## GET PROPOSAL STATE VECTOR AND PROPOSAL PROBABILITY
     # Now I have my second-to-last proposal vector.  What remains is to calculate the probability of
@@ -2402,7 +2816,6 @@ splitmerge_gibbs_comps    = function(my_states,
     )
     assignments_launch              = as.vector(swap_return_items[['assignments_launch']])
     total_log_prob                  = as.vector(swap_return_items[['total_log_prob']])
-    print("finished merge launch")
     ####################################################################################################
     ## CALCULATE THE MH STEP AND FINISH
     # Recall that this is for a merge.  Gather the necessary data values.
@@ -2553,10 +2966,10 @@ redraw_mixture_parameters = function(my_states,
   if (length(indices_of_state) > 0) {
     Z_index_of_regime_start   = Z_timepoint_indices[[min(indices_of_state)]]$timepoint_first_index
     Z_index_of_regime_end     = Z_timepoint_indices[[max(indices_of_state)]]$timepoint_last_index
-    Z_values_of_regime        = data_points_Z[Z_index_of_regime_start:Z_index_of_regime_end, ]
-    upper_bound_is_equal      = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start:Z_index_of_regime_end, ]
-    lower_bound_is_equal      = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start:Z_index_of_regime_end, ]
-    is_missing                = hyperparameters$is_missing[Z_index_of_regime_start:Z_index_of_regime_end, ]
+    Z_values_of_regime        = data_points_Z[Z_index_of_regime_start:Z_index_of_regime_end,]
+    upper_bound_is_equal      = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start:Z_index_of_regime_end,]
+    lower_bound_is_equal      = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start:Z_index_of_regime_end,]
+    is_missing                = hyperparameters$is_missing[Z_index_of_regime_start:Z_index_of_regime_end,]
   } else {
     Z_values_of_regime        = NA
   }
@@ -2622,10 +3035,10 @@ redraw_mixture_parameters = function(my_states,
       # Otherwise, draw the precision and mu from the mvn posterior.
       indices_of_comp_in_regime = which(cluster_assignments == component_index)
       
-      Z_values                  = Z_values_of_regime[indices_of_comp_in_regime, ]
-      upper_bound_is_equal_temp = upper_bound_is_equal[indices_of_comp_in_regime, ]
-      lower_bound_is_equal_temp = lower_bound_is_equal[indices_of_comp_in_regime, ]
-      is_missing_temp           = is_missing[indices_of_comp_in_regime, ]
+      Z_values                  = Z_values_of_regime[indices_of_comp_in_regime,]
+      upper_bound_is_equal_temp = upper_bound_is_equal[indices_of_comp_in_regime,]
+      lower_bound_is_equal_temp = lower_bound_is_equal[indices_of_comp_in_regime,]
+      is_missing_temp           = is_missing[indices_of_comp_in_regime,]
       
       temp_n                    = nrow(Z_values)
       if (is.null(temp_n)) {
@@ -2717,7 +3130,7 @@ redraw_G_with_mixture     = function(my_states,
   if (length(indices_of_state) > 0) {
     Z_index_of_regime_start   = Z_timepoint_indices[[min(indices_of_state)]]$timepoint_first_index
     Z_index_of_regime_end     = Z_timepoint_indices[[max(indices_of_state)]]$timepoint_last_index
-    Z_values_of_regime        = data_points_Z[Z_index_of_regime_start:Z_index_of_regime_end, ]
+    Z_values_of_regime        = data_points_Z[Z_index_of_regime_start:Z_index_of_regime_end,]
   } else {
     Z_values_of_regime        = NA
   }
@@ -2778,10 +3191,10 @@ redraw_G_with_mixture     = function(my_states,
       # Otherwise, draw the precision and mu from the mvn posterior.
       indices_of_comp_in_regime = which(cluster_assignments == component_index)
       
-      Z_values                  = Z_values_of_regime[indices_of_comp_in_regime, ]
-      upper_bound_is_equal_temp = upper_bound_is_equal[indices_of_comp_in_regime, ]
-      lower_bound_is_equal_temp = lower_bound_is_equal[indices_of_comp_in_regime, ]
-      is_missing_temp           = is_missing[indices_of_comp_in_regime, ]
+      Z_values                  = Z_values_of_regime[indices_of_comp_in_regime,]
+      upper_bound_is_equal_temp = upper_bound_is_equal[indices_of_comp_in_regime,]
+      lower_bound_is_equal_temp = lower_bound_is_equal[indices_of_comp_in_regime,]
+      is_missing_temp           = is_missing[indices_of_comp_in_regime,]
       
       temp_n                    = nrow(Z_values)
       if (is.null(temp_n)) {
@@ -2818,7 +3231,6 @@ redraw_G_with_mixture     = function(my_states,
       edge_updated_j = selected_edge_j - 1
       current_G      = current_graph_G
       
-      print("actually performing DRJ step")
       output = DRJ_MCMC_singlestep(
         current_lambda,
         lambda_0,
@@ -2892,18 +3304,18 @@ draw_mix_params_justlists = function(my_states,
   indices_of_state          = which(my_states == state_to_redraw)
   Z_index_of_regime_start   = Z_timepoint_indices[[min(indices_of_state)]]$timepoint_first_index
   Z_index_of_regime_end     = Z_timepoint_indices[[max(indices_of_state)]]$timepoint_last_index
-  Z_values_of_regime        = data_points_Z[Z_index_of_regime_start:Z_index_of_regime_end, ]
-  upper_bound_is_equal      = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start:Z_index_of_regime_end, ]
-  lower_bound_is_equal      = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start:Z_index_of_regime_end, ]
-  is_missing                = hyperparameters$is_missing[Z_index_of_regime_start:Z_index_of_regime_end, ]
+  Z_values_of_regime        = data_points_Z[Z_index_of_regime_start:Z_index_of_regime_end,]
+  upper_bound_is_equal      = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start:Z_index_of_regime_end,]
+  lower_bound_is_equal      = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start:Z_index_of_regime_end,]
+  is_missing                = hyperparameters$is_missing[Z_index_of_regime_start:Z_index_of_regime_end,]
   p                         = hyperparameters$p
   
   for (component_index in 1:max(cluster_assignments)) {
     indices_of_comp_in_regime = which(cluster_assignments == component_index)
-    Z_values                  = Z_values_of_regime[indices_of_comp_in_regime, ]
-    upper_bound_is_equal_temp = upper_bound_is_equal[indices_of_comp_in_regime, ]
-    lower_bound_is_equal_temp = lower_bound_is_equal[indices_of_comp_in_regime, ]
-    is_missing_temp           = is_missing[indices_of_comp_in_regime, ]
+    Z_values                  = Z_values_of_regime[indices_of_comp_in_regime,]
+    upper_bound_is_equal_temp = upper_bound_is_equal[indices_of_comp_in_regime,]
+    lower_bound_is_equal_temp = lower_bound_is_equal[indices_of_comp_in_regime,]
+    is_missing_temp           = is_missing[indices_of_comp_in_regime,]
     
     temp_n                    = nrow(Z_values)
     if (is.null(temp_n)) {
@@ -2966,7 +3378,7 @@ get_mixture_log_density   = function(current_state,
     current_precision     = cluster_precisions[[cluster_index]]
     current_mu            = cluster_mus[[cluster_index]]
     indicies_of_cluster   = which(cluster_assignments == cluster_index)
-    data_of_cluster       = data_points_of_state[indicies_of_cluster, ]
+    data_of_cluster       = data_points_of_state[indicies_of_cluster,]
     if (length(indicies_of_cluster) == 1) {
       data_of_cluster = t(as.matrix(data_of_cluster))
     }
@@ -3015,7 +3427,7 @@ get_mix_log_dens_at_obs   = function(index_of_observation,
     current_precision     = cluster_precisions[[cluster_index]]
     current_mu            = cluster_mus[[cluster_index]]
     cluster_indices       = which(cluster_assignments == cluster_index)
-    data_of_cluster       = data_of_observation[cluster_indices, ]
+    data_of_cluster       = data_of_observation[cluster_indices,]
     if (length(cluster_indices) == 1) {
       data_of_cluster     = t(as.matrix(data_of_cluster))
     }
@@ -3063,24 +3475,24 @@ redraw_latent_data        = function(state_to_redraw,
   precisions        = previous_model_fits[[state_to_redraw]]$precision
   mus               = previous_model_fits[[state_to_redraw]]$mu
   continuous        = as.numeric(!hyperparameters$not.cont)
-  print("inside latent data function")
+  
   for (component_index in 1:max(components)) {
     indices_of_data           = which(components == component_index)
-    temp_data                 = latent_data_of_state[indices_of_data,]
-    temp_data_raw             = raw_data_from_state[indices_of_data,]
+    temp_data                 = latent_data_of_state[indices_of_data, ]
+    temp_data_raw             = raw_data_from_state[indices_of_data, ]
     n_value                   = nrow(temp_data)
     
     if (is.null(n_value)) {
       n_value = 1
       temp_data = t(as.matrix(temp_data))
       temp_data_raw = t(as.matrix(temp_data_raw))
-      upper_bound_is_equal_temp = t(as.matrix(upper_bound_is_equal_state[indices_of_data, ]))
-      lower_bound_is_equal_temp = t(as.matrix(lower_bound_is_equal_state[indices_of_data, ]))
-      is_missing_temp           = t(as.matrix(is_missing_state[indices_of_data, ]))
+      upper_bound_is_equal_temp = t(as.matrix(upper_bound_is_equal_state[indices_of_data,]))
+      lower_bound_is_equal_temp = t(as.matrix(lower_bound_is_equal_state[indices_of_data,]))
+      is_missing_temp           = t(as.matrix(is_missing_state[indices_of_data,]))
     } else {
-      upper_bound_is_equal_temp = upper_bound_is_equal_state[indices_of_data, ]
-      lower_bound_is_equal_temp = lower_bound_is_equal_state[indices_of_data, ]
-      is_missing_temp           = is_missing_state[indices_of_data, ]
+      upper_bound_is_equal_temp = upper_bound_is_equal_state[indices_of_data,]
+      lower_bound_is_equal_temp = lower_bound_is_equal_state[indices_of_data,]
+      is_missing_temp           = is_missing_state[indices_of_data,]
     }
     prec_of_component         = precisions[[component_index]]
     mu_of_component           = mus[[component_index]]
@@ -3102,7 +3514,7 @@ redraw_latent_data        = function(state_to_redraw,
     new_data_for_comp         = matrix(redraw_output, n_value, hyperparameters$p)
     
     # Update the data for that component.
-    latent_data_of_state[indices_of_data, ] = new_data_for_comp
+    latent_data_of_state[indices_of_data,] = new_data_for_comp
   }
   return(latent_data_of_state)
 }
@@ -3172,7 +3584,10 @@ update_regime_components  = function(state_value_gained,
       if (is.na(sum(prob_distn)) | (sum(prob_distn) == 0)) {
         log_prob_forward       = -Inf
       } else {
-        rand_value = runif(1, min = 0, max = sum(prob_distn))
+        suppressWarnings({
+          rand_value = runif(1, min = 0, max = sum(prob_distn))
+        })
+        
         for (split_index in 1:length(available_components)) {
           sum_density_values = sum_density_values + exp(prob_distn[split_index])
           if (is.na(rand_value)) {
@@ -3225,7 +3640,10 @@ update_regime_components  = function(state_value_gained,
       if (is.na(sum(prob_distn)) | (sum(prob_distn) == 0)) {
         log_prob_forward       = -Inf
       } else {
-        rand_value = runif(1, min = 0, max = sum(prob_distn))
+        suppressWarnings({
+          rand_value = runif(1, min = 0, max = sum(prob_distn))
+        })
+        
         for (split_index in 1:length(available_components)) {
           sum_density_values = sum_density_values + exp(prob_distn[split_index])
           if (is.na(rand_value)) {
@@ -3247,7 +3665,8 @@ update_regime_components  = function(state_value_gained,
   previous_model_fits[[state_value_gained]]$cluster_assignments = components_gained_state
   previous_model_fits[[state_value_lost]]$cluster_assignments   = components_lost_state
   
-  # I believe that the update will go away in the MH ratio.  The proposal distribution should be the same as the likelihood evaluation.
+  # I believe that the update will go away in the MH ratio.  The proposal
+  # distribution should be the same as the likelihood evaluation.
   return(list(previous_model_fits_item = previous_model_fits))#,
   
 }
@@ -3314,7 +3733,7 @@ split_regime_components   = function(state_split,
     for (new_comp_index in 1:length(available_components)) {
       indices_of_this_component = which(components_to_add == comp_index)
       if (length(indices_of_this_component) > 1) {
-        data_of_this_component                  = data_of_state_changed[indices_of_this_component, ]
+        data_of_this_component                  = data_of_state_changed[indices_of_this_component,]
         current_mu                              = mus_gained_state[[available_components[new_comp_index]]]
         current_precision                       = precisions_gained_state[[available_components[new_comp_index]]]
         prob_distn[new_comp_index]              = log_dmvnrm_arma_regular(data_of_this_component,
@@ -3322,7 +3741,7 @@ split_regime_components   = function(state_split,
                                                                           current_precision)
         prob_distn_just_density[new_comp_index] = prob_distn[new_comp_index]
       } else if (length(indices_of_this_component) == 1) {
-        data_of_this_component                  = matrix(data_of_state_changed[indices_of_this_component, ], nrow =
+        data_of_this_component                  = matrix(data_of_state_changed[indices_of_this_component,], nrow =
                                                            1)
         current_mu                              = mus_gained_state[[available_components[new_comp_index]]]
         current_precision                       = precisions_gained_state[[available_components[new_comp_index]]]
@@ -3342,13 +3761,13 @@ split_regime_components   = function(state_split,
     
     # Determine to which component I want to assign this group of new values.
     sum_density_values     = 0
-    rand_value = runif(1, min = 0, max = sum(exp(prob_distn)))
+    suppressWarnings({
+      rand_value = runif(1, min = 0, max = sum(exp(prob_distn)))
+    })
+    
     for (split_index in 1:length(available_components)) {
       sum_density_values = sum_density_values + exp(prob_distn[split_index])
       if (is.na(rand_value)) {
-        print("Printing out information about rand value")
-        print(prob_distn)
-        print(sum(prob_distn))
         log_prob_forward = Inf
         break
       } else if (rand_value <= sum_density_values) {
@@ -3423,7 +3842,7 @@ merge_regime_components   = function(state_merged,
       # Add in log prob mass from the density:
       indices_of_this_component = which(components_to_add == comp_index)
       if (length(indices_of_this_component) > 1) {
-        data_of_this_component                  = data_in_second_state[indices_of_this_component, ]
+        data_of_this_component                  = data_in_second_state[indices_of_this_component,]
         current_mu                              = mus_gained_state[[available_components[new_comp_index]]]
         current_precision                       = precisions_gained_state[[available_components[new_comp_index]]]
         prob_distn[new_comp_index]              = log_dmvnrm_arma_regular(data_of_this_component,
@@ -3431,7 +3850,7 @@ merge_regime_components   = function(state_merged,
                                                                           current_precision)
         prob_distn_just_density[new_comp_index] = prob_distn[new_comp_index]
       } else if (length(indices_of_this_component) == 1) {
-        data_of_this_component                  = matrix(data_in_second_state[indices_of_this_component, ], nrow =
+        data_of_this_component                  = matrix(data_in_second_state[indices_of_this_component,], nrow =
                                                            1)
         current_mu                              = mus_gained_state[[available_components[new_comp_index]]]
         current_precision                       = precisions_gained_state[[available_components[new_comp_index]]]
@@ -3452,13 +3871,13 @@ merge_regime_components   = function(state_merged,
     
     # Determine to which component I want to assign this group of new values.
     sum_density_values     = 0
-    rand_value = runif(1, min = 0, max = sum(exp(prob_distn)))
+    suppressWarnings({
+      rand_value = runif(1, min = 0, max = sum(exp(prob_distn)))
+    })
     for (split_index in 1:length(available_components)) {
       sum_density_values = sum_density_values + exp(prob_distn[split_index])
       if (is.na(rand_value)) {
         log_prob_forward = Inf
-        print(prob_distn)
-        
         break
       } else if (rand_value <= sum_density_values) {
         log_prob_forward       = log_prob_forward + prob_distn[split_index]

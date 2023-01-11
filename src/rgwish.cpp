@@ -142,9 +142,6 @@ void rgwish_c( double G[], double Ts[], double K[], int *b, int *p, double *thre
 	while( (mean_diff > threshold_c) and ( counter < 90000 ) )
 	{
 	  counter++;
-	  // if(count%1000000 == 0){
-	  //   printf("Attempted %i iterations to draw new precision.\n", count);
-	  // }
 		memcpy( &sigma_last[0], &sigma[0], sizeof( double ) * pxp );
 		
 		for( i = 0; i < dim; i++ )

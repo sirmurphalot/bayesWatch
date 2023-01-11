@@ -608,11 +608,11 @@ void IPF_MLE(int *CliqueMat, int *CliqueDims, int totcliques,
     {
       count += 1;
       if(count%50000==0){
-        printf("current count is: %d\n",count);
+//        printf("current count is: %d\n",count);
       }
     
       if(count > 100000){
-        printf("the IPF MLE did not converge :( \n");
+//        printf("the IPF MLE did not converge :( \n");
         *nonconverge_flag += 1;
         break;
       }
@@ -1147,7 +1147,7 @@ List log_normalizing_g_wishart_posterior_laplace( NumericMatrix graph,
   
   if(nonconverge_flag > 0){
     nonconverge_flag = 1;
-    printf("The nonconverge flag reflected the failure of the MLE convergence.\n");
+//    printf("The nonconverge flag reflected the failure of the MLE convergence.\n");
   }
   
   return_items["log_posterior"] = s;

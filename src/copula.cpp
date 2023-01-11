@@ -90,16 +90,6 @@ void copula_NA( double Z[], double K[], int R[], int not_continuous[], int *n, i
                     runif_value  = pnorm_lb + unif_rand() * ( pnorm_ub - pnorm_lb );
                     Z[ counter ] = Rf_qnorm5( runif_value, mu_ij, sd_j, TRUE, FALSE );
                     current_Z    = Z[ counter ];
-                    // Note: there are some issues here that I may still want to examine/talk to curt about.
-                    //       Couple occasionally leads to a lot of NaNs.
-                    // if(std::isnan(current_Z)){
-                    //   printf("Coupla introduced an NaN\n");
-                    //   printf("----> Coupla mu value %lf\n", mu_ij);
-                    //   printf("----> Coupla sd value %lf\n", sd_j);
-                    //   printf("----> Coupla lower bound %lf\n", lb);
-                    //   printf("----> Coupla upper bound %lf\n", ub);
-                    //   printf("----> runif value %lf\n", runif_value);
-                    // }
                 }else
                     Z[ counter ] = mu_ij + norm_rand() * sd_j;  // rnorm( mu_ij, sd_j );
             }
