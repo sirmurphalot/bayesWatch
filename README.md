@@ -1,8 +1,8 @@
-# **sawnuti** 
+# **bayesWatch** 
   
-![](https://www.r-pkg.org/badges/version/sawnuti) ![](https://www.r-pkg.org/badges/last-release/sawnuti)
+![](https://www.r-pkg.org/badges/version/bayesWatch) ![](https://www.r-pkg.org/badges/last-release/bayesWatch)
 
-An algorithm for the comparison of two sequences in time.  This package implements the methods introduced in [Murph et al. 2021](https://www.tandfonline.com/doi/full/10.1080/07474946.2021.1940491).
+EXPLAIN IT BETTER SOON THANK YOU
 
 This repository is organized as a stand-alone R package.  For questions, issues, or clarifications please reach out to Murph: <acmurph@unc.edu>.  Feel free to email any applications; we'd be happy to highlight them here.
 
@@ -12,17 +12,29 @@ This repository is organized as a stand-alone R package.  For questions, issues,
 You can install the latest version from CRAN using:
 
 ``` r
-install.packages( "sawnuti" )
+install.packages( "bayesWatch" )
 ```
 
 ``` r
-require( "sawnuti" )
+require( "bayesWatch" )
 ```
 
 ## Examples
 
 ```r
-matchFunction = function(a,b){ifelse(a==b, 1, -1)}
+full_data = data("example_data.rds")
+
+day_of_observations = readRDS("bayesWatch/data/day_of_observations.rds")
+
+day_dts = readRDS("bayesWatch/data/day_dts.rds")
+x       = fit_regime_vector(full_data, day_of_observations, day_dts, 
+                            iterations = 500, g.prior = 1, linger_parameter = 20, n.cores=3,
+                            wishart_df_inital = 3, hyperprior_b = 3, lambda = 5)
+saveRDS(x,"bayesWatch_fit_object.rds")
+print(x)
+
+xx = readRDS("bayesWatch_fit_object.rds")
+detect_faults(xx)
 
 sawnuti(string1="a b c", string2="d b c", times1="1 2 3",times2="3 2 1", alpha = 1, 
         match_function = matchFunction, gap_penalty = 1)

@@ -6,7 +6,6 @@ require(Matrix)
 require(CholWishart)
 require(ggplot2)
 require(Hotelling)
-source("R/helpers.R")
 
 
 #' Title
@@ -94,15 +93,14 @@ fit_regime_vector = function(data_woTimeValues,
                              simulation_iter = NULL,
                              T2_window_size = 3,
                              determining_p_cutoff = FALSE,
+                             prob_cutoff = 0.5,
                              verbose_logfile = TRUE) {
   # If the user wants a verbose output of the entire model, this is saved to a log file (it is very very long).
   if (verbose_logfile) {
     file.remove("verbose_log.txt")
     file.create("verbose_log.txt")
-    cat(
-      "This log outlines a VERY verbose log for debugging.\n",
-      file = "verbose_log.txt"
-    )
+    cat("This log outlines a VERY verbose log for debugging.\n",
+        file = "verbose_log.txt")
     cat("It is suggested that you CTRL+F for issues.\n",
         file = "verbose_log.txt",
         append = TRUE)
@@ -110,8 +108,10 @@ fit_regime_vector = function(data_woTimeValues,
   
   # If you are performing fault detection, logs of the models drawn must be saved.  The graph
   # is made at the end of this method so that these logs need not be saved past this method.
-  model_saves_list = list()
-  if (!is.null(data_woTimeValues)) {
+  model_saves_list  = list()
+  model_saves_names = c()
+  model_save_count = 1
+  if (!is.null(names(data_woTimeValues))) {
     variable_names = names(data_woTimeValues)
   }
   
@@ -138,7 +138,7 @@ fit_regime_vector = function(data_woTimeValues,
         file = "verbose_log.txt",
         append = T)
   # Sort days and observations
-  data_woTimeValues    = data_woTimeValues[order(time_of_observations), ]
+  data_woTimeValues    = data_woTimeValues[order(time_of_observations),]
   time_of_observations = time_of_observations[order(time_of_observations)]
   time_points          = time_points[order(time_points)]
   data_set_list        = list()
@@ -222,7 +222,7 @@ fit_regime_vector = function(data_woTimeValues,
       Z_timepoint_indices[[i - negative_count]]$timepoint_last_index  = max(indices_of_timepoint)
     }
     data_set_list[[i - negative_count]] = data_woTimeValues[Z_timepoint_indices[[i -
-                                                                                   negative_count]]$timepoint_first_index:Z_timepoint_indices[[i - negative_count]]$timepoint_last_index, ]
+                                                                                   negative_count]]$timepoint_first_index:Z_timepoint_indices[[i - negative_count]]$timepoint_last_index,]
   }
   
   
@@ -337,10 +337,10 @@ fit_regime_vector = function(data_woTimeValues,
       append = T
     )
   
-  if(g.prior < 1){
+  if (g.prior < 1) {
     sink(nullfile())
     bdgraph_object = BDgraph::bdgraph(
-      data_woTimeValues[1:Z_timepoint_indices[[max(which(previous_states == 1))]]$timepoint_last_index, ],
+      data_woTimeValues[1:Z_timepoint_indices[[max(which(previous_states == 1))]]$timepoint_last_index,],
       g.prior = g.prior,
       iter = 500,
       method = "gcgm"
@@ -365,7 +365,7 @@ fit_regime_vector = function(data_woTimeValues,
                                                              regime_index))]]$timepoint_first_index
       max_index           = Z_timepoint_indices[[max(which(previous_states ==
                                                              regime_index))]]$timepoint_last_index
-      temp_data           = data_woTimeValues[min_index:max_index, ]
+      temp_data           = data_woTimeValues[min_index:max_index,]
       
       temp_cov_matrix     = empirical_cov_w_missing(temp_data)
       if (any(is.null(scaleMatrix) |
@@ -376,10 +376,10 @@ fit_regime_vector = function(data_woTimeValues,
             file = 'verbose_log.txt',
             append = T
           )
-        if(class(bdgraph_object)=='bdgraph'){
+        if (class(bdgraph_object) == 'bdgraph') {
           precMatrix_temp = bdgraph_object$K_hat
-        }else {
-          precMatrix_temp_temp                        = solve(cov(temp_data[,1:original_p], use = "pairwise.complete.obs"))
+        } else {
+          precMatrix_temp_temp                        = solve(cov(temp_data[, 1:original_p], use = "pairwise.complete.obs"))
           precMatrix_temp                             = diag(p)
           precMatrix_temp[1:original_p, 1:original_p] = precMatrix_temp_temp
         }
@@ -407,7 +407,7 @@ fit_regime_vector = function(data_woTimeValues,
     mu_0 = NA,
     lambda = lambda,
     p = NA,
-    hyperprior_scale_matrix = 0.25*diag(p)*hyperprior_b,
+    hyperprior_scale_matrix = 0.25 * diag(p) * hyperprior_b,
     wishart_scale_matrix = covMatrix * (wishart_df_inital +
                                           p - 1),
     wishart_df = wishart_df_inital,
@@ -416,7 +416,7 @@ fit_regime_vector = function(data_woTimeValues,
     component_truncation = component_truncation,
     regime_truncation = regime_truncation,
     g.prior = g.prior
-  ) #, pseudoprior_df=pseudoprior_df)
+  )
   # | ------------------------ Fill in Missing Inputs ---------------------------------- |
   data_woTimeValues[is.infinite(data_woTimeValues)] = NA
   model_states                                      = list()
@@ -483,7 +483,7 @@ fit_regime_vector = function(data_woTimeValues,
   if (is.null(set_G)) {
     # If G is not set, I'll draw from the distribution over all possible graphs determined by g.prior,
     # the probability of a given edge being present.
-    if(class(bdgraph_object)=='bdgraph'){
+    if (class(bdgraph_object) == 'bdgraph') {
       previous_G              = BDgraph::select(bdgraph_object)
     } else {
       previous_G = matrix(1, hyperparameters$p, hyperparameters$p) - diag(hyperparameters$p)
@@ -495,7 +495,8 @@ fit_regime_vector = function(data_woTimeValues,
   }
   hyperparameters$G = previous_G
   
-  if (is.null(g_sampling_distribution)&(class(bdgraph_object)=='bdgraph') ) {
+  if (is.null(g_sampling_distribution) &
+      (class(bdgraph_object) == 'bdgraph')) {
     g_sampling_distribution = bdgraph_object$p_links
     g_sampling_distribution = (1 - g_sampling_distribution) * (previous_G) + g_sampling_distribution *
       (1 - previous_G)
@@ -611,7 +612,7 @@ fit_regime_vector = function(data_woTimeValues,
         first_index = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
         last_index  = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
         indicies    = c(first_index:last_index)
-        temp_data   = data_woTimeValues[first_index:last_index,]
+        temp_data   = data_woTimeValues[first_index:last_index, ]
       }
       # Start by drawing a prior for everything.
       previous_model_fits = redraw_mixture_parameters(
@@ -748,11 +749,11 @@ fit_regime_vector = function(data_woTimeValues,
       print(x)
       first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
       last_index                = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
-      temp_data                 = full_data_Z[first_index:last_index, ]
-      temp_raw_data             = data_woTimeValues[first_index:last_index, ]
-      is_missing_temp           = is_missing[first_index:last_index, ]
-      upper_bound_is_equal_temp = upper_bound_is_equal[first_index:last_index, ]
-      lower_bound_is_equal_temp = lower_bound_is_equal[first_index:last_index, ]
+      temp_data                 = full_data_Z[first_index:last_index,]
+      temp_raw_data             = data_woTimeValues[first_index:last_index,]
+      is_missing_temp           = is_missing[first_index:last_index,]
+      upper_bound_is_equal_temp = upper_bound_is_equal[first_index:last_index,]
+      lower_bound_is_equal_temp = lower_bound_is_equal[first_index:last_index,]
       new_latent_data           = redraw_latent_data(
         x,
         previous_model_fits,
@@ -1005,7 +1006,7 @@ fit_regime_vector = function(data_woTimeValues,
         print("redrawing the components for state")
         first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
         last_index                = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
-        temp_data                 = full_data_Z[first_index:last_index, ]
+        temp_data                 = full_data_Z[first_index:last_index,]
         
         new_components_for_state  = splitmerge_gibbs_comps(
           my_states,
@@ -1064,7 +1065,7 @@ fit_regime_vector = function(data_woTimeValues,
         # print("redrawing the components for state")
         first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
         last_index                = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
-        temp_data                 = full_data_Z[first_index:last_index, ]
+        temp_data                 = full_data_Z[first_index:last_index,]
         new_components_for_state  = gibbs_swap_comps(
           temp_data,
           previous_model_fits[[x]]$cluster_assignments,
@@ -1101,7 +1102,7 @@ fit_regime_vector = function(data_woTimeValues,
           file = 'verbose_log.txt',
           append = T
         )
-      if(g.prior < 1){
+      if (g.prior < 1) {
         sink(nullfile())
         out = tryCatch({
           BDgraph::bdgraph(full_data_Z, g.prior = g.prior, iter = 1000)
@@ -1128,7 +1129,7 @@ fit_regime_vector = function(data_woTimeValues,
     }
     
     # Randomly select an edge based on the sampling distribution on the graph structure.
-    if(g.prior < 1){
+    if (g.prior < 1) {
       total_prob_mass = 0
       suppressWarnings({
         rand_selection  = runif(1,
@@ -1465,44 +1466,35 @@ fit_regime_vector = function(data_woTimeValues,
       } else {
         temp_list = previous_model_fits[(max(my_states) - 1):max(my_states)]
       }
-      if (is.null(simulation_iter)) {
-        data_name = paste("Model_Fits",
-                          "/",
-                          paste(my_states, collapse = ""),
-                          "_",
-                          iter,
-                          '.RData',
-                          sep = "")
-      } else {
-        # I think that the only information that I really want is the location of the LAST changepoint.
-        # I want every model that puts a changepoint here so that I can see if they are all putting one
-        # there for the same reason. I don't need an exact match.
-        temp_states = rep(0, times = (length(my_states) - 1))
-        for (j in 1:(length(my_states) - 1)) {
-          temp_states[j] = my_states[j + 1] - my_states[j]
-        }
-        if (sum(temp_states) > 1) {
-          indicies_of_changepoint                                               = which(temp_states ==
-                                                                                          1)
-          temp_states                                                           = rep(0, times = (length(my_states) -
-                                                                                                    1))
-          temp_states[indicies_of_changepoint[length(indicies_of_changepoint)]] = 1
-        }
-        data_name = paste(
-          "Model_Fits_Simulation/",
-          paste(temp_states, collapse = ""),
-          "_",
-          simulation_iter,
-          "_",
-          iter,
-          '.RData',
-          sep = ""
-        )
+      
+      # I think that the only information that I really want is the location of the LAST changepoint.
+      # I want every model that puts a changepoint here so that I can see if they are all putting one
+      # there for the same reason. I don't need an exact match.
+      temp_states = rep(0, times = (length(my_states) - 1))
+      for (j in 1:(length(my_states) - 1)) {
+        temp_states[j] = my_states[j + 1] - my_states[j]
       }
+      if (sum(temp_states) > 1) {
+        indicies_of_changepoint                                               = which(temp_states ==
+                                                                                        1)
+        temp_states                                                           = rep(0, times = (length(my_states) -
+                                                                                                  1))
+        temp_states[indicies_of_changepoint[length(indicies_of_changepoint)]] = 1
+      }
+      data_name = paste(paste(temp_states, collapse = ""),
+                        "_",
+                        iter,
+                        '.RData',
+                        sep = "")
+      
       
       # Usually, I only need to save the model information for the last two regimes (fault detection)
       # However, when I am searching for a reasonable probability cutoff on the posterior, I need them all.
-      model_saves_list$data_name = temp_list
+      if (model_params_save_every < iterations) {
+        model_saves_list[[model_save_count]] = temp_list
+        model_saves_names = c(model_saves_names, data_name)
+        model_save_count  = model_save_count + 1
+      }
     }
     
     if (determining_p_cutoff) {
@@ -1522,16 +1514,16 @@ fit_regime_vector = function(data_woTimeValues,
     model_states[[iter]]         = my_states
     record_count                 = record_count + 1
     
-    five_percent = floor(iterations*0.05)
-    if(iter%%five_percent==0){
-      percentile_location = floor(iter/five_percent)*5
-      if(percentile_location == 100){
-        cat(paste(percentile_location, "\n",sep=""))
-      }else{
-        cat(paste(percentile_location, "->",sep=""))
+    five_percent = floor(iterations * 0.05)
+    if (iter %% five_percent == 0) {
+      percentile_location = floor(iter / five_percent) * 5
+      if (percentile_location == 100) {
+        cat(paste(percentile_location, "\n", sep = ""))
+      } else{
+        cat(paste(percentile_location, "->", sep = ""))
       }
       
-    } else if (iter==1){
+    } else if (iter == 1) {
       cat("MCMC chain running...\n")
     }
   }
@@ -1544,7 +1536,7 @@ fit_regime_vector = function(data_woTimeValues,
   for (i in 2:length(my_states)) {
     states_df = rbind(states_df, data.frame(matrix(my_states[[i]], nrow = 1)))
   }
-  states_df_burnt = states_df[floor(2 * nrow(states_df) / 4):nrow(states_df),]
+  states_df_burnt = states_df[floor(2 * nrow(states_df) / 4):nrow(states_df), ]
   prop_mat = matrix(0, nrow = 1, ncol = (ncol(states_df_burnt) - 1))
   number_of_segments = nrow(states_df)
   for (j in 1:(ncol(states_df_burnt) - 1)) {
@@ -1578,6 +1570,18 @@ fit_regime_vector = function(data_woTimeValues,
   
   class(mylist) = "bayesWatch"
   
+  if (model_params_save_every < iterations) {
+    names(model_saves_list) = model_saves_names
+    differences_of_marginals = determine_marginals(mylist, model_saves_list, prob_cutoff)
+    fault_plot = graph_posterior_distributions(differences_of_marginals,
+                                                 mylist,
+                                                 model_saves_list, 
+                                                 prob_cutoff,
+                                                 f_divergence = "Hellinger") 
+  }
+  
+  mylist$fault_graph = fault_plot
+  
   return(mylist)
 }
 
@@ -1599,7 +1603,7 @@ get_point_estimate = function(regime_fit_object, prob_cutoff) {
   for (i in 2:length(my_states)) {
     states_df = rbind(states_df, data.frame(matrix(my_states[[i]], nrow = 1)))
   }
-  states_df_burnt = states_df[floor(2 * nrow(states_df) / 4):nrow(states_df),]
+  states_df_burnt = states_df[floor(2 * nrow(states_df) / 4):nrow(states_df), ]
   prop_mat = matrix(0, nrow = 1, ncol = (ncol(states_df_burnt) - 1))
   number_of_segments = nrow(states_df)
   for (j in 1:(ncol(states_df_burnt) - 1)) {
@@ -1671,6 +1675,8 @@ detect_faults = function(regime_fit_object) {
   if (is.null(regime_fit_object$fault_graph)) {
     stop("This regime fit was run without fault detection.")
   } else {
+    regime_fit_object$fault_graph
     return(regime_fit_object$fault_graph)
   }
 }
+
