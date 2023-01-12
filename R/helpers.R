@@ -2116,19 +2116,19 @@ redraw_hyperparameters    = function(hyperparameters,
   if (!is.nan(MH_ratio)) {
     if ((log(runif(1)) <= MH_ratio) & (!nonconverge_flag)) {
       hyperparameters$wishart_scale_matrix = new_scale
-      if (verbose_logfile)
-        cat(
-          'scale matrix updated!  Mean of G-Wishart is:\n',
-          file = "verbose_log.txt",
-          append = T
-        )
-      if (verbose_logfile)
-        cat(
-          solve(new_scale) * (hyperparameters$wishart_df + hyperparameters$p -
-                                1),
-          file = "verbose_log.txt",
-          append = T
-        )
+      # if (verbose_logfile)
+      #   cat(
+      #     'scale matrix updated!  Mean of G-Wishart is:\n',
+      #     file = "verbose_log.txt",
+      #     append = T
+      #   )
+      # if (verbose_logfile)
+      #   cat(
+      #     solve(new_scale) * (hyperparameters$wishart_df + hyperparameters$p -
+      #                           1),
+      #     file = "verbose_log.txt",
+      #     append = T
+      #   )
       if (verbose_logfile)
         cat("\n", file = "verbose_log.txt", append = T)
     } else {

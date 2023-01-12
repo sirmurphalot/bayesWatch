@@ -376,7 +376,7 @@ fit_regime_vector = function(data_woTimeValues,
             file = 'verbose_log.txt',
             append = T
           )
-        if(!is.na(bdgraph_object)){
+        if(class(bdgraph_object)=='bdgraph'){
           precMatrix_temp = bdgraph_object$K_hat
         }else {
           precMatrix_temp_temp                        = solve(cov(temp_data[,1:original_p], use = "pairwise.complete.obs"))
@@ -407,7 +407,7 @@ fit_regime_vector = function(data_woTimeValues,
     mu_0 = NA,
     lambda = lambda,
     p = NA,
-    hyperprior_scale_matrix = 0.2 * diag(p),
+    hyperprior_scale_matrix = 0.25*diag(p)*hyperprior_b,
     wishart_scale_matrix = covMatrix * (wishart_df_inital +
                                           p - 1),
     wishart_df = wishart_df_inital,
@@ -483,7 +483,7 @@ fit_regime_vector = function(data_woTimeValues,
   if (is.null(set_G)) {
     # If G is not set, I'll draw from the distribution over all possible graphs determined by g.prior,
     # the probability of a given edge being present.
-    if(!is.na(bdgraph_object)){
+    if(class(bdgraph_object)=='bdgraph'){
       previous_G              = BDgraph::select(bdgraph_object)
     } else {
       previous_G = matrix(1, hyperparameters$p, hyperparameters$p) - diag(hyperparameters$p)
@@ -495,7 +495,7 @@ fit_regime_vector = function(data_woTimeValues,
   }
   hyperparameters$G = previous_G
   
-  if (is.null(g_sampling_distribution)&(!is.na(bdgraph_object))) {
+  if (is.null(g_sampling_distribution)&(class(bdgraph_object)=='bdgraph') ) {
     g_sampling_distribution = bdgraph_object$p_links
     g_sampling_distribution = (1 - g_sampling_distribution) * (previous_G) + g_sampling_distribution *
       (1 - previous_G)

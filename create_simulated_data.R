@@ -19,21 +19,22 @@ create_S2_w_diff_missing_struct = function(p, sigma){
 job_num = 7
 set.seed(8)
 parameters_number         = 8
-p                       = 10
+p                       = 5
 orig_p = p
 discrete_vals = c(1,5)
+# discrete_vals = c()
 has_discretes = 1
 
-mean_shift                = 3
+mean_shift                = 1
 prob_cutoff               = 0.1
 percent_missing_index     = parameters_number
-base_data_size            = 20
+base_data_size            = 50
 
 # Presently, the maximum value for num_of_days is 51.  This can be easily updated by updating the
 # day_dts value below.
-num_of_days               = 6
+num_of_days               = 10
 
-possible_missings_percent = c(20,0,20,20,20,0,20,10)
+possible_missings_percent = c(20,0,20,20,20,0,20,0)
 missing_nonmissing        = c(1,0,1,1,1,0,1,1)
 distribution_change       = c('miss','mean','cov','cov','cov','mean','mean', 'mean')
 modal_type                = c('unimodal','unimodal','unimodal','unimodal','bimodal','bimodal','unimodal','unimodal')
@@ -54,8 +55,9 @@ graph_structure       = data.sim.mixed_group1$G
 data.sim.mixed_group1 = bdgraph.sim( n = rpois(1,100), p = p,
                                       graph = data.sim.mixed_group1$G)
 S1 = data.sim.mixed_group1$sigma
-S1    = S1*0.5
-S2    = S1
+S1    = S1* 0.25
+# S1    = S1 - diag(diag(S1)) + diag(diag(S1))*0.9
+S2    = S1*4
 S3    = S1
 mean1 = rep(0, p)
 mean2 = mean1 
@@ -107,7 +109,7 @@ for(day in 1:(length(day_dts)-1)){
     
     
     
-  }else if(count < 4){
+  }else if(count < 6){
     
     if(modal_type[parameters_number]=='unimodal'){
       data.sim.mixed_group1 = bdgraph.sim( n = 2*base_data_size, p = p, 
@@ -273,7 +275,8 @@ for(discrete_index in all_indices[which(not.cont == 1)]){
 
 # Mean center non-discrete rows. 
 for(discrete_index in all_indices[which(not.cont == 0)]){
-  full_data[,discrete_index] = full_data[,discrete_index] - mean(full_data[,discrete_index])
+  full_data[,discrete_index] = (full_data[,discrete_index] - 
+                                  mean(full_data[,discrete_index],na.rm=T))/sd(full_data[,discrete_index],na.rm=T)
 }
 
 # Add in some missing values.
@@ -355,8 +358,8 @@ for(transform_index in 1:length(not.cont)){
     temp_lambda                   = BoxCox.lambda(temp_data_col, method = "guerrero")
     full_data[,transform_index]   = BoxCox(temp_data_col, temp_lambda)
     full_data[,transform_index]   = full_data[,transform_index] + minimum_value - 1
-    full_data[,transform_index]   = (full_data[,transform_index] - 
-                                       mean(full_data[,transform_index],na.rm=T))/sd(full_data[,transform_index],na.rm=T)
+    # full_data[,transform_index]   = (full_data[,transform_index] - 
+    #                                    mean(full_data[,transform_index],na.rm=T))/sd(full_data[,transform_index],na.rm=T)
     print(paste("Finished column:", transform_index))
     all_lambdas = c(all_lambdas, temp_lambda)
   }
