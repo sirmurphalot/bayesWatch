@@ -744,7 +744,6 @@ fit_regime_vector = function(data_woTimeValues,
     parallel::clusterExport(clust, "is_missing", envir = environment())
     parallel::clusterExport(clust, "not.cont", envir = environment())
     data_subsets_z = parallel::parLapply(clust, 1:max(my_states), function(x) {
-      library(palliative.changepoints)
       # source("R/helpers.R")
       print(x)
       first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
@@ -1257,7 +1256,6 @@ fit_regime_vector = function(data_woTimeValues,
         parallel::clusterExport(clust, "g.prior", envir = environment())
         parallel::clusterExport(clust, "p", envir = environment())
         models_temp = parallel::parSapply(clust, 1:max(my_states), function(x) {
-          library(palliative.changepoints)
           
           state_to_redraw = x
           current_graph_G = previous_G
@@ -1565,7 +1563,8 @@ fit_regime_vector = function(data_woTimeValues,
     latent_data = full_data_Z,
     raw_data = data_woTimeValues,
     Z_timepoint_indices = Z_timepoint_indices,
-    variable_names = variable_names
+    variable_names = variable_names,
+    prob_cutoff = prob_cutoff
   )
   
   class(mylist) = "bayesWatch"
@@ -1624,14 +1623,13 @@ get_point_estimate = function(regime_fit_object, prob_cutoff) {
 #' Title
 #'
 #' @param regime_fit_output
-#' @param prob_cutoff
 #'
 #' @return
 #' @export
 #' @noRd
 #'
 #' @examples
-plot.bayesWatch = function(regime_fit_object, prob_cutoff = 0.5) {
+plot.bayesWatch = function(regime_fit_object, ...) {
   ### Grab the change-point probabilities
   # yy = regime_fit_object
   # MVN_model_mergesplit_accepts = yy$mergesplit_accepts
@@ -1647,6 +1645,7 @@ plot.bayesWatch = function(regime_fit_object, prob_cutoff = 0.5) {
   #   temp_difference = states_df_burnt[, j + 1] - states_df_burnt[, j]
   #   prop_mat[1, j] = mean(temp_difference == 1)
   # }
+  prob_cutoff         = regime_fit_object$prob_cutoff
   changepoint_probs   = regime_fit_object$changepoint_probabilities[, 2]
   # changepoints        = changepoint_probs >= prob_cutoff
   changepoints_data   = data.frame(prob_value = as.vector(changepoint_probs),

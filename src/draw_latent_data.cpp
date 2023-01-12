@@ -13,7 +13,7 @@ double log_mvn_pdf(const arma::vec& data_value, const arma::vec& conditional_mea
   double double_exp_term           = (double)arma::as_scalar(exp_term);
   double double_det_term, sign;
   arma::log_det(double_det_term,sign, conditional_covariance);
-  double log_pdf                   = - ( (double)p * 0.5 ) * log(2.0 * PI) * (-0.5) * double_det_term - 0.5 * double_exp_term;
+  double log_pdf                   = - ( (double)p * 0.5 ) * log(2.0 * M_PI) * (-0.5) * double_det_term - 0.5 * double_exp_term;
   return(log_pdf);
 }
 

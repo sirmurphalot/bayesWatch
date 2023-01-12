@@ -1,12 +1,16 @@
 Package: bayesWatch
 Type: Package
-Title: What the Package Does in One 'Title Case' Line
-Version: 1.0
-Date: 2023-01-08
-Author: Your Name
-Maintainer: Your Name <your@email.com>
-Description: One paragraph description of what the package does as one or more full sentences.
-License: GPL (>= 2)
-Imports: Rcpp (>= 1.0.7), RcppArmadillo, parallel (>= 3.6.2), Matrix, Hotelling, CholWishart, mvtnorm, ggplot2, gridExtra (>= 0.9.1)
-LinkingTo: Rcpp, RcppArmadillo, parallel, Matrix, Hotelling, CholWishart, mvtnorm, ggplot2, gridExtra (>= 0.9.1)
+Title: Determines Change-Points for Process Monitoring and Determines Faults
+Version: 0.1.0
+Date: 2023-01-12
+Authors@R: person("Alexander C.", "Murph", email = "acmurph@live.unc.edu",
+                  role = c("aut", "cre"),
+                  comment = c(ORCID = "0000-0001-7170-867X"))
+Description: More to come!
+License: MIT + file LICENSE
+Imports: Rcpp (>= 1.0.7), parallel (>= 3.6.2), Matrix, Hotelling, CholWishart, mvtnorm, ggplot2, gridExtra (>= 0.9.1), BDgraph
+LinkingTo: Rcpp, RcppArmadillo, RcppEigen, Matrix, CholWishart, mvtnorm
 Depends: R (>= 3.5.0)
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3

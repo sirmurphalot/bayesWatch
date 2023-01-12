@@ -1,7 +1,5 @@
 # Create simulated data with artifical change-point imposed.
-
 library(BDgraph)
-library(forecast)
 
 create_S2_w_diff_missing_struct = function(p, sigma){
   ## p is the total number of columns.
@@ -329,22 +327,22 @@ create_simulated_data = function(){
     upper_index   = upper_index + 2*base_data_size
   }
   
-  # Perform Box-Cox Transformations on the variables as a pre-processing step
-  all_lambdas = c()
-  for(transform_index in 1:length(not.cont)){
-    if(!as.logical(not.cont[transform_index])){
-      # Then this variable is continuous, and I should try to do an automated box-cox transform:
-      temp_data_col                 = full_data[,transform_index]
-      minimum_value                 = min(temp_data_col,na.rm=T)
-      temp_data_col                 = temp_data_col - minimum_value + 1
-      temp_lambda                   = BoxCox.lambda(temp_data_col, method = "guerrero")
-      full_data[,transform_index]   = BoxCox(temp_data_col, temp_lambda)
-      full_data[,transform_index]   = full_data[,transform_index] + minimum_value - 1
-      # full_data[,transform_index]   = (full_data[,transform_index] - 
-      #                                    mean(full_data[,transform_index],na.rm=T))/sd(full_data[,transform_index],na.rm=T)
-      all_lambdas = c(all_lambdas, temp_lambda)
-    }
-  }
+  # # Perform Box-Cox Transformations on the variables as a pre-processing step
+  # all_lambdas = c()
+  # for(transform_index in 1:length(not.cont)){
+  #   if(!as.logical(not.cont[transform_index])){
+  #     # Then this variable is continuous, and I should try to do an automated box-cox transform:
+  #     temp_data_col                 = full_data[,transform_index]
+  #     minimum_value                 = min(temp_data_col,na.rm=T)
+  #     temp_data_col                 = temp_data_col - minimum_value + 1
+  #     temp_lambda                   = BoxCox.lambda(temp_data_col, method = "guerrero")
+  #     full_data[,transform_index]   = BoxCox(temp_data_col, temp_lambda)
+  #     full_data[,transform_index]   = full_data[,transform_index] + minimum_value - 1
+  #     # full_data[,transform_index]   = (full_data[,transform_index] - 
+  #     #                                    mean(full_data[,transform_index],na.rm=T))/sd(full_data[,transform_index],na.rm=T)
+  #     all_lambdas = c(all_lambdas, temp_lambda)
+  #   }
+  # }
   
   
   # saveRDS(full_data, "data/example_data.rds")

@@ -1,6 +1,8 @@
 useDynLib(bayesWatch, .registration=TRUE)
-importFrom(Rcpp, evalCpp)
-import(ggplot2)
+import(ggplot2, BDgraph, gridExtra, parallel, Rcpp, Matrix, CholWishart, Hotelling)
+importFrom("stats", "cov", "dbeta", "density", "dgamma", "dnorm",
+             "rbeta", "rbinom", "rgamma", "rnorm", "rpois", "runif",
+             "sd")
 exportPattern("^[[:alpha:]]+")
 
 export(print.bayesWatch)

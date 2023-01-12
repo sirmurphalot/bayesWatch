@@ -208,7 +208,7 @@ double log_dNormalWishart_unnormalized( const arma::vec& m_hyperparameter, const
   arma::log_det(log_det_term, sign, observed_precision);
  
   log_likelihood  = 0.5 * (posterior_wishartDF-2) * (log_det_term);
-  log_likelihood += -0.5 * p * log(2*PI);
+  log_likelihood += -0.5 * p * log(2*M_PI);
   log_likelihood += -0.5 * arma::trace(posterior_inv_scale * observed_precision);
   log_likelihood += p * 0.5 * log(lambda_hyperparameter) + 0.5 * (log_det_term);
   log_likelihood += -0.5 * lambda_hyperparameter * arma::as_scalar((posterior_mu_centered.t()) * observed_precision * posterior_mu_centered);
