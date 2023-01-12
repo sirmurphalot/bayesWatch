@@ -20,40 +20,40 @@ require( "bayesWatch" )
 ```
 
 ## Examples
-
+Simulated data are available with a change-point imposed after day 5.  This change-point only occurs for variables 3 and 4, with 4 seeing the more significant change.
 ```r
-full_data = data("example_data.rds")
+data("full_data")
+data("day_of_observations")
+data("day_dts")
 
-day_of_observations = readRDS("bayesWatch/data/day_of_observations.rds")
-
-day_dts = readRDS("bayesWatch/data/day_dts.rds")
-x       = fit_regime_vector(full_data, day_of_observations, day_dts, 
+my_fit       = fit_regime_vector(full_data, day_of_observations, day_dts, 
                             iterations = 500, g.prior = 1, linger_parameter = 20, n.cores=3,
                             wishart_df_inital = 3, hyperprior_b = 3, lambda = 5)
-saveRDS(x,"bayesWatch_fit_object.rds")
-print(x)
+                            MCMC chain running...
+# 5->10->15->20->25->30->35->40->45->50->55->60->65->70->75->80->85->90->95->100
+# [1] "MCMC sampling complete.  Performing fault detection calculations..."
 
-xx = readRDS("bayesWatch_fit_object.rds")
-detect_faults(xx)
-
-sawnuti(string1="a b c", string2="d b c", times1="1 2 3",times2="3 2 1", alpha = 1, 
-        match_function = matchFunction, gap_penalty = 1)
-# $ScoreingMatrix
-#   [,1] [,2] [,3] [,4]
-# [1,]    0   -3   -5   -6
-# [2,]   -3   -1   -4   -5
-# [3,]   -1   -1    0   -2
-# [4,]   -4   -4   -3   -1
-#
-# $AlignmentScore
-# [1] "-1"
-#
-# $Alignment
-#   [,1] [,2] [,3]
-# [1,] "d"  "b"  "c"
-# [2,] "|"  "|"  "|"
-# [3,] "a"  "b"  "c"
+print(my_fit)
+#      bayesWatch object
+# ----------------------------------
+#   Time-point Change-point probability
+# 1          1                        0
+# 2          2                        0
+# 3          3                        0
+# 4          4                        0
+# 5          5                        1
+# 6          6                        0
+# 7          7                        0
+# 8          8                        0
+# 9          9                        0
 ```
+
+Once the regime vector is fit, we can print out the fault detection graphs.
+```r
+detect_faults(my_fit)
+```
+![](man/figures/fault_detection_graphs.png)<!-- -->
+
 
 ## Packages Required
 
@@ -61,4 +61,4 @@ None.
 
 ## Citation
 
-A. Murph, A. Flynt, B. R. King (2021). Comparing finite sequences of discrete events with non-uniform time intervals, <em>Sequential Analysis</em>, 40(3), 291-313.
+Coming soon!
