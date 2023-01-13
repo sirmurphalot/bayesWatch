@@ -55,7 +55,7 @@ Once the regime vector is fit, we can print out the fault detection graphs.
 ```r
 detect_faults(my_fit)
 ```
-![](man/figures/fault_detection_graphs.pdf)<!-- -->
+![](man/figures/fault_detection_graphs.png)<!-- -->
 
 
 ## Packages Required
