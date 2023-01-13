@@ -2,21 +2,20 @@
   
 ![](https://www.r-pkg.org/badges/version/bayesWatch) ![](https://www.r-pkg.org/badges/last-release/bayesWatch)
 
-EXPLAIN IT BETTER SOON THANK YOU
+The main method `fit_regime_vector` of this package fits an array of Gaussian Graphical Mixture Models to groupings of homogeneous data in time, called regimes, which we model as the observed states of a Markov process with unknown transition probabilities.   While the primary goal of this model is to identify when there is a regime change, as this indicates a significant change in input data distribution, an attractive consequence of this approach is a rich collection of models fit to many different possible regimes.  A fault detection system that leverages these model fits to describe the cause of a regime change is included in `detect_faults`.
 
 This repository is organized as a stand-alone R package.  For questions, issues, or clarifications please reach out to Murph: <acmurph@unc.edu>.  Feel free to email any applications; we'd be happy to highlight them here.
-
 
 ## Installation
 
 You can install the latest version from CRAN using:
 
 ``` r
-install.packages( "bayesWatch" )
+install.packages("bayesWatch")
 ```
 
 ``` r
-require( "bayesWatch" )
+require(bayesWatch)
 ```
 
 ## Examples
