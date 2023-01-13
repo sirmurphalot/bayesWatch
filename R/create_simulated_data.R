@@ -1,18 +1,5 @@
-# Create simulated data with artifical change-point imposed.
+# Create simulated data with artificial change-point imposed.
 library(BDgraph)
-
-create_S2_w_diff_missing_struct = function(p, sigma){
-  ## p is the total number of columns.
-  ## This method takes in current covariance, sigma, and changes the last 5 columns.  
-  
-  shur_complement = rinvwishart(2+p, diag(5))
-  undo_complement = shur_complement + sigma[(p-4):p,1:(p-5)]%*%
-    solve(sigma[1:(p-5),1:(p-5)])%*%
-    sigma[1:(p-5),(p-4):p]
-  new_sigma = sigma
-  new_sigma[(p-4):p,(p-4):p] = 2*undo_complement
-  return(new_sigma)
-}
 
 create_simulated_data = function(){
   job_num = 7
@@ -26,6 +13,7 @@ create_simulated_data = function(){
   
   mean_shift                = 1
   prob_cutoff               = 0.1
+  half_dist_between_modes   = 0.5
   percent_missing_index     = parameters_number
   base_data_size            = 50
   
@@ -53,16 +41,17 @@ create_simulated_data = function(){
   
   data.sim.mixed_group1 = bdgraph.sim( n = rpois(1,100), p = p,
                                         graph = data.sim.mixed_group1$G)
-  S1 = data.sim.mixed_group1$sigma
-  S1    = S1* 0.25
-  # S1    = S1 - diag(diag(S1)) + diag(diag(S1))*0.9
-  S2    = S1
+  S1      = data.sim.mixed_group1$sigma
+  orig_S2 = S1
+  S1      = S1* 0.25
+
+  S2      = S1
   S2[3,3] = S2[3,3]*2
   S2[4,4] = S2[4,4]*3
-  S3    = S1
-  mean1 = rep(0, p)
-  mean2 = mean1 
-  mean3 = mean1
+  S3      = S1
+  mean1   = rep(0, p)
+  mean2   = mean1 
+  mean3   = mean1
   
   mean2[3:4] = mean1[3:4] + mean_shift
   mean2[4]   = mean1[4] + mean_shift
@@ -251,7 +240,7 @@ create_simulated_data = function(){
       }
     }
     if(while_loop_count>1000){
-      error("WE COULD NOT CREATE THE DISCRETE VARIABLES")
+      stop("WE COULD NOT CREATE THE DISCRETE VARIABLES")
     }
   }
   

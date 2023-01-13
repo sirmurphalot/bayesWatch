@@ -376,7 +376,7 @@ fit_regime_vector = function(data_woTimeValues,
             file = 'verbose_log.txt',
             append = T
           )
-        if (class(bdgraph_object) == 'bdgraph') {
+        if (is(bdgraph_object, 'bdgraph')) {
           precMatrix_temp = bdgraph_object$K_hat
         } else {
           precMatrix_temp_temp                        = solve(cov(temp_data[, 1:original_p], use = "pairwise.complete.obs"))
@@ -483,7 +483,7 @@ fit_regime_vector = function(data_woTimeValues,
   if (is.null(set_G)) {
     # If G is not set, I'll draw from the distribution over all possible graphs determined by g.prior,
     # the probability of a given edge being present.
-    if (class(bdgraph_object) == 'bdgraph') {
+    if (is(bdgraph_object, 'bdgraph')) {
       previous_G              = BDgraph::select(bdgraph_object)
     } else {
       previous_G = matrix(1, hyperparameters$p, hyperparameters$p) - diag(hyperparameters$p)
@@ -496,7 +496,7 @@ fit_regime_vector = function(data_woTimeValues,
   hyperparameters$G = previous_G
   
   if (is.null(g_sampling_distribution) &
-      (class(bdgraph_object) == 'bdgraph')) {
+      (is(bdgraph_object, 'bdgraph'))) {
     g_sampling_distribution = bdgraph_object$p_links
     g_sampling_distribution = (1 - g_sampling_distribution) * (previous_G) + g_sampling_distribution *
       (1 - previous_G)
@@ -1629,36 +1629,20 @@ get_point_estimate = function(regime_fit_object, prob_cutoff) {
 #' @noRd
 #'
 #' @examples
-plot.bayesWatch = function(regime_fit_object, ...) {
-  ### Grab the change-point probabilities
-  # yy = regime_fit_object
-  # MVN_model_mergesplit_accepts = yy$mergesplit_accepts
-  # my_states = yy$states
-  # states_df = data.frame(matrix(my_states[[1]], nrow = 1))
-  # for (i in 2:length(my_states)) {
-  #   states_df = rbind(states_df, data.frame(matrix(my_states[[i]], nrow = 1)))
-  # }
-  # states_df_burnt = states_df[floor(2 * nrow(states_df) / 4):nrow(states_df), ]
-  # prop_mat = matrix(0, nrow = 1, ncol = (ncol(states_df_burnt) - 1))
-  # number_of_segments = nrow(states_df)
-  # for (j in 1:(ncol(states_df_burnt) - 1)) {
-  #   temp_difference = states_df_burnt[, j + 1] - states_df_burnt[, j]
-  #   prop_mat[1, j] = mean(temp_difference == 1)
-  # }
+plot.bayesWatch = function(x, ...) {
+  time_point<-prob_value<-NULL
+  regime_fit_object   = x
   prob_cutoff         = regime_fit_object$prob_cutoff
   changepoint_probs   = regime_fit_object$changepoint_probabilities[, 2]
-  # changepoints        = changepoint_probs >= prob_cutoff
   changepoints_data   = data.frame(prob_value = as.vector(changepoint_probs),
                                    time_point = as.factor(1:length(as.vector(
                                      as.vector(changepoint_probs)
                                    ))))
   
-  my_plot = ggplot2::ggplot(changepoints_data, aes(x = time_point, y = prob_value)) + ggplot2::geom_bar(stat = "identity", fill =
+  ggplot2::ggplot(changepoints_data, aes(x = time_point, y = prob_value)) + ggplot2::geom_bar(stat = "identity", fill =
                                                                                                           "blue") +
     ggplot2::geom_hline(yintercept = prob_cutoff, color = "red") +
     ggplot2::annotate("text", label = "Probability Cutoff Value")
-  
-  return(my_plot)
 }
 
 

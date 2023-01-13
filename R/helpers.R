@@ -1,6 +1,6 @@
 # Helper function for bd_gc_mcmc main method.
 require(parallel)
-require(mvtnorm)
+# require(mvtnorm)
 
 #' Title
 #'
@@ -1911,6 +1911,7 @@ redraw_hyperparameters    = function(hyperparameters,
                                      previous_model_fits,
                                      my_states,
                                      verbose_logfile = FALSE) {
+  rate_of_sampling_distn<-NULL
   # | ---------------------- Gather Data ---------------------------- |
   threshold      = 1e-8
   alpha          = hyperparameters$alpha
@@ -3111,6 +3112,9 @@ redraw_G_with_mixture     = function(my_states,
                                      selected_edge_i,
                                      selected_edge_j,
                                      g_sampling_distribution) {
+  upper_bound_is_equal<-lower_bound_is_equal<-is_missing<-NULL
+  n.cores_eachchild         = 1
+  new_G_proposed            = new_proposed_G
   cluster_assignments       = previous_model_fits[[state_to_redraw]]$cluster_assignments
   cluster_precisions        = previous_model_fits[[state_to_redraw]]$precision
   cluster_mus               = previous_model_fits[[state_to_redraw]]$mu

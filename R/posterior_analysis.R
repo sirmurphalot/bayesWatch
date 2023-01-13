@@ -378,6 +378,7 @@ graph_posterior_distributions = function(differences_of_marginals,
                                          model_logs, 
                                          prob_cutoff,
                                          f_divergence = "Hellinger") {
+  Variable<-KL_single<-vline<-y_heights<-x_value<-Value<-Before_or_After<-Hellinger_single<-Jeff_single<-NULL
   true_parameter_values = NULL
   ###############################################################################
   # Start by making a state vector that mirrors thet set of expected changepoints.

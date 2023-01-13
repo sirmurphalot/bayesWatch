@@ -14,7 +14,7 @@
 #define MAXDIMENS 50
 
 ///////////////////////////////////////////////
-extern void CheckPointer(void* pointer);
+// extern void CheckPointer(void* pointer);
 extern int  choose(int m, int n);
 ///////////////////////////////////////////////
 
@@ -22,17 +22,6 @@ extern int  choose(int m, int n);
 int numeric (const void *p1, const void *p2)
 {
    return(*((int*)p1) - *((int*)p2));
-}
-
-
-void CheckPointer(void* pointer)
-{
-   if(pointer==NULL)
-   {
-      printf("Memory allocation error.\n");
-      exit(1);
-   }
-   return;
 }
 
 
@@ -101,19 +90,19 @@ Graph::Graph(LPGraph InitialGraph)
    }
    nMss      = InitialGraph->nMss;
    MssDimens = new int[nMss];
-   CheckPointer(MssDimens);
+   // CheckPointer(MssDimens);
    memset(MssDimens,0,nMss*sizeof(int));
    for(i=0;i<nMss;i++)
    {
       MssDimens[i] = InitialGraph->MssDimens[i];		
    }	
    Mss  = new int*[nMss];
-   CheckPointer(Mss);
+   // CheckPointer(Mss);
    memset(Mss,0,nMss*sizeof(int*));
    for(i=0;i<nMss;i++)
    {
       Mss[i] = new int[MssDimens[i]];
-      CheckPointer(Mss[i]);
+      // CheckPointer(Mss[i]);
       memset(Mss[i],0,MssDimens[i]*sizeof(int));
       for(j=0;j<MssDimens[i];j++)
       {
@@ -196,55 +185,55 @@ void Graph::InitGraph(int n)
    nVertices = n;
    //alloc the matrix of vertices
    Edge = new int*[nVertices];
-   CheckPointer(Edge);
+   // CheckPointer(Edge);
    memset(Edge,0,nVertices*sizeof(int*));
    for(i=0; i<n; i++)
    {
       Edge[i] = new int[nVertices];
-      CheckPointer(Edge[i]);
+      // CheckPointer(Edge[i]);
       memset(Edge[i],0,nVertices*sizeof(int));
    }
    nLabels = 0;
    Labels = new int[nVertices];
-   CheckPointer(Labels);
+   // CheckPointer(Labels);
    memset(Labels,0,nVertices*sizeof(int));
    nCliques = 0;
    Cliques = new int*[nVertices];
-   CheckPointer(Cliques);
+   // CheckPointer(Cliques);
    memset(Cliques,0,nVertices*sizeof(int*)); 
    for(i=0;i<n;i++)
    {
       Cliques[i] = new int[nVertices];
-      CheckPointer(Cliques[i]);
+      // CheckPointer(Cliques[i]);
       memset(Cliques[i],0,nVertices*sizeof(int));
    }	
    CliquesDimens = new int[nVertices];
-   CheckPointer(CliquesDimens);
+   // CheckPointer(CliquesDimens);
    memset(CliquesDimens,0,nVertices*sizeof(int));
    nTreeEdges = 0;
    TreeEdgeA = new int[nVertices];
-   CheckPointer(TreeEdgeA);
+   // CheckPointer(TreeEdgeA);
    memset(TreeEdgeA,0,nVertices*sizeof(int));
    TreeEdgeB = new int[nVertices];
-   CheckPointer(TreeEdgeB);
+   // CheckPointer(TreeEdgeB);
    memset(TreeEdgeB,0,nVertices*sizeof(int));
    ordering = new int[nVertices];
-   CheckPointer(ordering);
+   // CheckPointer(ordering);
    memset(ordering,0,nVertices*sizeof(int));
    Separators = new int*[nVertices];
-   CheckPointer(Separators);
+   // CheckPointer(Separators);
    memset(Separators,0,nVertices*sizeof(int*));
    for(i=0; i<n; i++)
    {
       Separators[i] = new int[nVertices];
-      CheckPointer(Separators[i]);
+      // CheckPointer(Separators[i]);
       memset(Separators[i],0,nVertices*sizeof(int));
    }
    SeparatorsDimens = new int[nVertices];
-   CheckPointer(SeparatorsDimens);
+   // CheckPointer(SeparatorsDimens);
    memset(SeparatorsDimens,0,nVertices*sizeof(int));
    localord = new int[nVertices];
-   CheckPointer(localord);
+   // CheckPointer(localord);
    memset(localord,0,nVertices*sizeof(int));
    return;
 }	
@@ -257,21 +246,19 @@ int Graph::ReadGraph(char* sFileName)
 	FILE* in = fopen(sFileName, "r");
 	if(NULL == in)
 	{
-		printf("Cannot open input file :: %s\n", sFileName);
 		return 0;
 	}
 	
-	fscanf(in, "%d", &n);
+	// fscanf(in, "%d", &n);
 	if(n <= 0) return 0;
 	InitGraph(n);
-	fscanf(in, "%d", &n);
+	// fscanf(in, "%d", &n);
 	if(n <= 0) return 0; //number of edges in the graph
 	
 	for(k=0; k<n; k++)
 	{
 		if(2 != fscanf(in, "%d %d", &i, &j))
 		{
-			printf("Error reading input file :: %s\n", sFileName);
 			return 0;
 		}		
 		Edge[i-1][j-1] = 1;
@@ -290,28 +277,25 @@ int Graph::ReadMss(char* sFileName)
 	
 	if(NULL==(in=fopen(sFileName,"r")))
 	{
-		printf("Could not open file %s!!\n", sFileName);
 		return 0;
 	}	
 	if(!fscanf(in,"%d",&s))
 	{
-		printf("File %s has an unknown format!\n", sFileName);
 		fclose(in);
 		return 0;
 	}
 	nMss = s;	
 	MssDimens = new int[nMss];
-	CheckPointer(MssDimens);	
+	// CheckPointer(MssDimens);	
 	memset(MssDimens,0,nMss*sizeof(int));	
 	Mss = new int*[nMss];
-	CheckPointer(Mss);
+	// CheckPointer(Mss);
 	memset(Mss,0,nMss*sizeof(int*));	
 	//read the mss one  by one
 	for(i=0; i<nMss; i++)
 	{
 		if(!fscanf(in,"%d",&s))
 		{
-			printf("File %s has an unknown format!\n", sFileName);
 			fclose(in);
 			//clean the memory we allocated already
 			for(j=0;j<i;j++)
@@ -325,13 +309,12 @@ int Graph::ReadMss(char* sFileName)
 		}
 		MssDimens[i] = s;
 		Mss[i] = new int[MssDimens[i]];
-		CheckPointer(Mss[i]);
+		// CheckPointer(Mss[i]);
 		memset(Mss[i],0,MssDimens[i]*sizeof(int));
 		for(j=0;j<MssDimens[i];j++)
 		{
 			if(!fscanf(in,"%d",&s))
 			{
-				printf("File %s has an unknown format!\n",sFileName);
 				fclose(in);
 			     //clean the memory we allocated already
 				for(j=0;j<i;j++)
@@ -382,60 +365,43 @@ void Graph::WriteInfo(FILE* out)
 {
    int i, j;
 	
-   fprintf(out,"Minimal Sufficient Statistics\n");
-   for(i=0;i<nMss;i++)
-   {
-      fprintf(out,"%d ::",MssDimens[i]);
-      for(j=0;j<MssDimens[i];j++)
-      {
-         fprintf(out," %d",Mss[i][j]+1);
-      }
-      fprintf(out,"\n");
-   }
-   fprintf(out,"\n");
-   for(i=0; i<nCliques; i++)
-   {
-      fprintf(out, "Clique %d :: ", i+1);
-      for(j=0; j<CliquesDimens[i]; j++)
-      {
-         fprintf(out, " %d", Cliques[i][j]+1);
-      }
-      fprintf(out, "\n");
-   }
-   for(i=0;i<nConnectedComponents;i++)
-   {
-      fprintf(out,"Connected component %d :: ", i+1);
-      for(j=0;j<ConnectedComponentsDimens[i];j++)
-      {
-         fprintf(out," %d",ConnectedComponents[i][j]+1);
-      }
-      fprintf(out, "\n");
-   }
-   for(i=0; i<nTreeEdges; i++)
-   {
-      fprintf(out, "Edge %d :: (%d, %d)\n", i+1, TreeEdgeA[i]+1, TreeEdgeB[i]+1);
-   }
-	
-   for(i=0; i<nSeparators; i++)
-   {
-      fprintf(out, "Separator %d :: ", i+1);
-      for(j=0; j<SeparatorsDimens[i]; j++)
-      {
-         fprintf(out, " %d", Separators[i][j]+1);
-      }
-      fprintf(out, "\n");
-   }
-   if(NULL!=StarComp)
-   {
-      for(i=0;i<nTreeEdges;i++)
-      {
-	 fprintf(out,"StarComp %d :: ",i);
-         for(j=0;j<nVertices;j++)
-	    fprintf(out," %d",StarComp[i][j]);
-         fprintf(out,"\n");
-      }
-   }
-   return;
+   // for(i=0;i<nMss;i++)
+   // {
+   //    for(j=0;j<MssDimens[i];j++)
+   //    {
+   //    }
+   // }
+   // for(i=0; i<nCliques; i++)
+   // {
+   //    for(j=0; j<CliquesDimens[i]; j++)
+   //    {
+   //    }
+   // }
+   // for(i=0;i<nConnectedComponents;i++)
+   // {
+   //    for(j=0;j<ConnectedComponentsDimens[i];j++)
+   //    {
+   //    }
+   // }
+   // for(i=0; i<nTreeEdges; i++)
+   // {
+   // }
+   // 
+   // for(i=0; i<nSeparators; i++)
+   // {
+   //    for(j=0; j<SeparatorsDimens[i]; j++)
+   //    {
+   //    }
+   // }
+   // if(NULL!=StarComp)
+   // {
+   //    for(i=0;i<nTreeEdges;i++)
+   //    {
+   //       for(j=0;j<nVertices;j++)
+   // 
+   //    }
+   // }
+   // return;
 }
 
 void Graph::GenerateCliques(int label)
@@ -443,9 +409,9 @@ void Graph::GenerateCliques(int label)
 	int i, j, k, p, r;
 	int n = nVertices;
 	int* clique = new int[nVertices];
-	CheckPointer(clique);
+	// CheckPointer(clique);
 	int* LRound = new int[nVertices];
-	CheckPointer(LRound);
+	// CheckPointer(LRound);
 	
 	//clean memory
 	memset(localord,0,nVertices*sizeof(int));
@@ -712,39 +678,39 @@ int Graph::GenerateAllCliques()
      //Alloc Memory :: Begin
 	int nAllCliques  = 0;
 	int** AllCliques = new int*[n];
-	CheckPointer(AllCliques);
+	// CheckPointer(AllCliques);
 	memset(AllCliques,0,n*sizeof(int*));
 	for(i=0;i<n;i++)
 	{
 		AllCliques[i] = new int[n];
-		CheckPointer(AllCliques[i]);
+		// CheckPointer(AllCliques[i]);
 		memset(AllCliques[i],0,n*sizeof(int));
 	}
 	
 	int* AllCliquesDimens = new int[n];
-	CheckPointer(AllCliquesDimens);
+	// CheckPointer(AllCliquesDimens);
 	memset(AllCliquesDimens,0,n*sizeof(int));
 	
 	int nAllTreeEdges = 0;
 	int* AllTreeEdgeA = new int[n];
-	CheckPointer(AllTreeEdgeA);
+	// CheckPointer(AllTreeEdgeA);
 	memset(AllTreeEdgeA,0,n*sizeof(int));
 	int* AllTreeEdgeB = new int[n];
-	CheckPointer(AllTreeEdgeB);
+	// CheckPointer(AllTreeEdgeB);
 	memset(AllTreeEdgeB,0,n*sizeof(int));
 	
 	int** AllSeparators = new int*[n];
-	CheckPointer(AllSeparators);
+	// CheckPointer(AllSeparators);
 	memset(AllSeparators,0,n*sizeof(int*));
 	for(i=0;i<n;i++)
 	{
 		AllSeparators[i] = new int[n];
-		CheckPointer(AllSeparators[i]);
+		// CheckPointer(AllSeparators[i]);
 		memset(AllSeparators[i],0,n*sizeof(int));
 	}
 	int nAllSeparators = 0;	
 	int* AllSeparatorsDimens = new int[n];
-	CheckPointer(AllSeparatorsDimens);
+	// CheckPointer(AllSeparatorsDimens);
 	memset(AllSeparatorsDimens,0,n*sizeof(int));
 	//Alloc Memory :: End
 	
@@ -904,7 +870,7 @@ int Graph::SearchVertex()
 	int x, u, v;
 	int okay;
 	int* sxAdj = new int[nVertices];
-	CheckPointer(sxAdj);
+	// CheckPointer(sxAdj);
 	memset(sxAdj,0,nVertices*sizeof(int));
 	
 	for(x=0;x<nVertices;x++)
@@ -949,9 +915,9 @@ void Graph::InitConnectedComponents()
    int i,label;
    nConnectedComponents=nLabels;
    ConnectedComponents = new int*[nConnectedComponents];
-   CheckPointer(ConnectedComponents);
+   // CheckPointer(ConnectedComponents);
    ConnectedComponentsDimens = new int[nConnectedComponents];
-   CheckPointer(ConnectedComponentsDimens);
+   // CheckPointer(ConnectedComponentsDimens);
    for(label=1;label<=nLabels;label++)
    {
       //count the number of vertices being labeled with label
@@ -960,10 +926,9 @@ void Graph::InitConnectedComponents()
       {
          if(Labels[i]==label) count++;  
       }
-      printf("label = %d :: count = %d\n",label,count);
       ConnectedComponentsDimens[label-1]=count;
       ConnectedComponents[label-1] = new int[count];
-      CheckPointer(ConnectedComponents[label-1]);
+      // CheckPointer(ConnectedComponents[label-1]);
       count=0;
       for(i=0;i<nVertices;i++)
       {
@@ -984,18 +949,6 @@ void Graph::GetMPSubgraphs()
    //if(IsDecomposable()) return;//easy task if the graph is decomposable
    //if not, generate the minimal fill-in graph
    LPGraph gfill = MakeFillInGraph(this);
-   if(!gfill->IsDecomposable())
-   {
-     for(i=0;i<this->nVertices;i++){
-       for(j=0;j<this->nVertices;j++){
-	 printf("%d ",this->Edge[i][j]);
-       }
-       printf("\n");
-     }
-
-      printf("The fill-in graph is not decomposable!\n Something is wrong.\n");
-      exit(1);
-   }	
    //gfill->WriteInfo(stdout);
    //we clean the memory a bit, just to be on the safe side
    nCliques = nSeparators = 0;	
@@ -1013,15 +966,14 @@ void Graph::GetMPSubgraphs()
    //////////////////////////////////////////////////////////
    //done cleaning memory                                  //
    //////////////////////////////////////////////////////////	
-   int* UsedEdge = new int[gfill->nTreeEdges]; CheckPointer(UsedEdge);
+   int* UsedEdge = new int[gfill->nTreeEdges]; // CheckPointer(UsedEdge);
    //mark the edges as "not used"
    memset(UsedEdge,0,gfill->nTreeEdges*sizeof(int));   
-   int* MarkC = new int[gfill->nCliques]; CheckPointer(MarkC); 
+   int* MarkC = new int[gfill->nCliques]; // CheckPointer(MarkC); 
    memset(MarkC,0,gfill->nCliques*sizeof(int));
-   int* MarkS = new int[gfill->nSeparators]; CheckPointer(MarkS);
+   int* MarkS = new int[gfill->nSeparators]; // CheckPointer(MarkS);
    memset(MarkS,0,gfill->nSeparators*sizeof(int)); 
    
-   //printf("nTreeEdges = %d\n",gfill->nTreeEdges);
    ////////////////////////////////////////////////////////////   
    while(1)
    {
@@ -1035,7 +987,6 @@ void Graph::GetMPSubgraphs()
 	 if(UsedEdge[edg]) continue;
          Ci = gfill->TreeEdgeB[edg];
          Cj = gfill->TreeEdgeA[edg];
-         //printf("Cj = %d\n",Cj+1);         
          int foundterminal = 1;
          for(i=0;i<gfill->nTreeEdges;i++)
 	 {
@@ -1049,14 +1000,12 @@ void Graph::GetMPSubgraphs()
          if(foundterminal) break;
       }
       if(edg==gfill->nTreeEdges) break;
-      //printf("Cj = %d :: Ci = %d\n",Cj+1,Ci+1);
       //mark the edge as used
       UsedEdge[edg]=1;
       //Step 4
       if(IsClique(gfill->Separators[edg],
                   gfill->SeparatorsDimens[edg]))
       {
-	 //printf("%d is clique\n",edg+1);
          MarkC[Cj]  = 1;
          MarkS[edg] = 1;  
       }
@@ -1067,8 +1016,8 @@ void Graph::GetMPSubgraphs()
          int  len1 = gfill->CliquesDimens[Ci]+
                      gfill->CliquesDimens[Cj];
          int  len2 = 0;
-         int* buffer1 = new int[len1]; CheckPointer(buffer1);		
-         int* buffer2 = new int[len1]; CheckPointer(buffer2);
+         int* buffer1 = new int[len1]; //CheckPointer(buffer1);		
+         int* buffer2 = new int[len1]; //CheckPointer(buffer2);
          len1 = 0;
          for(i=0;i<gfill->CliquesDimens[Ci];i++)
 	 {
@@ -1133,7 +1082,7 @@ void Graph::GetMPSubgraphs()
 void Graph::FindCliqueTree()
 {
    int i,j,k;
-   LPGraph tempGraph = new Graph; CheckPointer(tempGraph);
+   LPGraph tempGraph = new Graph; //CheckPointer(tempGraph);
    tempGraph->InitGraph(nVertices);
    for(i=0;i<nCliques;i++)
    {
@@ -1145,11 +1094,6 @@ void Graph::FindCliqueTree()
             tempGraph->Edge[Cliques[i][k]][Cliques[i][j]] = 1;
          }
       }
-   }
-   if(!tempGraph->IsDecomposable())
-   {
-      printf("Something is very wrong in FindCliqueTree. Program exits...\n");
-      exit(1);
    }
    ///////////////////////////////////////////////////////////////
    //the ordering of the cliques/mp-subgraphs might have changed//
@@ -1184,16 +1128,13 @@ void Graph::FindCliqueTree()
    //initialize the connected components of the graph//
    ////////////////////////////////////////////////////
    tempGraph->InitConnectedComponents();
-   int* LabelEdges = new int[nTreeEdges]; CheckPointer(LabelEdges);
+   int* LabelEdges = new int[nTreeEdges]; // CheckPointer(LabelEdges);
    for(i=0;i<nTreeEdges;i++)
    {
       LabelEdges[i] = tempGraph->Labels[Cliques[TreeEdgeB[i]][0]];
-      printf("Edge %d :: label %d\n",
-             i+1,LabelEdges[i]); 
    }
-   int* RootConComp = new int[tempGraph->nLabels]; CheckPointer(RootConComp);
-   int* LeafConComp = new int[tempGraph->nLabels]; CheckPointer(LeafConComp);
-   //printf("Concomp = %d\n",tempGraph->nLabels);
+   int* RootConComp = new int[tempGraph->nLabels]; // CheckPointer(RootConComp);
+   int* LeafConComp = new int[tempGraph->nLabels]; // CheckPointer(LeafConComp);
    for(i=0;i<tempGraph->nLabels;i++)
    {
       ////////////////////////////////////////////
@@ -1208,7 +1149,6 @@ void Graph::FindCliqueTree()
 	 if(LabelEdges[edg]!=i+1) continue;
          Ci = TreeEdgeB[edg];
          Cj = TreeEdgeA[edg];
-         //printf("Cj = %d\n",Cj+1);         
          int foundroot = 1;
          for(j=0;j<nTreeEdges;j++)
 	 {
@@ -1230,7 +1170,6 @@ void Graph::FindCliqueTree()
 	 if(LabelEdges[edg]!=i+1) continue;
          Ci = TreeEdgeB[edg];
          Cj = TreeEdgeA[edg];
-         //printf("Cj = %d\n",Cj+1);         
          int foundterminal = 1;
          for(j=0;j<nTreeEdges;j++)
 	 {
@@ -1247,8 +1186,6 @@ void Graph::FindCliqueTree()
             break;
          }
       }
-      printf("Component %d :: root = %d :: leaf = %d\n",
-             i,RootConComp[i],LeafConComp[i]);  
    }
    ////////////////////////////////////////////////////////
    //add the edges that connect the trees associated with//
@@ -1267,7 +1204,7 @@ void Graph::FindCliqueTree()
    /////////////////////////////
    //initialize the tree graph//
    /////////////////////////////
-   LPGraph treeGraph = new Graph; CheckPointer(treeGraph);
+   LPGraph treeGraph = new Graph; // CheckPointer(treeGraph);
    treeGraph->InitGraph(nCliques);
    for(i=0;i<nTreeEdges;i++)
    {
@@ -1277,10 +1214,10 @@ void Graph::FindCliqueTree()
    //////////////////////////////////////////////
    //alocate the memory for the star components//
    //////////////////////////////////////////////
-   StarComp = new int*[nTreeEdges]; CheckPointer(StarComp);
+   StarComp = new int*[nTreeEdges]; // CheckPointer(StarComp);
    for(i=0;i<nTreeEdges;i++)
    {
-      StarComp[i] = new int[nVertices]; CheckPointer(StarComp[i]);
+      StarComp[i] = new int[nVertices]; // CheckPointer(StarComp[i]);
       memset(StarComp[i],0,nVertices*sizeof(int)); 
    }
    /////////////////////////////////////////////////////////
@@ -1328,18 +1265,7 @@ void Graph::FindCliqueTree()
    delete tempGraph;
    return;
 }
-void Graph::Print_A(){
-  int i,j;
-  printf("\n");
-  for(i=0;i<nVertices;i++){
-    for(j=0;j<nVertices;j++){
-      printf("%d ",Edge[i][j]);
-    }
-    printf("\n");
-  }
-  printf("\n");
-}
-      
+   
 //class Graph::Ends
 
 //class SectionGraph::Begins
@@ -1348,7 +1274,7 @@ SectionGraph::SectionGraph(LPGraph InitialGraph,int* velim) : Graph(InitialGraph
 	int i,j;
 	
 	Eliminated = new int[nVertices];
-	CheckPointer(Eliminated);
+	// CheckPointer(Eliminated);
 	memset(Eliminated,0,nVertices*sizeof(int));
 	nEliminated = 0;
 	for(i=0;i<nVertices;i++)
@@ -1392,8 +1318,7 @@ int SectionGraph::IsChain(int u,int v)
 	}	
 	if(Eliminated[u] || Eliminated[v])
 	{
-		printf("One of the vertices %d,%d has been eliminated...\n",u,v);
-		exit(1);
+
 	}		
 	if(Labels[u]==Labels[v]) return 1;
 	return 0;
@@ -1404,7 +1329,7 @@ int SectionGraph::IsChain(int u,int v)
 EliminationGraph::EliminationGraph(LPGraph InitialGraph,int vertex) : Graph(InitialGraph)
 {	
 	Eliminated = new int[nVertices];
-	CheckPointer(Eliminated);
+	// CheckPointer(Eliminated);
 	memset(Eliminated,0,nVertices*sizeof(int));
 	nEliminated = 0;
 	EliminateVertex(vertex);
@@ -1457,7 +1382,7 @@ int EliminationGraph::SearchVertex()
 	int x, u, v;
 	int okay;
 	int* sxAdj = new int[nVertices];
-	CheckPointer(sxAdj);
+	// CheckPointer(sxAdj);
 	memset(sxAdj,0,nVertices*sizeof(int));
 	
 	for(x=0;x<nVertices;x++)
@@ -1502,12 +1427,11 @@ LPGraph MakeFillInGraph(LPGraph graph)
 	int i;
 	
 	LPGraph gfill = new Graph(graph);
-	CheckPointer(gfill);
+	// CheckPointer(gfill);
 	//if the graph is decomposable, there is no need to do anything
 	if(gfill->IsDecomposable()) return gfill;
 	
 	int v1 = gfill->SearchVertex();
-	//printf("v1 = %d\n",v1);
 	//add edges to Def(Adj(x)) so that Adj(x) becomes a clique	
 	for(u=0;u<gfill->nVertices;u++)
 	{
@@ -1518,7 +1442,6 @@ LPGraph MakeFillInGraph(LPGraph graph)
 				if((gfill->Edge[v1][v]==1)&&(gfill->Edge[u][v]==0))
 				{
 					gfill->Edge[v][u] = gfill->Edge[u][v] = 1;
-					//printf("u = %d, v = %d\n",u,v);
 				}	
 			}	
 		}	
@@ -1527,7 +1450,6 @@ LPGraph MakeFillInGraph(LPGraph graph)
 	for(i=1;i<graph->nVertices-1;i++)
 	{
 		v1 = egraph.SearchVertex();
-		//printf("v1 = %d\n",v1);
 		for(u=0;u<egraph.nVertices;u++)
 		{
 			if(egraph.Eliminated[u]) continue;
@@ -1541,7 +1463,6 @@ LPGraph MakeFillInGraph(LPGraph graph)
 						gfill->Edge[v][u] = gfill->Edge[u][v] = 1;
 						//these are the edges that are added
 						//to the initial graph
-						//printf("u = %d, v = %d\n",u,v);
 					}	
 				}	
 			}	

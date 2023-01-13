@@ -3,6 +3,7 @@ import(ggplot2, BDgraph, gridExtra, parallel, Rcpp, Matrix, CholWishart, Hotelli
 importFrom("stats", "cov", "dbeta", "density", "dgamma", "dnorm",
              "rbeta", "rbinom", "rgamma", "rnorm", "rpois", "runif",
              "sd")
+importFrom("methods", "is")
 exportPattern("^[[:alpha:]]+")
 
 export(print.bayesWatch)

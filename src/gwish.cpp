@@ -14,55 +14,6 @@
 
 #define REPS_MC 1000
 
-void util_print_mat_dbl(double *X,int p_i,int p_j,int forlatex)
-{
-  int i,j;
-  for(i = 0; i < p_i; i++)
-    {
-      for(j = 0; j < p_j; j++)
-    {
-      printf("%f, ",X[i * p_j + j]);
-      if( forlatex==1 && j != (p_j- 1) ) printf("&");
-    }
-      if( forlatex==1 ) printf("\\\\");
-      printf( "\n" );
-    }
-}//util_print_mat_dbl
-
-void util_print_mat_int(int *X,int p_i,int p_j,int forlatex)
-{
-  int i,j;
-
-  for(i = 0; i < p_i; i++)
-    {
-      for(j = 0; j < p_j; j++)
-    {
-      printf("%d, ",X[i * p_j + j]);
-      if(forlatex==1 && j!=(p_j-1))printf("&");
-    }
-      if(forlatex==1) printf("\\\\");
-      printf("\n");
-    }
-}//util_print_mat_dbl
-
-void util_print_tri_mat(double *X, int p)
-{
-  int i, j, k;
-  k=0;
-  printf("\n");
-  for(i = 0; i < p; i++)
-    {
-      for(j = i; j < p; j++)
-    {
-      printf("%3.3f ",X[k]);
-      k++;
-    }
-      printf("\n");
-    }
-
-  return;
-}
-
 void util_es_to_A(int *es, int *A, int p)
 {
   int i,j,k;
@@ -160,8 +111,6 @@ double log_det(int p, double* A)
       }
     else
       {//This is really unlikely. I'd like to know it happened, but its not worth shutting down
-        printf("****Eigen-value Decomposition Failed!!******\n");
-        printf("****Nothing done to resolve this**********\n");
       }
     delete[] eigvals;
     delete[] work;
@@ -178,10 +127,6 @@ void mult_mats(int p_i, int p_k, int p_j, double *A, double *B, double *C)
   // Lenkowski uses row major order with his matrices (see usage of mult_mats below), but I'm pretty sure that this version of dgemm assumes col major order.  So, 
   // I transpose the matrices. 
   //---  Use CBLAS  -----
-  // printf("about do matrix mult with CBLAS\n");
-  // printf("p_i:%d\n",p_i);
-  // printf("p_j:%d\n",p_j);
-  // printf("p_k:%d\n",p_k);
   // 
   // dgemm	(	character 	TRANSA,integer 	M,integer 	N,integer 	K,double precision 	ALPHA,
   //         double precision, dimension(lda,*) 	A,
@@ -195,7 +140,6 @@ void mult_mats(int p_i, int p_k, int p_j, double *A, double *B, double *C)
     
     
   F77_NAME(dgemm)(&CblasTrans,&CblasTrans,&p_i,&p_j,&p_k,&a,A,&p_i,B,&p_k,&c,C,&p_i FCONE FCONE);
-  // printf("finished doing matrix mult with CBLAS\n");
   //---------------------
 
   return;
@@ -210,9 +154,7 @@ void mult_square_mats(int p, double* A,double* B,double* C)
   char CblasTrans = 'T';
 
   //-- Use CBLAS -------
-  // printf("about do matrix mult with CBLAS (square)\n");
   F77_NAME(dgemm)(&CblasTrans,&CblasTrans,&p,&p,&p,&a,A,&p,B,&p,&c,C,&p FCONE FCONE);
-  // printf("finished matrix mult with CBLAS (square)\n");
   //--------------------
   return;
 }
@@ -251,9 +193,6 @@ void get_cond_matrix(int p,int p_clique,int *clique_ID,
   double *submatrix_Vc,*submatrix_VV,*submatrix_VVinv;
   double *submatrix_cV_VVinv;
   double *TempResult;
-
-  // printf("p_clique is %d \n",p_clique);
-  // printf("p-p_clique is %d \n",p-p_clique);
   //----  Start: Form Matrix Objects --------
   //-----  Make the two cross parts  ------
   submatrix_cV=new double[p_clique * (p - p_clique)];
@@ -263,7 +202,6 @@ void get_cond_matrix(int p,int p_clique,int *clique_ID,
     {
       // submatrix_cV[i * (p-p_clique) + j]=Full[ clique_ID[i] * p + V_ID[j] ];
       submatrix_cV[j * (p_clique) + i]=Full[ clique_ID[i] * p + V_ID[j] ];
-      // printf("matrix element is: %lf \n", submatrix_cV[j * (p_clique) + i]);
     }
     }
   submatrix_Vc=new double[(p-p_clique)*p_clique];
@@ -283,12 +221,6 @@ void get_cond_matrix(int p,int p_clique,int *clique_ID,
 
   submatrix_VVinv=new double[(p-p_clique) * (p-p_clique)];
   invert(p-p_clique,submatrix_VV,submatrix_VVinv);
-   // printf("*****   THE CONDITION PIECES  ******\n");
-   // util_print_mat_dbl(submatrix_cV,p_clique,p-p_clique,0);
-   // util_print_mat_dbl(submatrix_Vc,p-p_clique,p_clique,0);
-   // util_print_mat_dbl(submatrix_VVinv,p-p_clique,p-p_clique,0);
-   // printf("*****************\n");
-  //-------------------------------------------------
 
   //------  Form the conditioning matrix --------
   submatrix_cV_VVinv=new double[p_clique * (p-p_clique)];
@@ -296,9 +228,6 @@ void get_cond_matrix(int p,int p_clique,int *clique_ID,
         submatrix_cV,
         submatrix_VVinv,
         submatrix_cV_VVinv);
-   // printf("****** Mult of the left two   *****\n");
-   // util_print_mat_dbl(submatrix_cV_VVinv,p_clique,p-p_clique,0);
-   // printf("**** **************\n");
 
   mult_mats(p_clique,p-p_clique,p_clique,
         submatrix_cV_VVinv,
@@ -318,8 +247,6 @@ void get_cond_matrix(int p,int p_clique,int *clique_ID,
   }
   transpose(p_clique, p_clique,TempResult,Result);
   
-  //  util_print_mat_dbl(Result,p_clique,p_clique,0);
-  //  printf("******************\n");
   //---------------------------------------------
   delete[] submatrix_cV;
   submatrix_cV=0;
@@ -509,11 +436,7 @@ void add_clique(int *var_list_curr, int curr_length, int *clmat, int *cldims, in
       break;
     }
     }
-  if(pos == -1){
-    printf("something is seriously wrong with your assumption regarding the number of cliques\n");
-    util_print_mat_int(cldims,1,p,0);
-    util_print_mat_int(clmat,p, p, 0);
-  }
+
   cldims[pos] = curr_length;
   for(i = 0; i < curr_length; i++) clmat[pos * p + i] = var_list_curr[i];
   return;
@@ -603,16 +526,13 @@ void IPF_MLE(int *CliqueMat, int *CliqueDims, int totcliques,
 
   maxdiff = thresh + 1;
 
-  // printf("entering that pesky while loop\n");
   while(maxdiff > thresh)
     {
       count += 1;
       if(count%50000==0){
-//        printf("current count is: %d\n",count);
       }
     
       if(count > 100000){
-//        printf("the IPF MLE did not converge :( \n");
         *nonconverge_flag += 1;
         break;
       }
@@ -711,7 +631,6 @@ double gwish_nc_complete(int delta, int p, double *D)
   dblP=p;
 
   //----    Calculate Each Piece --------
-  //  util_print_mat_dbl(D, p, p, 0);
   d = ((dblDelta+dblP-1) / 2) * log_det(p,D);
 
   c = (dblP * (dblDelta + dblP - 1)) / 2 * log(2);
@@ -719,11 +638,6 @@ double gwish_nc_complete(int delta, int p, double *D)
   a = (dblDelta + dblP - 1) / 2;
   g = dblP * (dblP - 1) / 4 * log(M_PI);
   for(i = 0;i < dblP;i++) g += lgamma(a - (double)i / 2);
-  
-  // printf("d: %f, c: %f, a: %f, g: %f\n", d,c,a,g);
-  // printf("the delta total value is: %f.\n", dblDelta);
-  // printf("the p total value is: %f.\n", dblP);
-  // printf("the log det of the posterior scale is: %f.\n", log_det(p,D));
   I = -d + c + g;
   //------------------------------------
   return(I);
@@ -852,7 +766,6 @@ double gwish_norm_laplace(int p, int *A, int delta, double *D)
     }
   //--------  End Lookup Table ---------
 
-  //  util_print_mat_dbl(D,p,p,0);printf("%d\n",p);
   //---------Fill in Hessian--------------------
   // Note that the mode of the G-Wishart with scale D
   // is (delta-2)*D^{-1}, and since the Hessian is actually
@@ -932,7 +845,6 @@ double gwish_exact_posterior(int p, int delta, int n,  double *D_post) // double
 {
 //I_prior,
   double  I_post;
-  // printf("The exact n is: %i\n",n);
   //--------------------------
   //I_prior = gwish_nc_complete(delta, p, D_prior);
   I_post = gwish_nc_complete(delta+n, p, D_post);
@@ -974,28 +886,23 @@ double gwish_calculateLogPosterior(LPGraph graph, double *D_post, int delta,int 
       if(graph->IsClique(graph->Cliques[i], graph->CliquesDimens[i]))
         {
           mypost += gwish_exact_posterior(sub_p, delta, n, sub_D_post);
-          //	  printf("Done Calc now: %f\n", mypost);
         }
       else //otherwise do the approximation
         {
-        // printf("We're performing the approximation, even though it should be exact.\n");
       //-------  Form the SubAdjacency Matrix  -------------------
       sub_ee = sub_p * (sub_p - 1) / 2;
       sub_A = new int[sub_p * sub_p];
-      // printf("making submatrix \n");
       make_sub_mat_int(p, sub_p, graph->Cliques[i], graph->Edge, sub_A);
       //----------------------------------------------------------
 
       //-------  Get the Clique Decomposition --------------------
       CliqueMat = new int[sub_ee * sub_p];
       CliqueDims = new int[sub_ee];	
-      // printf("getting cliques \n");
       totcliques = get_cliques(sub_A, sub_p, CliqueMat, CliqueDims);
       //----------------------------------------------------------
 
       //-------  IPF the D matrices Accordingly ------------------
       //IPF_MLE(CliqueMat, CliqueDims, totcliques, sub_D_prior, sub_p, .000001);
-      // printf("entering IPFMLE \n");
       IPF_MLE(CliqueMat, CliqueDims, totcliques, sub_D_post, sub_p, .00001, nonconverge_flag);
       //----------------------------------------------------------
 
@@ -1006,16 +913,13 @@ double gwish_calculateLogPosterior(LPGraph graph, double *D_post, int delta,int 
       //---- Subtract the Prior Normalizing Constant -------------
           // Murph: again, I don't want the normalizing constants.
       // mypost -= gwish_norm_mc_alt(sub_A, delta, sub_D_prior, sub_p, REPS_MC, stream);
-      //	  	  printf("Done MC, now: %f\n",mypost);
       //------------------------------------------------------------
       delete[] CliqueMat;
       delete[] CliqueDims;
       delete[] sub_A;
     }
-      //      printf("%d, %f size %d\n", i, mypost,sub_p);
       delete[] sub_D_post; //delete[] sub_D_prior;
     }//Loop through the prime components
-   // printf("Going through separators\n");
   for(i = 0; i < graph->nSeparators; i++)
     {
       sub_p = graph->SeparatorsDimens[i];
@@ -1032,12 +936,10 @@ double gwish_calculateLogPosterior(LPGraph graph, double *D_post, int delta,int 
       //   separators should always be complete
       // Murph: I updated this function to ignore the prior information.
       mypost -= gwish_exact_posterior(sub_p,delta,n,sub_D_post);
-      //       printf("%d %f\n",i, mypost);
       //--------------------------------------------
       // Murph: again, I don't want the normalizing constants.
       delete[] sub_D_post; // delete[] sub_D_prior;
     }//Loop through the separators
-  //  printf("Score: %f\n", mypost);
   return(mypost);
 
 }//gwish_calculateLogPosterior
@@ -1124,7 +1026,6 @@ using namespace Rcpp;
 List log_normalizing_g_wishart_posterior_laplace( NumericMatrix graph,
                             NumericMatrix D_post, int Delta, int n, int p) {
   // Method written by Murph to access Lenkowski's and Dobra's functions.
-  // printf("Entering LaPlace log G wishart function.\n");
   List return_items;
   int i,j;
   double s;
@@ -1141,13 +1042,11 @@ List log_normalizing_g_wishart_posterior_laplace( NumericMatrix graph,
           new_graph->Edge[j][i] = graph(i,j);
       }
   }
-  // printf("Entering Dobra and Lenkowski function.\n");
   s = gwish_calculateLogPosterior(new_graph, REAL(D_post), Delta, n, &nonconverge_flag);
   delete new_graph;
   
   if(nonconverge_flag > 0){
     nonconverge_flag = 1;
-//    printf("The nonconverge flag reflected the failure of the MLE convergence.\n");
   }
   
   return_items["log_posterior"] = s;

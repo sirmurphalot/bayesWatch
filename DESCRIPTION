@@ -6,10 +6,12 @@ Date: 2023-01-12
 Authors@R: person("Alexander C.", "Murph", email = "acmurph@live.unc.edu",
                   role = c("aut", "cre"),
                   comment = c(ORCID = "0000-0001-7170-867X"))
+Maintainer: Alexander C. Murph <acmurph@live.unc.edu>
 Description: More to come!
 License: MIT + file LICENSE
-Imports: Rcpp (>= 1.0.7), parallel (>= 3.6.2), Matrix, Hotelling, CholWishart, mvtnorm, ggplot2, gridExtra (>= 0.9.1), BDgraph
-LinkingTo: Rcpp, RcppArmadillo, RcppEigen, Matrix, CholWishart, mvtnorm
+Imports: Rcpp (>= 1.0.7), parallel (>= 3.6.2), Matrix, Hotelling, CholWishart, 
+          ggplot2, gridExtra (>= 0.9.1), BDgraph, methods
+LinkingTo: Rcpp, RcppArmadillo, RcppEigen, Matrix, CholWishart
 Depends: R (>= 3.5.0)
 Encoding: UTF-8
 LazyData: true
