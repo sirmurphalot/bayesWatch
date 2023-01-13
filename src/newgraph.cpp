@@ -363,7 +363,6 @@ void Graph::InitGraphFromMss()
 
 void Graph::WriteInfo(FILE* out)
 {
-   int i, j;
 	
    // for(i=0;i<nMss;i++)
    // {

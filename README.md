@@ -2,7 +2,7 @@
   
 ![](https://www.r-pkg.org/badges/version/bayesWatch) ![](https://www.r-pkg.org/badges/last-release/bayesWatch)
 
-The main method `fit_regime_vector` of this package fits an array of Gaussian Graphical Mixture Models to groupings of homogeneous data in time, called regimes, which we model as the observed states of a Markov process with unknown transition probabilities.   While the primary goal of this model is to identify when there is a regime change, as this indicates a significant change in input data distribution, an attractive consequence of this approach is a rich collection of models fit to many different possible regimes.  A fault detection system that leverages these model fits to describe the cause of a regime change is included in `detect_faults`.
+The main method `fit_regime_vector` of this package fits an array of Gaussian Graphical Mixture Models to groupings of homogeneous data in time, called regimes, which we model as the observed states of a Markov process with unknown transition probabilities.   While the primary goal of this model is to identify when there is a regime change, as this indicates a significant change in input data distribution, an attractive consequence of this approach is a rich collection of models fit to many different possible regimes.  A fault detection system that leverages these model fits to describe the cause of a regime change is included in `detect_faults`.  For further technical details on these methods, see the Citations section.
 
 This repository is organized as a stand-alone R package.  For questions, issues, or clarifications please reach out to Murph: <acmurph@unc.edu>.  Feel free to email any applications; we'd be happy to highlight them here.
 
@@ -46,12 +46,16 @@ print(my_fit)
 # 8          8                        0
 # 9          9                        0
 ```
+```r
+plot(my_fit)
+```
+![](man/figures/posterior_probs.png)<!-- -->
 
 Once the regime vector is fit, we can print out the fault detection graphs.
 ```r
 detect_faults(my_fit)
 ```
-![](man/figures/fault_detection_graphs.png)<!-- -->
+![](man/figures/fault_detection_graphs.pdf)<!-- -->
 
 
 ## Packages Required

@@ -3,7 +3,7 @@ library(BDgraph)
 
 create_simulated_data = function(){
   job_num = 7
-  set.seed(8)
+  set.seed(9)
   parameters_number         = 8
   p                       = 5
   orig_p = p
@@ -36,25 +36,27 @@ create_simulated_data = function(){
   not.cont = rep(0, times = p)
   
   data.sim.mixed_group1 = bdgraph.sim( n = rpois(1,100), p = p,
-                                        graph = "cluster")
+                                        graph = "cluster", prob = 0.5)
   graph_structure       = data.sim.mixed_group1$G
   
-  data.sim.mixed_group1 = bdgraph.sim( n = rpois(1,100), p = p,
-                                        graph = data.sim.mixed_group1$G)
+  suppressWarnings({
+    data.sim.mixed_group1 = bdgraph.sim( n = rpois(1,100), p = p,
+                                          graph = data.sim.mixed_group1$G)
+  })
   S1      = data.sim.mixed_group1$sigma
   orig_S2 = S1
   S1      = S1* 0.25
 
   S2      = S1
   S2[3,3] = S2[3,3]*2
-  S2[4,4] = S2[4,4]*3
+  S2[4,4] = S2[4,4]*4
   S3      = S1
   mean1   = rep(0, p)
   mean2   = mean1 
   mean3   = mean1
   
   mean2[3:4] = mean1[3:4] + mean_shift
-  mean2[4]   = mean1[4] + mean_shift
+  mean2[4]   = mean1[4] + 2*mean_shift
   data_type = "MeanIsDifferent"
     
   day_dts = seq(as.POSIXct("2020-03-01 01:00:00", tz="CST6CDT"),as.POSIXct("2020-04-22 01:00:00", tz="CST6CDT"),by="1 day")
