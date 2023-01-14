@@ -1471,33 +1471,6 @@ LPGraph MakeFillInGraph(LPGraph graph)
 	return gfill;
 }
 
-/////////////////////////////////////////////////////////////////////
-/*
-int main()
-{
-   int i, j, k;
-   LPGraph graph = new Graph;
-	
-   graph->ReadMss("tarjan.dat");
-   graph->InitGraphFromMss();
-   //graph->WriteInfo(stdout);
-   for(i=0; i<graph->nVertices; i++)
-   {
-      for(j=0; j<graph->nVertices; j++)
-      {
-         printf("%d  ", graph->Edge[i][j]);
-      }
-      printf("\n");
-   }
-   printf("\n");	
-   graph->GetMPSubgraphs();
-   graph->FindCliqueTree();
-   graph->WriteInfo(stdout);
-   delete graph;
-   return 1;
-}
-*/
-
 
 
 

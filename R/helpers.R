@@ -2,16 +2,18 @@
 require(parallel)
 # require(mvtnorm)
 
-#' Title
+
+#' Perform a Gibbs sweep on the current regime vector during the MCMC sampling.
 #'
-#' @param my_states
-#' @param data_points_Z
-#' @param Z_timepoint_indices
-#' @param previous_model_fits
-#' @param transition_probabilities
-#' @param hyperparameters
-#' @param n.cores
-#' @param min_regime_length
+#' @param my_states vector. Current regime vector.
+#' @param data_points_Z matrix.  The latent data at this MCMC iteration
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param transition_probabilities vector. Current estimate of unknown transition probabilities for Markov chain.
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param n.cores integer. Number of cores available for this calculation.
+#' @param min_regime_length integer. Gibbs sweep will not create a regime smaller than this.
+#' @param verbose_logfile  logical. Will print to logfile if TRUE.
 #'
 #' @return
 #' @noRd
@@ -303,9 +305,10 @@ update_states_gibbs       = function(my_states,
   )
 }
 
-#' Title
+#' Method to estimate a covariance matrix with missing.  Inputs missing values with column mean, then
+#' performs covariance calculation with the full matrix.
 #'
-#' @param data_w_missing
+#' @param data_w_missing matrix. Data with missing values.
 #'
 #' @return
 #' @noRd
@@ -333,22 +336,22 @@ empirical_cov_w_missing   = function(data_w_missing) {
 }
 
 
-#' Title
+#' Merge-split-swap algorithm on the regime vector as outlined in Murph et al 2023.
 #'
-#' @param my_states
-#' @param previous_model_fits
-#' @param data_points_Z
-#' @param Z_timepoint_indices
-#' @param linger_parameter
-#' @param move_parameter
-#' @param not.cont
-#' @param transition_probabilities
-#' @param current_graph_G
-#' @param hyperparameters
-#' @param n.cores
-#' @param launching
-#' @param allow_mixtures
-#' @param min_regime_length
+#' @param my_states vector. Current regime vector.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param data_points_Z matrix.  The latent data at this MCMC iteration
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param linger_parameter float. Prior parameter for Markov chain probability matrix.  Larger = less likely to change states.
+#' @param move_parameter float. Prior parameter for Markov chain probability matrix.  Larger = more likely to change states.
+#' @param not.cont vector. Indicator vector for which columns are discrete.
+#' @param transition_probabilities vector. Current estimate of unknown transition probabilities for Markov chain.
+#' @param current_graph_G matrix. Current graph structure for Gaussian Graphical Model.
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param n.cores integer. Number of cores available for this calculation.
+#' @param allow_mixtures logical. Whether or not a mixture model should be fit.
+#' @param min_regime_length integer. Gibbs sweep will not create a regime smaller than this.
+#' @param verbose_logfile logical. Will print to logfile if TRUE.
 #'
 #' @return
 #' @noRd
@@ -366,7 +369,6 @@ update_states_mergesplit  = function(my_states,
                                      current_graph_G,
                                      hyperparameters,
                                      n.cores,
-                                     launching = F,
                                      allow_mixtures = FALSE,
                                      min_regime_length = 1,
                                      verbose_logfile = FALSE) {
@@ -1529,14 +1531,16 @@ update_states_mergesplit  = function(my_states,
   }
 }
 
-#' Title
+#' There are leftover G-wishart normalizing terms when performing the Metropolis-Hastings
+#' updating step in the merge-split algorithm for the regime vector.  This method calculates 
+#' these values.  See Murph et al 2023 for more details.
 #'
-#' @param previous_model_fits
-#' @param Z_timepoint_indices
-#' @param data_points_Z
-#' @param hyperparameters
-#' @param regime_of_interest
-#' @param state_vector
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param data_points_Z matrix.  The latent data at this MCMC iteration
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param regime_of_interest integer. Regime for which to calculate marginal.
+#' @param state_vector vector. Current regime vector.
 #'
 #' @return
 #' @noRd
@@ -1639,13 +1643,13 @@ log_Gwishart_marginals    = function(previous_model_fits,
 }
 
 
-#' Title
+#' Calculates pseudoprior value according to Carlin & Chib
 #'
-#' @param previous_model_fits
-#' @param previous_model_fits_temp
-#' @param my_states
-#' @param my_states_temp
-#' @param hyperparameters
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param previous_model_fits_temp rlist. The parameter fit proposed for the next MCMC iteration.
+#' @param my_states vector. Current regime vector.
+#' @param my_states_temp vector. Proposed new regime vector.
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
 #'
 #' @return
 #' @noRd
@@ -1706,14 +1710,16 @@ get_pseudoprior_prior_dens = function(previous_model_fits,
 }
 
 
-#' Title
+#' There are leftover Normal-Inverse-Wishart terms when performing the Metropolis-Hastings
+#' updating step in the merge-split algorithm for the regime vector.  This method calculates 
+#' these values.  See Murph et al 2023 for more details.
 #'
-#' @param previous_model_fits
-#' @param Z_timepoint_indices
-#' @param data_points_Z
-#' @param hyperparameters
-#' @param regime_of_interest
-#' @param state_vector
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param data_points_Z matrix.  The latent data at this MCMC iteration
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param regime_of_interest integer. Regime for which to calculate marginal.
+#' @param state_vector vector. Current regime vector.
 #'
 #' @return
 #' @noRd
@@ -1765,10 +1771,11 @@ log_mu_marginals          = function(previous_model_fits,
 }
 
 
-#' Title
+#' The algorithms for resampling the regime vector require a 
+#' relabeling at the end.  This method does that relabeling.
 #'
-#' @param my_states
-#' @param previous_model_fits
+#' @param my_states vector. Current regime vector.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
 #'
 #' @return
 #' @noRd
@@ -1814,64 +1821,12 @@ shift_states              = function(my_states, previous_model_fits) {
 }
 
 
-#' Title
+#' Re sampling the unknown transition probabilities for the Markov chain.
 #'
-#' @param current_state
-#' @param previous_model_fits
-#'
-#' @return
-#' @noRd
-#'
-#' @examples
-shift_components          = function(current_state, previous_model_fits) {
-  # Reassign components within a regime to drop any components for which no data is assigned.
-  cluster_assignments      = previous_model_fits[[current_state]]$cluster_assignments
-  current_state_mus        = previous_model_fits[[current_state]]$mu
-  current_state_precisions = previous_model_fits[[current_state]]$precision
-  current_state_comp_probs = previous_model_fits[[current_state]]$component_log_probs
-  current_state_sticks     = previous_model_fits[[current_state]]$component_sticks
-  
-  running_index = 0
-  unique_components = 1:max(cluster_assignments)
-  f = function(x) {
-    sum(cluster_assignments == x)
-  }
-  counts_of_each    = sapply(unique_components, f)
-  comps_to_iterate  = unique_components[order(counts_of_each, decreasing = TRUE)]
-  
-  for (actual_index in comps_to_iterate) {
-    if (sum(cluster_assignments == actual_index) == 0) {
-      # Then this is a state that need to be removed.
-    } else {
-      running_index                             = running_index + 1
-      indices_of_component                      = which(previous_model_fits[[current_state]]$cluster_assignments == actual_index)
-      if (length(current_state_mus) >= actual_index) {
-        current_state_mus[[running_index]]        = current_state_mus[[actual_index]]
-        current_state_precisions[[running_index]] = current_state_precisions[[actual_index]]
-        current_state_comp_probs[running_index]   = current_state_comp_probs[actual_index]
-        current_state_sticks[running_index]       = current_state_sticks[actual_index]
-      } else {
-        current_state_mus[[running_index]]        = NA
-        current_state_precisions[[running_index]] = NA
-      }
-      cluster_assignments[indices_of_component] = running_index
-    }
-  }
-  previous_model_fits[[current_state]]$mu                  = current_state_mus
-  previous_model_fits[[current_state]]$precision           = current_state_precisions
-  previous_model_fits[[current_state]]$cluster_assignments = cluster_assignments
-  previous_model_fits[[current_state]]$component_log_probs = current_state_comp_probs
-  previous_model_fits[[current_state]]$component_sticks    = current_state_sticks
-  return(previous_model_fits)
-}
-
-
-#' Title
-#'
-#' @param my_states
-#' @param my_alpha
-#' @param my_beta
-#' @param n.cores
+#' @param my_states vector. Current regime vector.
+#' @param my_alpha Prior parameter for Markov chain probability matrix.  Larger = less likely to change states.
+#' @param my_beta float. Prior parameter for Markov chain probability matrix.  Larger = more likely to change states.
+#' @param n.cores integer. Number of cores available for this calculation.
 #'
 #' @return
 #' @noRd
@@ -1895,12 +1850,13 @@ redraw_transition_probs   = function(my_states, my_alpha, my_beta, n.cores) {
 }
 
 
-#' Title
+#' Resample hyperparameters according to a Bayesian hierarchical framework.
 #'
-#' @param hyperparameters
-#' @param transition_probs
-#' @param previous_model_fits
-#' @param my_states
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param transition_probs vector. Current estimate of unknown transition probabilities for Markov chain.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param my_states vector. Current regime vector.
+#' @param verbose_logfile logical. Will print to logfile if TRUE.
 #'
 #' @return
 #' @noRd
@@ -2271,16 +2227,16 @@ redraw_hyperparameters    = function(hyperparameters,
 }
 
 
-#' Title
+#' Draw Lambda and mu from a NI-G-Wishart distribution according to Murph et al 2023.
 #'
-#' @param current_G
-#' @param b
-#' @param nS2
-#' @param n
-#' @param y_bar
-#' @param mu_0
-#' @param lambda
-#' @param scale_matrix
+#' @param current_G matrix. Graph structure of G-Wishart.
+#' @param b integer. DF of NIW.
+#' @param nS2 matrix. n*empirical covariance matrix.
+#' @param n integer. Number of observations.
+#' @param y_bar vector. Column average of data.
+#' @param mu_0 vector. NIW hyperparameter. Center of mu distribution.
+#' @param lambda float. NIW hyperparameter.  Controls effect of nS2 on mu.
+#' @param scale_matrix matrix. NIW hyperparameter. 
 #'
 #' @return
 #' @noRd
@@ -2325,17 +2281,19 @@ draw_mvn_parameters       = function(current_G,
 }
 
 
-#' Title
+#' Process to find a split point for the merge-split algorithm on the regime vector.
+#' Probability of proposal is relative to the likelihood.
 #'
-#' @param current_G
-#' @param data_points_Z
-#' @param Z_timepoint_indices
-#' @param indices_of_regime
-#' @param hyperparameters
-#' @param n.cores
-#' @param components_of_regime
-#' @param scale_matrix_of_regime
-#' @param df_of_regime
+#' @param current_G matrix. Current graph structure for Gaussian Graphical Model.
+#' @param data_points_Z matrix.  The latent data at this MCMC iteration
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param indices_of_regime vector. Data instances associated with current regime.
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param n.cores integer. Number of cores available for this calculation.
+#' @param components_of_regime vector. Mixture component assignments for current regime.
+#' @param scale_matrix_of_regime matrix. Hyperparameter for NI-G-W
+#' @param df_of_regime float. DF of NI-G-W.
+#' @param verbose_logfile logical. Will print to logfile if TRUE.
 #'
 #' @return
 #' @noRd
@@ -2549,15 +2507,17 @@ get_split_distribution    = function(current_G,
 }
 
 
-#' Title
+#' Resample the mixture components according to a merge-split algorithm followed by a
+#' Gibbs sweep.
 #'
-#' @param my_states
-#' @param previous_model_fits
-#' @param data_points_of_state
-#' @param current_state
-#' @param hyperparameters
-#' @param Z_timepoint_indices
-#' @param data_points_Z
+#' @param my_states vector. Current regime vector.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param data_points_of_state matrix. Data instances in current state.
+#' @param current_state integer. The current regime for which we are resampling components.
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param data_points_Z matrix.  The latent data at this MCMC iteration
+#' @param verbose_logfile logical. Will print to logfile if TRUE.
 #'
 #' @return
 #' @noRd
@@ -2927,18 +2887,20 @@ splitmerge_gibbs_comps    = function(my_states,
 }
 
 
-#' Title
+#' Redraw the Lambda and my parameters according to a mixture NI-G-W model according
+#' to Murph et al 2023.
 #'
-#' @param my_states
-#' @param state_to_redraw
-#' @param previous_model_fits
-#' @param data_points_Z
-#' @param Z_timepoint_indices
-#' @param linger_parameter
-#' @param move_parameter
-#' @param not.cont
-#' @param current_graph_G
-#' @param hyperparameters
+#' @param my_states vector. Current regime vector.
+#' @param state_to_redraw integer. State's parameter values to redraw.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param data_points_Z matrix.  The latent data at this MCMC iteration
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param linger_parameter float. Prior parameter for Markov chain probability matrix.  Larger = less likely to change states.
+#' @param move_parameter float. Prior parameter for Markov chain probability matrix.  Larger = more likely to change states.
+#' @param not.cont vector. Indicator vector for which columns are discrete.
+#' @param current_graph_G matrix. Current graph structure for Gaussian Graphical Model.
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' 
 #'
 #' @return
 #' @noRd
@@ -3083,19 +3045,21 @@ redraw_mixture_parameters = function(my_states,
 }
 
 
-#' Title
+#' Redraws the Lambda and Mu parameters according to a new graph structure.
+#' Details in Murph et al 2023.
 #'
-#' @param my_states
-#' @param state_to_redraw
-#' @param previous_model_fits
-#' @param data_points_Z
-#' @param Z_timepoint_indices
-#' @param current_graph_G
-#' @param hyperparameters
-#' @param new_proposed_G
-#' @param selected_edge_i
-#' @param selected_edge_j
-#' @param g_sampling_distribution
+#' @param my_states vector. Current regime vector.
+#' @param state_to_redraw integer. State for which parameters are to be redrawn.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param data_points_Z matrix.  The latent data at this MCMC iteration
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param current_graph_G matrix. Current graph structure for Gaussian Graphical Model.
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param new_proposed_G matrix. New graph structure proposed for Gaussian Graphical Model.
+#' @param selected_edge_i integer. Row index of changed element in G.
+#' @param selected_edge_j integer. Col index of changed element in G.
+#' @param g_sampling_distribution matrix. Probability distribution of edge inclusion.
+#' 
 #'
 #' @return
 #' @noRd
@@ -3270,99 +3234,12 @@ redraw_G_with_mixture     = function(my_states,
 }
 
 
-
-#' Title
+#' Get log density of data according to the likelihood, assuming a mixture distribution.
 #'
-#' @param my_states
-#' @param state_to_redraw
-#' @param previous_model_fits
-#' @param data_points_Z
-#' @param Z_timepoint_indices
-#' @param linger_parameter
-#' @param move_parameter
-#' @param not.cont
-#' @param current_graph_G
-#' @param hyperparameters
-#'
-#' @return
-#' @noRd
-#'
-#' @examples
-draw_mix_params_justlists = function(my_states,
-                                     state_to_redraw,
-                                     previous_model_fits,
-                                     data_points_Z,
-                                     Z_timepoint_indices,
-                                     linger_parameter,
-                                     move_parameter,
-                                     not.cont,
-                                     current_graph_G,
-                                     hyperparameters) {
-  # This is a method for redrawing the parameters, given the components within the regime.
-  cluster_assignments       = previous_model_fits[[state_to_redraw]]$cluster_assignments
-  cluster_precisions        = previous_model_fits[[state_to_redraw]]$precision
-  cluster_mus               = previous_model_fits[[state_to_redraw]]$mu
-  scale_matrix              = hyperparameters$wishart_scale_matrix
-  df                        = hyperparameters$wishart_df
-  
-  indices_of_state          = which(my_states == state_to_redraw)
-  Z_index_of_regime_start   = Z_timepoint_indices[[min(indices_of_state)]]$timepoint_first_index
-  Z_index_of_regime_end     = Z_timepoint_indices[[max(indices_of_state)]]$timepoint_last_index
-  Z_values_of_regime        = data_points_Z[Z_index_of_regime_start:Z_index_of_regime_end,]
-  upper_bound_is_equal      = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start:Z_index_of_regime_end,]
-  lower_bound_is_equal      = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start:Z_index_of_regime_end,]
-  is_missing                = hyperparameters$is_missing[Z_index_of_regime_start:Z_index_of_regime_end,]
-  p                         = hyperparameters$p
-  
-  for (component_index in 1:max(cluster_assignments)) {
-    indices_of_comp_in_regime = which(cluster_assignments == component_index)
-    Z_values                  = Z_values_of_regime[indices_of_comp_in_regime,]
-    upper_bound_is_equal_temp = upper_bound_is_equal[indices_of_comp_in_regime,]
-    lower_bound_is_equal_temp = lower_bound_is_equal[indices_of_comp_in_regime,]
-    is_missing_temp           = is_missing[indices_of_comp_in_regime,]
-    
-    temp_n                    = nrow(Z_values)
-    if (is.null(temp_n)) {
-      temp_n                    = 1
-      mu                        = Z_values
-      x_bar_vector              = matrix(rep(mu, times = temp_n), temp_n , p, byrow =
-                                           T)
-      nS2                       = matrix(0, nrow = hyperparameters$p, ncol = hyperparameters$p)
-    } else {
-      mu                        = apply(Z_values, 2, mean)
-      x_bar_vector              = matrix(rep(mu, times = temp_n), temp_n , p, byrow =
-                                           T)
-      nS2                       = t(Z_values - x_bar_vector) %*% (Z_values -
-                                                                    x_bar_vector)
-    }
-    
-    
-    new_parameter_values      = draw_mvn_parameters(
-      current_graph_G,
-      df,
-      nS2,
-      temp_n,
-      mu,
-      hyperparameters$mu_0,
-      hyperparameters$lambda,
-      scale_matrix
-    )
-    cluster_precisions[[component_index]] = new_parameter_values$final_K
-    cluster_mus[[component_index]]        = new_parameter_values$final_mu
-  }
-  
-  previous_model_fits[[state_to_redraw]]$precision = cluster_precisions
-  previous_model_fits[[state_to_redraw]]$mu        = cluster_mus
-  return(list(precisions = previous_model_fits[[state_to_redraw]]$precision,
-              mus        = previous_model_fits[[state_to_redraw]]$mu))
-}
-
-
-#' Title
-#'
-#' @param current_state
-#' @param previous_model_fits
-#' @param data_points_of_state
+#' @param current_state integer. State for which we need to calculate a mixture log density.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param data_points_of_state matrix. Data instances in current state.
+#' 
 #'
 #' @return
 #' @noRd
@@ -3398,13 +3275,13 @@ get_mixture_log_density   = function(current_state,
 }
 
 
-#' Title
+#' Gets the log mixture likelihood of a single data instance.
 #'
-#' @param index_of_observation
-#' @param my_states
-#' @param previous_model_fits
-#' @param data_of_observation
-#' @param Z_timepoint_indices
+#' @param index_of_observation integer. Index of full data corresponding to single data instance.
+#' @param my_states vector. Current regime vector.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param data_of_observation vector. Data of a single observation.
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
 #'
 #' @return
 #' @noRd
@@ -3451,16 +3328,16 @@ get_mix_log_dens_at_obs   = function(index_of_observation,
 }
 
 
-#' Title
+#' Method to redraw estimated latent data for a single state.
 #'
-#' @param state_to_redraw
-#' @param previous_model_fits
-#' @param hyperparameters
-#' @param latent_data_of_state
-#' @param raw_data_from_state
-#' @param is_missing_state
-#' @param upper_bound_is_equal_state
-#' @param lower_bound_is_equal_state
+#' @param state_to_redraw integer. State whose latent data we will redraw in this method.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param latent_data_of_state matrix. The latent data at this MCMC iteration corresponding to given state.
+#' @param raw_data_from_state matrix. The raw data at this MCMC iteration corresponding to given state.
+#' @param is_missing_state matrix. Indicators as to when elements of raw_data_from_state are missing.
+#' @param upper_bound_is_equal_state matrix. Indicators as to when elements of raw_data_from_state achieve their upper bounds.
+#' @param lower_bound_is_equal_state matrix. Indicators as to when elements of raw_data_from_state achieve their lower bounds.
 #'
 #' @return
 #' @noRd
@@ -3524,14 +3401,14 @@ redraw_latent_data        = function(state_to_redraw,
 }
 
 
-#' Title
+#' Swap components from one regime to another whenever Gibbs sampling reassigns it.
 #'
-#' @param state_value_gained
-#' @param state_value_lost
-#' @param value_index
-#' @param previous_model_fits
-#' @param Z_timepoint_indices
-#' @param hyperparameters
+#' @param state_value_gained integer. State that is gaining additional components.
+#' @param state_value_lost integer. State that is loosing additional components.
+#' @param value_index integer. State value that is changing its regime.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
 #'
 #' @return
 #' @noRd
@@ -3676,15 +3553,15 @@ update_regime_components  = function(state_value_gained,
 }
 
 
-#' Title
+#' Splits components of a state following a regime split in the mergesplit algorithm.
 #'
-#' @param state_split
-#' @param my_states
-#' @param index_of_split
-#' @param previous_model_fits
-#' @param Z_timepoint_indices
-#' @param hyperparameters
-#' @param data_of_state_changed
+#' @param state_split integer. State that is being split.
+#' @param my_states vector. Current regime vector.
+#' @param index_of_split integer. Data index where the state split occurs.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param data_of_state_changed matrix. Latent data of the state that is changing regimes.
 #'
 #' @return
 #' @noRd
@@ -3795,12 +3672,12 @@ split_regime_components   = function(state_split,
 }
 
 
-#' Title
+#' Adding components to a state whenever a merge occurs in the merge-split algorithm for regimes.
 #'
-#' @param state_merged
-#' @param previous_model_fits
-#' @param hyperparameters
-#' @param data_in_second_state
+#' @param state_merged integer. Index of regime that is being merged with the regime above.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param data_in_second_state matrix. Latent data of the state that is joining state_merged.
 #'
 #' @return
 #' @noRd
@@ -3905,9 +3782,9 @@ merge_regime_components   = function(state_merged,
 }
 
 
-#' Title
+#' Converts the sticks in a stick-breaking process into component inclusion probabilities.
 #'
-#' @param component_sticks
+#' @param component_sticks vector. Sticks according to a stick-breaking process.  Dirichlet process prior.
 #'
 #' @return
 #' @noRd
@@ -3929,10 +3806,10 @@ sticks_to_log_probs       = function(component_sticks) {
 }
 
 
-#' Title
+#' Gets log probability of regime vector according to the Markov process.
 #'
-#' @param state_vector
-#' @param transition_probabilities
+#' @param state_vector vector. Current estimate regimes.
+#' @param transition_probabilities vector. Estimate for transition probabilities according to the Markov Chain.
 #'
 #' @return
 #' @noRd
@@ -3950,94 +3827,3 @@ calc_regimes_log_prob     = function(state_vector, transition_probabilities) {
   return(log_prob)
 }
 
-
-#' Title
-#'
-#' @param previous_model_fits
-#' @param previous_model_fits_temp
-#' @param alpha
-#' @param first_state
-#' @param second_state
-#' @param component_truncation
-#' @param is_a_merge
-#'
-#' @return
-#' @noRd
-#'
-#' @examples
-calculate_MH_contribution_from_components = function(previous_model_fits,
-                                                     previous_model_fits_temp,
-                                                     alpha,
-                                                     first_state,
-                                                     second_state,
-                                                     component_truncation,
-                                                     is_a_merge) {
-  log_prob_top       = 0
-  log_prob_bottom    = 0
-  if (is_a_merge) {
-    # This method is called before the regime reassignment, so we assume that this
-    # split happens in first_state and goes to max(my_states)+1 (which is second state)
-    component_assignments_from_old_first  = previous_model_fits[[first_state]]$cluster_assignments
-    component_assignments_from_old_second = previous_model_fits[[second_state]]$cluster_assignments
-    component_assignments_from_new        = previous_model_fits_temp[[first_state]]$cluster_assignments
-    for (comp_index in 1:component_truncation) {
-      # The leftover normalizing terms in the numerator have terms from the prior of the state that didn't exist before the split.
-      log_prob_bottom    = log_prob_bottom + lgamma(
-        sum(component_assignments_from_new == comp_index) + 1 + alpha + sum(component_assignments_from_new >
-                                                                              comp_index)
-      ) -
-        lgamma(sum(component_assignments_from_new ==
-                     comp_index) + 1) - lgamma(alpha + sum(component_assignments_from_new > comp_index))
-      log_prob_bottom    = log_prob_bottom + lgamma(1 + alpha) - lgamma(alpha)
-      # The leftover normalizing terms in the denominator are from the two states split.
-      log_prob_top = log_prob_bottom + lgamma(
-        sum(component_assignments_from_old_first == comp_index) + 1 + alpha + sum(component_assignments_from_old_first >
-                                                                                    comp_index)
-      ) -
-        lgamma(sum(component_assignments_from_old_first ==
-                     comp_index) + 1) - lgamma(alpha + sum(component_assignments_from_old_first >
-                                                             comp_index))
-      log_prob_top = log_prob_bottom + lgamma(
-        sum(component_assignments_from_old_second == comp_index) + 1 + alpha + sum(component_assignments_from_old_second >
-                                                                                     comp_index)
-      ) -
-        lgamma(sum(component_assignments_from_old_second ==
-                     comp_index) + 1) - lgamma(alpha + sum(component_assignments_from_old_second >
-                                                             comp_index))
-    }
-  } else {
-    # This method is called before the regime reassignment, so we assume that this
-    # split happens in first_state and goes to max(my_states)+1 (which is second state)
-    component_assignments_from_old        = previous_model_fits[[first_state]]$cluster_assignments
-    component_assignments_from_new_first  = previous_model_fits_temp[[first_state]]$cluster_assignments
-    component_assignments_from_new_second = previous_model_fits_temp[[second_state]]$cluster_assignments
-    for (comp_index in 1:component_truncation) {
-      # The leftover normalizing terms in the numerator have terms from the prior of the state that didn't exist before the split.
-      log_prob_top    = log_prob_top + lgamma(
-        sum(component_assignments_from_old == comp_index) + 1 + alpha + sum(component_assignments_from_old >
-                                                                              comp_index)
-      ) -
-        lgamma(sum(component_assignments_from_old == comp_index) +
-                 1) - lgamma(alpha + sum(component_assignments_from_old > comp_index))
-      log_prob_top    = log_prob_top + lgamma(1 + alpha) - lgamma(alpha)
-      # The leftover normalizing terms in the denominator are from the two states split.
-      log_prob_bottom = log_prob_bottom + lgamma(
-        sum(component_assignments_from_new_first == comp_index) + 1 + alpha + sum(component_assignments_from_new_first >
-                                                                                    comp_index)
-      ) -
-        lgamma(sum(component_assignments_from_new_first ==
-                     comp_index) + 1) - lgamma(alpha + sum(component_assignments_from_new_first >
-                                                             comp_index))
-      log_prob_bottom = log_prob_bottom + lgamma(
-        sum(component_assignments_from_new_second == comp_index) + 1 + alpha + sum(component_assignments_from_new_second >
-                                                                                     comp_index)
-      ) -
-        lgamma(sum(component_assignments_from_new_second ==
-                     comp_index) + 1) - lgamma(alpha + sum(component_assignments_from_new_second >
-                                                             comp_index))
-    }
-  }
-  
-  total_MH_contribution = log_prob_top - log_prob_bottom
-  return(total_MH_contribution)
-}

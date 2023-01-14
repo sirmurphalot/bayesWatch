@@ -6,6 +6,10 @@
 using namespace Rcpp;
 // [[Rcpp::depends(RcppArmadillo)]]
 
+//' Completion algorithm for precision matrix estimate.  See Murph et al 2023 for explaination.
+//' 
+//' @noRd
+//' 
 // [[Rcpp::export]]
 arma::mat complete_lambda(const arma::mat& orig_chol_mat, const arma::mat& current_G, int p, int cores){
   // Complete a precision matrices' cholesky decomposition to match graph structure G.
@@ -41,6 +45,10 @@ arma::mat complete_lambda(const arma::mat& orig_chol_mat, const arma::mat& curre
   return chol_mat;
 }
 
+//' Single step in Lenkowski's Double Reversible Metropolis-Hastings algorithm.
+//' 
+//' @noRd
+//' 
 // [[Rcpp::export]]
 List DRJ_MCMC_singlestep(const arma::mat& current_lambda, const arma::mat& lambda_0, const arma::mat& current_G, 
                    const int p, const int cores, const int edge_updated_i, const int edge_updated_j, const arma::mat& scale_matrix, 
@@ -158,6 +166,10 @@ return return_items;
 }
 
 
+//' Unnormalized kernel log value for a NW posterior distribution, given the data.
+//' 
+//' @noRd
+//' 
 // [[Rcpp::export]]
 double log_dNormalWishart_posterior_unnormalized( const arma::mat& data_matrix, const arma::vec& m_hyperparameter,
                                                const arma::mat& scale_matrix, const double lambda_hyperparameter,
@@ -180,7 +192,6 @@ double log_dNormalWishart_posterior_unnormalized( const arma::mat& data_matrix, 
   mean_minus_m                    = col_means - m_hyperparameter;
   
   arma::vec posterior_mu          = (lambda_hyperparameter * m_hyperparameter + n * col_means) / (n + lambda_hyperparameter);
-//  double posterior_lambda         = lambda_hyperparameter + n;
   arma::mat posterior_inv_scale   = arma::inv(scale_matrix) + nS2 + 
                                      ((n*lambda_hyperparameter) / (n + lambda_hyperparameter)) * (mean_minus_m * (mean_minus_m.t()));
   double posterior_wishartDF      = nu_wishartDF + n;
@@ -195,6 +206,10 @@ double log_dNormalWishart_posterior_unnormalized( const arma::mat& data_matrix, 
   return(log_likelihood);
 }
 
+//' Unnormalized kernel log value for a NW distribution.
+//' 
+//' @noRd
+//' 
 // [[Rcpp::export]]
 double log_dNormalWishart_unnormalized( const arma::vec& m_hyperparameter, const arma::mat& posterior_inv_scale, 
                                         const double lambda_hyperparameter, const double nu_wishartDF,
@@ -217,7 +232,10 @@ double log_dNormalWishart_unnormalized( const arma::vec& m_hyperparameter, const
 }
 
 
-
+//' Sample a new mu according to a NW distribution.
+//' 
+//' @noRd
+//' 
 // [[Rcpp::export]]
 arma::vec rmu_0( const arma::mat& sigma_0, const arma::mat& sum_precision_matrices,
                  const arma::vec& sum_precision_times_mu, const arma::vec& m_hyperparameter) {

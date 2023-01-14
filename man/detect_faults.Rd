@@ -2,13 +2,18 @@
 % Please edit documentation in R/fit_regimes.R
 \name{detect_faults}
 \alias{detect_faults}
-\title{Title}
+\title{Prints out fault detection graphics given a bayesWatch object. This method can only be run
+if fault detection was run on the bayesWatch fit (if model_params_save_every < iterations).}
 \usage{
 detect_faults(regime_fit_object)
 }
 \arguments{
-\item{regime_fit_object}{}
+\item{regime_fit_object}{bayesWatch object.  Fit with main method of package.}
+}
+\value{
+ggplot object. Fault detection graphs.
 }
 \description{
-Title
+Prints out fault detection graphics given a bayesWatch object. This method can only be run
+if fault detection was run on the bayesWatch fit (if model_params_save_every < iterations).
 }

@@ -189,6 +189,10 @@ arma::vec draw_values_parallel(const arma::vec& data_vector, const arma::mat& pr
 }
 
 
+//' Redraw latent data.
+//' 
+//' @noRd
+//' @examples
 // [[Rcpp::export]]
 arma::mat redraw_Z_arma(const arma::mat& current_data, const arma::mat& current_precision, const arma::vec& current_mu, int p,
                         const arma::vec& lower_bounds, const arma::vec& upper_bounds, 
@@ -225,7 +229,10 @@ arma::mat redraw_Z_arma(const arma::mat& current_data, const arma::mat& current_
   return(new_data);
 }
 
-
+//' Redraw latent data for missing values only (not including for discrete values).
+//' 
+//' @noRd
+//' @examples
 // [[Rcpp::export]]
 List redraw_Z_arma_justmissings(const arma::mat& current_data, const arma::mat& current_precision, const arma::vec& current_mu, int p,
                                 const arma::vec& lower_bounds, const arma::vec& upper_bounds, 
@@ -287,6 +294,10 @@ List redraw_Z_arma_justmissings(const arma::mat& current_data, const arma::mat& 
 }
 
 
+//' Fast evaluation of multivariate normal density of latent data values corresponding to missing values.
+//' 
+//' @noRd
+//' @examples
 // [[Rcpp::export]]
 List get_justmissings_density(const arma::mat& current_data, const arma::mat& current_precision, const arma::vec& current_mu, int p,
                                 const arma::vec& lower_bounds, const arma::vec& upper_bounds, 

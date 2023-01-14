@@ -8,7 +8,7 @@ require(ggplot2)
 require(Hotelling)
 
 
-#' Title
+#' Print function for a bayesWatch object.  Prints only the posterior change-point probabilities.
 #'
 #' @param x
 #' @param ...
@@ -26,44 +26,47 @@ print.bayesWatch = function(x, ...)
 }
 
 
-#' Title
+#' Main method of package.  MCMC sampling for change-point probabilities with fault detection
+#' according to the model by Murph et al. 2023.  Creates a bayesWatch object for analysis of change-points.
 #'
-#' @param data_woTimeValues
-#' @param time_of_observations
-#' @param time_points
-#' @param not.cont
-#' @param iterations
-#' @param burnin
-#' @param lower_bounds
-#' @param upper_bounds
-#' @param previous_states
-#' @param previous_model_fits
-#' @param sparsity_parameter
-#' @param linger_parameter
-#' @param move_parameter
-#' @param g.prior
-#' @param set_G
-#' @param wishart_df_inital
-#' @param lambda
-#' @param g_sampling_distribution
-#' @param n.cores
-#' @param scaleMatrix
-#' @param allow_for_mixture_models
-#' @param dirichlet_prior
-#' @param component_truncation
-#' @param regime_truncation
-#' @param hyperprior_b
-#' @param model_params_save_every
-#' @param simulation_iter
-#' @param T2_window_size
-#' @param determining_p_cutoff
+#' @param data_woTimeValues matrix. Raw data matrix without datetime stamps.
+#' @param time_of_observations vector. Datetime stamps for every data instance in data_woTimeValues.
+#' @param time_points vector. Time points that mark each 'day' of time. Range should include every datetime in time_of_observations.
+#' @param not.cont vector. Indicator variable as to which columns are discrete.
+#' @param iterations integer. Number of MCMC samples to take (including burn-in).
+#' @param burnin integer. Number of burn-in samples. iterations > burnin necessarily.
+#' @param lower_bounds vector. Lower bounds for each data column.
+#' @param upper_bounds vector. Upper bounds for each data column.
+#' @param previous_states vector. Starting regime vector, if known, of the same length as the number of 'days' in time_points.  
+#' @param previous_model_fits rlist. Starting parameter fits corresponding to regime vector previous_states.
+#' @param linger_parameter float. Prior parameter for Markov chain probability matrix.  Larger = less likely to change states.
+#' @param move_parameter float. Prior parameter for Markov chain probability matrix.  Larger = more likely to change states.
+#' @param g.prior float in (0,1). Prior probability on edge inclusion for graph structure G.
+#' @param set_G matrix. Starting graph structure, if known.
+#' @param wishart_df_inital integer (>= 3).  Starting DF for G-Wishart prior.
+#' @param lambda float. Parameter for NI-G-W prior, controls affect of precision sample on the center sample.
+#' @param g_sampling_distribution matrix. Prior probability on edge inclusion if not uniform across G.
+#' @param n.cores integer. Number of cores available for parallelization.
+#' @param scaleMatrix matrix. Parameter for NI-G-W prior.
+#' @param allow_for_mixture_models logical. Whether or not method should fix mixture distributions to regimes.
+#' @param dirichlet_prior float. Parameter for the dirichlet process for fitting components in the mixture model.
+#' @param component_truncation integer. Maximum component allowed.  Should be sufficiently large.
+#' @param regime_truncation integer. Maximum regime allowed. Should be sufficiently large.
+#' @param hyperprior_b integer. Hyperprior on Wishart distribution fit to the scaleMatrix.
+#' @param model_params_save_every integer. How frequently to save model fits for the fault detection method.
+#' @param simulation_iter integer. Used for simulation studies.  Deprecated value at package launch.
+#' @param T2_window_size integer. Length of sliding window for Hotelling T2 pre-step.  Used when an initial value for previous_states is not provided.
+#' @param determining_p_cutoff logical. Method for estimating the probability cutoff on the posterior distribution for determining change-points.  Deprecated at package launch date.
+#' @param variable_names vector. Vector of names of columnsof data_woTimeValues.
+#' @param prob_cutoff float. Changepoints are determined (for fault detection process) if posterior probability exceeds this value.
+#' @param verbose_logfile logical. Writes verbose model output to file for debugging when TRUE.
 #'
-#' @return
+#' @return bayesWatch object. A model fit for the analysis of posterior change-points and fault detection.
 #' @import parallel
 #' @export
 #'
 #' @examples
-fit_regime_vector = function(data_woTimeValues,
+bayesWatch = function(data_woTimeValues,
                              time_of_observations,
                              time_points,
                              variable_names = 1:ncol(data_woTimeValues),
@@ -74,7 +77,6 @@ fit_regime_vector = function(data_woTimeValues,
                              upper_bounds = NULL,
                              previous_states = NULL,
                              previous_model_fits = NULL,
-                             sparsity_parameter = NULL,
                              linger_parameter = 10,
                              move_parameter = 1,
                              g.prior = 0.2,
@@ -94,7 +96,7 @@ fit_regime_vector = function(data_woTimeValues,
                              T2_window_size = 3,
                              determining_p_cutoff = FALSE,
                              prob_cutoff = 0.5,
-                             verbose_logfile = TRUE) {
+                             verbose_logfile = FALSE) {
   # If the user wants a verbose output of the entire model, this is saved to a log file (it is very very long).
   if (verbose_logfile) {
     file.remove("verbose_log.txt")
@@ -839,7 +841,6 @@ fit_regime_vector = function(data_woTimeValues,
       previous_G,
       hyperparameters,
       n.cores,
-      launching,
       allow_mixtures = TRUE,
       min_regime_length = 1,
       verbose_logfile = verbose_logfile
@@ -1585,12 +1586,12 @@ fit_regime_vector = function(data_woTimeValues,
 }
 
 
-#' Title
+#' Given a bayesWatch object and a probability cutoff, finds change-points.
 #'
-#' @param regime_fit_output
-#' @param prob_cutoff
+#' @param regime_fit_output bayesWatch object. Fit with the bayesWatch method.
+#' @param prob_cutoff float in (0,1). Posterior probabilities above this cutoff will be considered changepoints.
 #'
-#' @return
+#' @return vector. Indicator values corresponding to change-point locations.
 #' @export
 #'
 get_point_estimate = function(regime_fit_object, prob_cutoff) {
@@ -1620,11 +1621,11 @@ get_point_estimate = function(regime_fit_object, prob_cutoff) {
 }
 
 
-#' Title
+#' Plots posterior probabilities of a change-point.
 #'
-#' @param regime_fit_output
+#' @param regime_fit_output bayesWatch object. Fit with the bayesWatch method.
 #'
-#' @return
+#' @return a ggplot.
 #' @export
 #' @noRd
 #'
@@ -1646,11 +1647,12 @@ plot.bayesWatch = function(x, ...) {
 }
 
 
-#' Title
+#' Prints out fault detection graphics given a bayesWatch object. This method can only be run
+#' if fault detection was run on the bayesWatch fit (if model_params_save_every < iterations).
 #'
-#' @param regime_fit_object
+#' @param regime_fit_object bayesWatch object.  Fit with main method of package.
 #'
-#' @return
+#' @return ggplot object. Fault detection graphs.
 #' @export
 #'
 #' @examples

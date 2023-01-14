@@ -160,6 +160,10 @@ extern "C" {
 
 using namespace Rcpp;
 
+//' Calculates MH ratio for a graph update.
+//' 
+//' @noRd
+//' @examples
 // [[Rcpp::export]]
 SEXP log_MH_Gupdate_Rcpp(int selected_edge_i,
                          int selected_edge_j, Rcpp::NumericVector oldG, 
@@ -173,6 +177,10 @@ SEXP log_MH_Gupdate_Rcpp(int selected_edge_i,
   return wrap(log_alpha_ij);
 }
 
+//' Calcuates the MH ratio for a merge split on regime vector.
+//' 
+//' @noRd
+//' @examples
 // [[Rcpp::export]]
 SEXP log_MH_mergesplit_Rcpp( Rcpp::NumericVector oldK, Rcpp::NumericVector newK, int b, int p ) {
   double log_alpha_ij;
@@ -183,6 +191,10 @@ SEXP log_MH_mergesplit_Rcpp( Rcpp::NumericVector oldK, Rcpp::NumericVector newK,
   return wrap(log_alpha_ij);
 }
 
+//' Calculates probability of new regime vector according to the Markov process.
+//' 
+//' @noRd
+//' @examples
 // [[Rcpp::export]]
 SEXP log_transition_probability_HMM_Rcpp( Rcpp::NumericVector transition_probabilities, 
                                           Rcpp::NumericVector my_states, int length_of_vector ) {
@@ -194,6 +206,10 @@ SEXP log_transition_probability_HMM_Rcpp( Rcpp::NumericVector transition_probabi
   return wrap(log_prob);
 }
 
+//' Selects an element of G to update according to the prior probability of edge inclusion.
+//' 
+//' @noRd
+//' @examples
 // [[Rcpp::export]]
 Rcpp::NumericVector select_edge_from_G_prior_Rcpp( Rcpp::NumericVector G, 
                                                    Rcpp::NumericVector g_prior, 

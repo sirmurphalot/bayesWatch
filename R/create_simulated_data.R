@@ -1,6 +1,13 @@
 # Create simulated data with artificial change-point imposed.
 library(BDgraph)
 
+
+#' Create simulated data used in the bayesWatch package.  This method copies much of the
+#' code used in the original paper (Murph et al 2023).  Much of the possible simulated examples
+#' are disabled here (we consider only a mean change example).
+#'
+#' @return
+#' @noRd
 create_simulated_data = function(){
   job_num = 7
   set.seed(9)

@@ -13,6 +13,14 @@ void inplace_tri_mat_mult(arma::rowvec &x, arma::mat const &trimat){
   }
 }
 
+//' Fast evaluation of multivariate normal log density.
+//'
+//' @param data_x A matrix of data instances
+//' @param mean A row vector corresponding to center parameter value.
+//' @param prec A matrix corresponding to precision matrix parameter value.
+//'
+//' @noRd
+//' @examples
 // [[Rcpp::export]]
 double log_dmvnrm_arma_regular(arma::mat const &data_x,  
                                 arma::rowvec const &mean,  
