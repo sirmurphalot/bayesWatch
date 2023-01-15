@@ -2,15 +2,15 @@
 ## Date: 01/17/2022
 library(gridExtra)
 
-#' Title
+#' Method called from within the bayesWatch method.  Takes the model saves for fault detection
+#' and performs all the necessary calculations for fault detection.
 #'
-#' @param changepoint_probs
-#' @param prob_cutoff
-#' @param variable_names
+#' @param bayesWatch_object bayesWatch object. A posterior regime fit from the bayesWatch method.
+#' @param model_logs rlist. All model logs from a run of the MCMC chain.
+#' @param prob_cutoff float in (0,1). All posterior probabilities above this cutoff signify a change-point.
+#' 
+#' @noRd
 #'
-#' @return
-#'
-#' @examples
 determine_marginals = function(bayesWatch_object,
                                model_logs,
                                prob_cutoff) {
@@ -360,19 +360,16 @@ determine_marginals = function(bayesWatch_object,
 }
 
 
-#' Title
+#' Method to create the posterior fault detection graphic, given the calculations from determine_marginals.
 #'
-#' @param differences_of_marginals
-#' @param num_of_dimensions
-#' @param changepoint_probs
-#' @param prob_cutoff
-#' @param true_parameter_values
-#' @param simulation_number
+#' @param differences_of_marginals matrix. The output from determine_marginals.
+#' @param bayesWatch_object bayesWatch object. MCMC fit from bayesWatch method.
+#' @param model_logs rlist. Model saves for fault detection from MCMC sampling.
+#' @param f_divergence character string. The type of f-divergence used for fault detection. Either "Hellinger", "KL", or "Jeffreys"
+#' @param prob_cutoff float in (0,1). All posterior probabilities above this cutoff signify a change-point.
 #'
-#' @return
-#' @export
+#' @noRd
 #'
-#' @examples
 graph_posterior_distributions = function(differences_of_marginals,
                                          bayesWatch_object,
                                          model_logs, 

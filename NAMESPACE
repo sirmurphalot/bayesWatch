@@ -4,9 +4,9 @@ importFrom("stats", "cov", "dbeta", "density", "dgamma", "dnorm",
              "rbeta", "rbinom", "rgamma", "rnorm", "rpois", "runif",
              "sd")
 importFrom("methods", "is")
-exportPattern("^[[:alpha:]]+")
+
+S3method( "plot"   , "bayesWatch" )
+S3method( "print"  , "bayesWatch" )
 
 export(print.bayesWatch)
-S3method(print, bayesWatch)
 export(plot.bayesWatch)
-S3method(plot, bayesWatch)

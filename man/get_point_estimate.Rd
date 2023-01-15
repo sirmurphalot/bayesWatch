@@ -7,9 +7,9 @@
 get_point_estimate(regime_fit_object, prob_cutoff)
 }
 \arguments{
-\item{prob_cutoff}{float in (0,1). Posterior probabilities above this cutoff will be considered changepoints.}
+\item{regime_fit_object}{bayesWatch object. Fit with the bayesWatch method.}
 
-\item{regime_fit_output}{bayesWatch object. Fit with the bayesWatch method.}
+\item{prob_cutoff}{float in (0,1). Posterior probabilities above this cutoff will be considered changepoints.}
 }
 \value{
 vector. Indicator values corresponding to change-point locations.

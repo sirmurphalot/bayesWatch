@@ -1025,7 +1025,7 @@ using namespace Rcpp;
 //' Calculates the normalizing constant for a G-Wishart with fixed graph structure using a Laplace approximation.
 //' 
 //' @noRd
-//' @examples
+//' 
 // [[Rcpp::export]]
 List log_normalizing_g_wishart_posterior_laplace( NumericMatrix graph,
                             NumericMatrix D_post, int Delta, int n, int p) {

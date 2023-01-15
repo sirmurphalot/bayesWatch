@@ -20,7 +20,7 @@ void inplace_tri_mat_mult(arma::rowvec &x, arma::mat const &trimat){
 //' @param prec A matrix corresponding to precision matrix parameter value.
 //'
 //' @noRd
-//' @examples
+//' 
 // [[Rcpp::export]]
 double log_dmvnrm_arma_regular(arma::mat const &data_x,  
                                 arma::rowvec const &mean,  

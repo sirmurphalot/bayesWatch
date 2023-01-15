@@ -4,7 +4,7 @@
 #' Completion algorithm for precision matrix estimate.  See Murph et al 2023 for explaination.
 #' 
 #' @noRd
-#' @examples
+#' 
 complete_lambda <- function(orig_chol_mat, current_G, p, cores) {
     .Call(`_bayesWatch_complete_lambda`, orig_chol_mat, current_G, p, cores)
 }
@@ -12,7 +12,7 @@ complete_lambda <- function(orig_chol_mat, current_G, p, cores) {
 #' Single step in Lenkowski's Double Reversible Metropolis-Hastings algorithm.
 #' 
 #' @noRd
-#' @examples
+#' 
 DRJ_MCMC_singlestep <- function(current_lambda, lambda_0, current_G, p, cores, edge_updated_i, edge_updated_j, scale_matrix, n_regime, mean_vector_regime, nS2, b, spread_parameter_sd2, mean_hyperparameter, lambda_hyperparameter, g_prior) {
     .Call(`_bayesWatch_DRJ_MCMC_singlestep`, current_lambda, lambda_0, current_G, p, cores, edge_updated_i, edge_updated_j, scale_matrix, n_regime, mean_vector_regime, nS2, b, spread_parameter_sd2, mean_hyperparameter, lambda_hyperparameter, g_prior)
 }
@@ -20,7 +20,7 @@ DRJ_MCMC_singlestep <- function(current_lambda, lambda_0, current_G, p, cores, e
 #' Unnormalized kernel log value for a NW posterior distribution, given the data.
 #' 
 #' @noRd
-#' @examples
+#' 
 log_dNormalWishart_posterior_unnormalized <- function(data_matrix, m_hyperparameter, scale_matrix, lambda_hyperparameter, nu_wishartDF, observed_mu, observed_precision) {
     .Call(`_bayesWatch_log_dNormalWishart_posterior_unnormalized`, data_matrix, m_hyperparameter, scale_matrix, lambda_hyperparameter, nu_wishartDF, observed_mu, observed_precision)
 }
@@ -28,7 +28,7 @@ log_dNormalWishart_posterior_unnormalized <- function(data_matrix, m_hyperparame
 #' Unnormalized kernel log value for a NW distribution.
 #' 
 #' @noRd
-#' @examples
+#' 
 log_dNormalWishart_unnormalized <- function(m_hyperparameter, posterior_inv_scale, lambda_hyperparameter, nu_wishartDF, observed_mu, observed_precision) {
     .Call(`_bayesWatch_log_dNormalWishart_unnormalized`, m_hyperparameter, posterior_inv_scale, lambda_hyperparameter, nu_wishartDF, observed_mu, observed_precision)
 }
@@ -36,7 +36,7 @@ log_dNormalWishart_unnormalized <- function(m_hyperparameter, posterior_inv_scal
 #' Sample a new mu according to a NW distribution.
 #' 
 #' @noRd
-#' @examples
+#' 
 rmu_0 <- function(sigma_0, sum_precision_matrices, sum_precision_times_mu, m_hyperparameter) {
     .Call(`_bayesWatch_rmu_0`, sigma_0, sum_precision_matrices, sum_precision_times_mu, m_hyperparameter)
 }
@@ -44,7 +44,7 @@ rmu_0 <- function(sigma_0, sum_precision_matrices, sum_precision_times_mu, m_hyp
 #' Calculates MH ratio for a graph update.
 #' 
 #' @noRd
-#' @examples
+#' 
 log_MH_Gupdate_Rcpp <- function(selected_edge_i, selected_edge_j, oldG, newG, oldK, newK, b, p) {
     .Call(`_bayesWatch_log_MH_Gupdate_Rcpp`, selected_edge_i, selected_edge_j, oldG, newG, oldK, newK, b, p)
 }
@@ -52,7 +52,7 @@ log_MH_Gupdate_Rcpp <- function(selected_edge_i, selected_edge_j, oldG, newG, ol
 #' Calcuates the MH ratio for a merge split on regime vector.
 #' 
 #' @noRd
-#' @examples
+#' 
 log_MH_mergesplit_Rcpp <- function(oldK, newK, b, p) {
     .Call(`_bayesWatch_log_MH_mergesplit_Rcpp`, oldK, newK, b, p)
 }
@@ -60,7 +60,7 @@ log_MH_mergesplit_Rcpp <- function(oldK, newK, b, p) {
 #' Calculates probability of new regime vector according to the Markov process.
 #' 
 #' @noRd
-#' @examples
+#' 
 log_transition_probability_HMM_Rcpp <- function(transition_probabilities, my_states, length_of_vector) {
     .Call(`_bayesWatch_log_transition_probability_HMM_Rcpp`, transition_probabilities, my_states, length_of_vector)
 }
@@ -68,7 +68,7 @@ log_transition_probability_HMM_Rcpp <- function(transition_probabilities, my_sta
 #' Selects an element of G to update according to the prior probability of edge inclusion.
 #' 
 #' @noRd
-#' @examples
+#' 
 select_edge_from_G_prior_Rcpp <- function(G, g_prior, p) {
     .Call(`_bayesWatch_select_edge_from_G_prior_Rcpp`, G, g_prior, p)
 }
@@ -80,7 +80,7 @@ select_edge_from_G_prior_Rcpp <- function(G, g_prior, p) {
 #' @param prec A matrix corresponding to precision matrix parameter value.
 #'
 #' @noRd
-#' @examples
+#' 
 log_dmvnrm_arma_regular <- function(data_x, mean, prec) {
     .Call(`_bayesWatch_log_dmvnrm_arma_regular`, data_x, mean, prec)
 }
@@ -88,7 +88,7 @@ log_dmvnrm_arma_regular <- function(data_x, mean, prec) {
 #' Redraw latent data.
 #' 
 #' @noRd
-#' @examples
+#' 
 redraw_Z_arma <- function(current_data, current_precision, current_mu, p, lower_bounds, upper_bounds, lower_bound_is_equal, upper_bound_is_equal, is_missing, is_continuous, raw_data, cores) {
     .Call(`_bayesWatch_redraw_Z_arma`, current_data, current_precision, current_mu, p, lower_bounds, upper_bounds, lower_bound_is_equal, upper_bound_is_equal, is_missing, is_continuous, raw_data, cores)
 }
@@ -96,7 +96,7 @@ redraw_Z_arma <- function(current_data, current_precision, current_mu, p, lower_
 #' Redraw latent data for missing values only (not including for discrete values).
 #' 
 #' @noRd
-#' @examples
+#' 
 redraw_Z_arma_justmissings <- function(current_data, current_precision, current_mu, p, lower_bounds, upper_bounds, lower_bound_is_equal, upper_bound_is_equal, is_missing, is_continuous, cores) {
     .Call(`_bayesWatch_redraw_Z_arma_justmissings`, current_data, current_precision, current_mu, p, lower_bounds, upper_bounds, lower_bound_is_equal, upper_bound_is_equal, is_missing, is_continuous, cores)
 }
@@ -104,7 +104,7 @@ redraw_Z_arma_justmissings <- function(current_data, current_precision, current_
 #' Fast evaluation of multivariate normal density of latent data values corresponding to missing values.
 #' 
 #' @noRd
-#' @examples
+#' 
 get_justmissings_density <- function(current_data, current_precision, current_mu, p, lower_bounds, upper_bounds, lower_bound_is_equal, upper_bound_is_equal, is_missing, is_continuous, cores) {
     .Call(`_bayesWatch_get_justmissings_density`, current_data, current_precision, current_mu, p, lower_bounds, upper_bounds, lower_bound_is_equal, upper_bound_is_equal, is_missing, is_continuous, cores)
 }
@@ -112,7 +112,7 @@ get_justmissings_density <- function(current_data, current_precision, current_mu
 #' Calculates the normalizing constant for a G-Wishart with fixed graph structure using a Laplace approximation.
 #' 
 #' @noRd
-#' @examples
+#' 
 log_normalizing_g_wishart_posterior_laplace <- function(graph, D_post, Delta, n, p) {
     .Call(`_bayesWatch_log_normalizing_g_wishart_posterior_laplace`, graph, D_post, Delta, n, p)
 }
@@ -120,7 +120,7 @@ log_normalizing_g_wishart_posterior_laplace <- function(graph, D_post, Delta, n,
 #' Calculates the probability of a component for the Gibbs sweep update.
 #' 
 #' @noRd
-#' @examples
+#' 
 calc_logprob_Gibbs_comp <- function(current_precision, current_mu, regime_comp_log_probs, current_data, proposed_component) {
     .Call(`_bayesWatch_calc_logprob_Gibbs_comp`, current_precision, current_mu, regime_comp_log_probs, current_data, proposed_component)
 }
@@ -128,7 +128,7 @@ calc_logprob_Gibbs_comp <- function(current_precision, current_mu, regime_comp_l
 #' Calculates relative probability of two possible components according to Dirichlet process.
 #' 
 #' @noRd
-#' @examples
+#' 
 gibbs_swap_btwn_two <- function(first_precision, second_precision, first_mu, second_mu, component_log_probs, indices_of_split_component, data_points_of_state, assignments_launch, first_component, second_component, num_gibbs_sweeps) {
     .Call(`_bayesWatch_gibbs_swap_btwn_two`, first_precision, second_precision, first_mu, second_mu, component_log_probs, indices_of_split_component, data_points_of_state, assignments_launch, first_component, second_component, num_gibbs_sweeps)
 }
@@ -136,7 +136,7 @@ gibbs_swap_btwn_two <- function(first_precision, second_precision, first_mu, sec
 #' Performs swap of components in the component reassignment.
 #' 
 #' @noRd
-#' @examples
+#' 
 gibbs_swap_comps <- function(data_points_of_state, cluster_assignments, regime_comp_log_probs, precisions, mus, assignments_maximum, gibbs_sweeps) {
     .Call(`_bayesWatch_gibbs_swap_comps`, data_points_of_state, cluster_assignments, regime_comp_log_probs, precisions, mus, assignments_maximum, gibbs_sweeps)
 }
@@ -144,7 +144,7 @@ gibbs_swap_comps <- function(data_points_of_state, cluster_assignments, regime_c
 #' Samples from a multivariate normal distribution.
 #' 
 #' @noRd
-#' @examples
+#' 
 rmvn_Rcpp <- function(mus, K, p) {
     .Call(`_bayesWatch_rmvn_Rcpp`, mus, K, p)
 }
@@ -152,7 +152,7 @@ rmvn_Rcpp <- function(mus, K, p) {
 #' Samples from a Wishart distribution.
 #' 
 #' @noRd
-#' @examples
+#' 
 rwish_Rcpp <- function(Ts, b, p) {
     .Call(`_bayesWatch_rwish_Rcpp`, Ts, b, p)
 }
@@ -160,7 +160,7 @@ rwish_Rcpp <- function(Ts, b, p) {
 #' Samples from a G-Wishart distribution according to the algorithm by Dobra and Lenkowski.
 #' 
 #' @noRd
-#' @examples
+#' 
 rgwish_Rcpp <- function(G, D, b, p, threshold) {
     .Call(`_bayesWatch_rgwish_Rcpp`, G, D, b, p, threshold)
 }
@@ -168,7 +168,7 @@ rgwish_Rcpp <- function(G, D, b, p, threshold) {
 #' Approximates the G wishart normalizing using an MCMC algorithm.
 #' 
 #' @noRd
-#' @examples
+#' 
 log_wishart_normalizingConstant_mc_Rcpp <- function(G, nu, b, H, check_H, mc_iters, p) {
     .Call(`_bayesWatch_log_wishart_normalizingConstant_mc_Rcpp`, G, nu, b, H, check_H, mc_iters, p)
 }

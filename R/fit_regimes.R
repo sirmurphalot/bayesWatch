@@ -10,14 +10,11 @@ require(Hotelling)
 
 #' Print function for a bayesWatch object.  Prints only the posterior change-point probabilities.
 #'
-#' @param x
-#' @param ...
+#' @param x bayesWatch object. Fit from bayesWatch main method.
+#' @param ... Additional plotting arguments.
 #'
-#' @return
 #' @export
-#' @noRd
 #'
-#' @examples
 print.bayesWatch = function(x, ...)
 {
   cat("\n     bayesWatch object\n")
@@ -66,7 +63,19 @@ print.bayesWatch = function(x, ...)
 #' @export
 #'
 #' @examples
-bayesWatch = function(data_woTimeValues,
+#' # library(bayesWatch)
+#' # data("full_data")
+#' # data("day_of_observations")
+#' # data("day_dts")
+#' 
+#' # x       = bayeswatch(full_data, day_of_observations, day_dts, 
+#' #                     iterations = 500, g.prior = 1, linger_parameter = 20, n.cores=3,
+#' #                     wishart_df_inital = 3, hyperprior_b = 3, lambda = 5)
+#' 
+#' # print(x)
+#' # plot(x)
+#' # detect_faults(x)
+bayeswatch = function(data_woTimeValues,
                              time_of_observations,
                              time_points,
                              variable_names = 1:ncol(data_woTimeValues),
@@ -1588,7 +1597,7 @@ bayesWatch = function(data_woTimeValues,
 
 #' Given a bayesWatch object and a probability cutoff, finds change-points.
 #'
-#' @param regime_fit_output bayesWatch object. Fit with the bayesWatch method.
+#' @param regime_fit_object bayesWatch object. Fit with the bayesWatch method.
 #' @param prob_cutoff float in (0,1). Posterior probabilities above this cutoff will be considered changepoints.
 #'
 #' @return vector. Indicator values corresponding to change-point locations.
@@ -1623,13 +1632,12 @@ get_point_estimate = function(regime_fit_object, prob_cutoff) {
 
 #' Plots posterior probabilities of a change-point.
 #'
-#' @param regime_fit_output bayesWatch object. Fit with the bayesWatch method.
+#' @param x bayesWatch object. Fit with the bayesWatch method.
+#' @param ... Additional plotting arguments.
 #'
 #' @return a ggplot.
 #' @export
-#' @noRd
 #'
-#' @examples
 plot.bayesWatch = function(x, ...) {
   time_point<-prob_value<-NULL
   regime_fit_object   = x
@@ -1655,7 +1663,7 @@ plot.bayesWatch = function(x, ...) {
 #' @return ggplot object. Fault detection graphs.
 #' @export
 #'
-#' @examples
+#' 
 detect_faults = function(regime_fit_object) {
   if (is.null(regime_fit_object$fault_graph)) {
     stop("This regime fit was run without fault detection.")

@@ -11,7 +11,7 @@ using namespace Rcpp;
 //' Calculates the probability of a component for the Gibbs sweep update.
 //' 
 //' @noRd
-//' @examples
+//' 
 // [[Rcpp::export]]
 double calc_logprob_Gibbs_comp(const arma::mat& current_precision, const arma::vec& current_mu, const arma::vec& regime_comp_log_probs,
                              const arma::mat& current_data, int proposed_component) {
@@ -28,7 +28,7 @@ double calc_logprob_Gibbs_comp(const arma::mat& current_precision, const arma::v
 //' Calculates relative probability of two possible components according to Dirichlet process.
 //' 
 //' @noRd
-//' @examples
+//' 
 // [[Rcpp::export]]
 List gibbs_swap_btwn_two(const arma::mat& first_precision, const arma::mat& second_precision, 
                               const arma::vec& first_mu, const arma::vec& second_mu, 
@@ -93,7 +93,7 @@ List gibbs_swap_btwn_two(const arma::mat& first_precision, const arma::mat& seco
 //' Performs swap of components in the component reassignment.
 //' 
 //' @noRd
-//' @examples
+//' 
 // [[Rcpp::export]]
 arma::vec gibbs_swap_comps(const arma::mat& data_points_of_state, arma::vec& cluster_assignments, const arma::vec& regime_comp_log_probs,
                            List precisions, List mus, int assignments_maximum, int gibbs_sweeps){

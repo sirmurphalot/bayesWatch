@@ -15,10 +15,10 @@ require(parallel)
 #' @param min_regime_length integer. Gibbs sweep will not create a regime smaller than this.
 #' @param verbose_logfile  logical. Will print to logfile if TRUE.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 update_states_gibbs       = function(my_states,
                                      data_points_Z,
                                      Z_timepoint_indices,
@@ -310,10 +310,10 @@ update_states_gibbs       = function(my_states,
 #'
 #' @param data_w_missing matrix. Data with missing values.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 empirical_cov_w_missing   = function(data_w_missing) {
   # In response to some reading that I've done on the issues of using the "pairwise.complete.obs," I am going
   # to write a better method to get a good empirical covariance matrix from data with missing values.
@@ -353,11 +353,11 @@ empirical_cov_w_missing   = function(data_w_missing) {
 #' @param min_regime_length integer. Gibbs sweep will not create a regime smaller than this.
 #' @param verbose_logfile logical. Will print to logfile if TRUE.
 #'
-#' @return
+#' 
 #' @noRd
 #'
 #'
-#' @examples
+#' 
 update_states_mergesplit  = function(my_states,
                                      previous_model_fits,
                                      data_points_Z,
@@ -591,7 +591,6 @@ update_states_mergesplit  = function(my_states,
       
       previous_model_fits_temp[[first_state]]$cluster_assignments         = comps_before
       previous_model_fits_temp[[max(my_states_temp)]]$cluster_assignments = comps_after
-      # previous_model_fits_temp           = shift_components(first_state, previous_model_fits_temp)
     } else {
       log_forward_prob_component_split   = 0
       component_split_list               = split_regime_components(
@@ -1531,6 +1530,57 @@ update_states_mergesplit  = function(my_states,
   }
 }
 
+#' Relabels mixture model components.
+#'
+#' @param current_state integer. Regime for which we want to reassign components.
+#' @param previous_model_fits rlist. Current MCMC samples parameter fits.  This includes component assignments.
+#'
+#' @noRd
+#'
+shift_components          = function(current_state, previous_model_fits) {
+  # Reassign components within a regime to drop any components for which no data is assigned.
+  cluster_assignments      = previous_model_fits[[current_state]]$cluster_assignments
+  current_state_mus        = previous_model_fits[[current_state]]$mu
+  current_state_precisions = previous_model_fits[[current_state]]$precision
+  current_state_comp_probs = previous_model_fits[[current_state]]$component_log_probs
+  current_state_sticks     = previous_model_fits[[current_state]]$component_sticks
+  
+  running_index = 0
+  unique_components = 1:max(cluster_assignments)
+  f=function(x){sum(cluster_assignments==x)}
+  counts_of_each    = sapply(unique_components, f)
+  comps_to_iterate  = unique_components[order(counts_of_each,decreasing = TRUE)]
+  
+  for(actual_index in comps_to_iterate){
+    if(sum(cluster_assignments == actual_index) == 0){
+      # Then this is a state that need to be removed.
+      # I think, maybe with this setup, I just do nothing here.
+    } else {
+      running_index                             = running_index + 1
+      indices_of_component                      = which(previous_model_fits[[current_state]]$cluster_assignments == actual_index)
+      if(length(current_state_mus)>=actual_index){
+        current_state_mus[[running_index]]        = current_state_mus[[actual_index]]
+        current_state_precisions[[running_index]] = current_state_precisions[[actual_index]]
+        current_state_comp_probs[running_index]   = current_state_comp_probs[actual_index]
+        current_state_sticks[running_index]       = current_state_sticks[actual_index]
+      } else {
+        current_state_mus[[running_index]]        = NA
+        current_state_precisions[[running_index]] = NA
+      }
+      
+      cluster_assignments[indices_of_component] = running_index
+    }
+  }
+  
+  previous_model_fits[[current_state]]$mu                  = current_state_mus
+  previous_model_fits[[current_state]]$precision           = current_state_precisions
+  previous_model_fits[[current_state]]$cluster_assignments = cluster_assignments
+  previous_model_fits[[current_state]]$component_log_probs = current_state_comp_probs
+  previous_model_fits[[current_state]]$component_sticks    = current_state_sticks
+  
+  return(previous_model_fits)
+}
+
 #' There are leftover G-wishart normalizing terms when performing the Metropolis-Hastings
 #' updating step in the merge-split algorithm for the regime vector.  This method calculates 
 #' these values.  See Murph et al 2023 for more details.
@@ -1542,10 +1592,10 @@ update_states_mergesplit  = function(my_states,
 #' @param regime_of_interest integer. Regime for which to calculate marginal.
 #' @param state_vector vector. Current regime vector.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 log_Gwishart_marginals    = function(previous_model_fits,
                                      Z_timepoint_indices,
                                      data_points_Z,
@@ -1651,10 +1701,10 @@ log_Gwishart_marginals    = function(previous_model_fits,
 #' @param my_states_temp vector. Proposed new regime vector.
 #' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 get_pseudoprior_prior_dens = function(previous_model_fits,
                                       previous_model_fits_temp,
                                       my_states,
@@ -1721,10 +1771,10 @@ get_pseudoprior_prior_dens = function(previous_model_fits,
 #' @param regime_of_interest integer. Regime for which to calculate marginal.
 #' @param state_vector vector. Current regime vector.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 log_mu_marginals          = function(previous_model_fits,
                                      Z_timepoint_indices,
                                      data_points_Z,
@@ -1777,10 +1827,10 @@ log_mu_marginals          = function(previous_model_fits,
 #' @param my_states vector. Current regime vector.
 #' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 shift_states              = function(my_states, previous_model_fits) {
   current_state            = 1
   previous_model_fits_temp = previous_model_fits
@@ -1828,10 +1878,10 @@ shift_states              = function(my_states, previous_model_fits) {
 #' @param my_beta float. Prior parameter for Markov chain probability matrix.  Larger = more likely to change states.
 #' @param n.cores integer. Number of cores available for this calculation.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 redraw_transition_probs   = function(my_states, my_alpha, my_beta, n.cores) {
   probs_temp = c()
   for (x in 1:length(my_states)) {
@@ -1858,10 +1908,10 @@ redraw_transition_probs   = function(my_states, my_alpha, my_beta, n.cores) {
 #' @param my_states vector. Current regime vector.
 #' @param verbose_logfile logical. Will print to logfile if TRUE.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 redraw_hyperparameters    = function(hyperparameters,
                                      transition_probs,
                                      previous_model_fits,
@@ -2238,10 +2288,10 @@ redraw_hyperparameters    = function(hyperparameters,
 #' @param lambda float. NIW hyperparameter.  Controls effect of nS2 on mu.
 #' @param scale_matrix matrix. NIW hyperparameter. 
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 draw_mvn_parameters       = function(current_G,
                                      b,
                                      nS2,
@@ -2295,10 +2345,10 @@ draw_mvn_parameters       = function(current_G,
 #' @param df_of_regime float. DF of NI-G-W.
 #' @param verbose_logfile logical. Will print to logfile if TRUE.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 get_split_distribution    = function(current_G,
                                      data_points_Z,
                                      Z_timepoint_indices,
@@ -2519,10 +2569,10 @@ get_split_distribution    = function(current_G,
 #' @param data_points_Z matrix.  The latent data at this MCMC iteration
 #' @param verbose_logfile logical. Will print to logfile if TRUE.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 splitmerge_gibbs_comps    = function(my_states,
                                      previous_model_fits,
                                      data_points_of_state,
@@ -2902,10 +2952,10 @@ splitmerge_gibbs_comps    = function(my_states,
 #' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
 #' 
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 redraw_mixture_parameters = function(my_states,
                                      state_to_redraw,
                                      previous_model_fits,
@@ -3061,10 +3111,10 @@ redraw_mixture_parameters = function(my_states,
 #' @param g_sampling_distribution matrix. Probability distribution of edge inclusion.
 #' 
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 redraw_G_with_mixture     = function(my_states,
                                      state_to_redraw,
                                      previous_model_fits,
@@ -3241,10 +3291,10 @@ redraw_G_with_mixture     = function(my_states,
 #' @param data_points_of_state matrix. Data instances in current state.
 #' 
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 get_mixture_log_density   = function(current_state,
                                      previous_model_fits,
                                      data_points_of_state) {
@@ -3283,10 +3333,10 @@ get_mixture_log_density   = function(current_state,
 #' @param data_of_observation vector. Data of a single observation.
 #' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 get_mix_log_dens_at_obs   = function(index_of_observation,
                                      my_states,
                                      previous_model_fits,
@@ -3339,10 +3389,10 @@ get_mix_log_dens_at_obs   = function(index_of_observation,
 #' @param upper_bound_is_equal_state matrix. Indicators as to when elements of raw_data_from_state achieve their upper bounds.
 #' @param lower_bound_is_equal_state matrix. Indicators as to when elements of raw_data_from_state achieve their lower bounds.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 redraw_latent_data        = function(state_to_redraw,
                                      previous_model_fits,
                                      hyperparameters,
@@ -3410,10 +3460,10 @@ redraw_latent_data        = function(state_to_redraw,
 #' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
 #' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 update_regime_components  = function(state_value_gained,
                                      state_value_lost,
                                      value_index,
@@ -3563,10 +3613,10 @@ update_regime_components  = function(state_value_gained,
 #' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
 #' @param data_of_state_changed matrix. Latent data of the state that is changing regimes.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 split_regime_components   = function(state_split,
                                      my_states,
                                      index_of_split,
@@ -3679,10 +3729,10 @@ split_regime_components   = function(state_split,
 #' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
 #' @param data_in_second_state matrix. Latent data of the state that is joining state_merged.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 merge_regime_components   = function(state_merged,
                                      previous_model_fits,
                                      hyperparameters,
@@ -3786,10 +3836,10 @@ merge_regime_components   = function(state_merged,
 #'
 #' @param component_sticks vector. Sticks according to a stick-breaking process.  Dirichlet process prior.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 sticks_to_log_probs       = function(component_sticks) {
   n               = length(component_sticks)
   component_probs = rep(0, times = n)
@@ -3811,10 +3861,10 @@ sticks_to_log_probs       = function(component_sticks) {
 #' @param state_vector vector. Current estimate regimes.
 #' @param transition_probabilities vector. Estimate for transition probabilities according to the Markov Chain.
 #'
-#' @return
+#' 
 #' @noRd
 #'
-#' @examples
+#' 
 calc_regimes_log_prob     = function(state_vector, transition_probabilities) {
   log_prob = 0
   for (regime_index in 1:(length(state_vector) - 1)) {

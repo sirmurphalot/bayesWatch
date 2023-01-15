@@ -354,7 +354,7 @@ using namespace Rcpp;
 //' Samples from a multivariate normal distribution.
 //' 
 //' @noRd
-//' @examples
+//' 
 // [[Rcpp::export]]
 Rcpp::NumericVector rmvn_Rcpp( Rcpp::NumericVector mus, 
                             Rcpp::NumericVector K, int p) {
@@ -369,7 +369,7 @@ Rcpp::NumericVector rmvn_Rcpp( Rcpp::NumericVector mus,
 //' Samples from a Wishart distribution.
 //' 
 //' @noRd
-//' @examples
+//' 
 // [[Rcpp::export]]
 Rcpp::NumericVector rwish_Rcpp( Rcpp::NumericVector Ts, int b, int p) {
   int pxp = p * p;
@@ -383,7 +383,7 @@ Rcpp::NumericVector rwish_Rcpp( Rcpp::NumericVector Ts, int b, int p) {
 //' Samples from a G-Wishart distribution according to the algorithm by Dobra and Lenkowski.
 //' 
 //' @noRd
-//' @examples
+//' 
 // [[Rcpp::export]]
 Rcpp::NumericVector rgwish_Rcpp( const Rcpp::NumericVector G, 
                                  const Rcpp::NumericVector D, 
@@ -418,7 +418,7 @@ Rcpp::NumericVector rgwish_Rcpp( const Rcpp::NumericVector G,
 //' Approximates the G wishart normalizing using an MCMC algorithm.
 //' 
 //' @noRd
-//' @examples
+//' 
 // [[Rcpp::export]]
 Rcpp::NumericVector log_wishart_normalizingConstant_mc_Rcpp( const Rcpp::NumericVector G, 
                                                  const Rcpp::NumericVector nu, const int b, const Rcpp::NumericVector H, const int check_H,
