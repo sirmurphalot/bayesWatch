@@ -2,7 +2,7 @@
   
 ![](https://www.r-pkg.org/badges/version/bayesWatch) ![](https://www.r-pkg.org/badges/last-release/bayesWatch)
 
-The main method `fit_regime_vector` of this package fits an array of Gaussian Graphical Mixture Models to groupings of homogeneous data in time, called regimes, which we model as the observed states of a Markov process with unknown transition probabilities.   While the primary goal of this model is to identify when there is a regime change, as this indicates a significant change in input data distribution, an attractive consequence of this approach is a rich collection of models fit to many different possible regimes.  A fault detection system that leverages these model fits to describe the cause of a regime change is included in `detect_faults`.  For further technical details on these methods, see the Citations section.
+The main method `bayeswatch` of this package fits an array of Gaussian Graphical Mixture Models to groupings of homogeneous data in time, called regimes, which we model as the observed states of a Markov process with unknown transition probabilities.   While the primary goal of this model is to identify when there is a regime change, as this indicates a significant change in input data distribution, an attractive consequence of this approach is a rich collection of models fit to many different possible regimes.  A fault detection system that leverages these model fits to describe the cause of a regime change is included in `detect_faults`.  For further technical details on these methods, see the Citations section.
 
 This repository is organized as a stand-alone R package.  For questions, issues, or clarifications please reach out to Murph: <acmurph@unc.edu>.  Feel free to email any applications; we'd be happy to highlight them here.
 
@@ -25,7 +25,7 @@ data("full_data")
 data("day_of_observations")
 data("day_dts")
 
-my_fit       = fit_regime_vector(full_data, day_of_observations, day_dts, 
+my_fit       = bayeswatch(full_data, day_of_observations, day_dts, 
                             iterations = 500, g.prior = 1, linger_parameter = 20, n.cores=3,
                             wishart_df_inital = 3, hyperprior_b = 3, lambda = 5)
                             MCMC chain running...
