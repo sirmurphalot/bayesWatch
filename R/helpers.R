@@ -218,46 +218,50 @@ update_states_gibbs       = function(my_states,
         rand_value              = runif(1)
         
         if((length(prob_of_state_change) == 0)|(is.na(prob_of_state_change))|(is.nan(prob_of_state_change))){
-          cat(
-            paste(
-              "-----> Probability values are poor in the Gibbs sampler",
-              "the value of prob_of_state_change is:",
-              prob_of_state_change,
-              "\n"
-            ),
-            file = "verbose_log.txt",
-            append = T
-          )
+          if (verbose_logfile)
+            cat(
+              paste(
+                "-----> Probability values are poor in the Gibbs sampler",
+                "the value of prob_of_state_change is:",
+                prob_of_state_change,
+                "\n"
+              ),
+              file = "verbose_log.txt",
+              append = T
+            )
           stop("There were precision issues with the Gibbs Swap algorithm.")
         }
         if(!is.na(prob_of_state_change)){
           if(rand_value <= prob_of_state_change){
             old_state             = my_states[index]
             if(old_state!=new_state){
-              cat(
-                "gibbs swap changed the state!",
-                file = "verbose_log.txt",
-                append = T
-              )
+              if (verbose_logfile)
+                cat(
+                  "gibbs swap changed the state!",
+                  file = "verbose_log.txt",
+                  append = T
+                )
               previous_model_fits = update_regime_components(new_state, old_state, 
                                                              index, previous_model_fits,
                                                              Z_timepoint_indices, hyperparameters)
               previous_model_fits = previous_model_fits$previous_model_fits_item
             } else {
-              cat(
-                "I'M PRETTY SURE THAT THIS SHOULD NEVER HAPPEN!!!!",
-                file = "verbose_log.txt",
-                append = T
-              )
+              if (verbose_logfile)
+                cat(
+                  "I'M PRETTY SURE THAT THIS SHOULD NEVER HAPPEN!!!!",
+                  file = "verbose_log.txt",
+                  append = T
+                )
             }
             my_states             = my_states_temp
             accepted              = 1
           } else {
-            cat(
-              "gibbs swap did not change the state!",
-              file = "verbose_log.txt",
-              append = T
-            )
+            if (verbose_logfile)
+              cat(
+                "gibbs swap did not change the state!",
+                file = "verbose_log.txt",
+                append = T
+              )
             accepted              = 1
           }
         }
@@ -682,13 +686,7 @@ update_states_mergesplit  = function(my_states,
         my_states
       )
     
-    pseudoprior_values              = get_pseudoprior_prior_dens(
-      previous_model_fits,
-      previous_model_fits_temp,
-      my_states,
-      my_states_temp,
-      hyperparameters
-    )
+    pseudoprior_values              = 0
     
     # Now, either accept this split, or reject.
     M               = length(unique(my_states))
@@ -1127,7 +1125,6 @@ update_states_mergesplit  = function(my_states,
       previous_model_fits_temp           = component_merge_list$previous_model_fits_item
     }
     
-    # browser()
     for (regime_index in 1:hyperparameters$regime_truncation) {
       previous_model_fits_temp             = redraw_mixture_parameters(
         my_states_temp,
@@ -1228,13 +1225,7 @@ update_states_mergesplit  = function(my_states,
     log_leftover_value_betaterms    = calc_regimes_log_prob(my_states_temp, transition_probabilities) -
       calc_regimes_log_prob(my_states, transition_probabilities)
     
-    pseudoprior_values              = get_pseudoprior_prior_dens(
-      previous_model_fits,
-      previous_model_fits_temp,
-      my_states,
-      my_states_temp,
-      hyperparameters
-    )
+    pseudoprior_values              = 0
     
     
     # Now, either accept this split, or reject.
@@ -1663,73 +1654,6 @@ log_Gwishart_marginals    = function(previous_model_fits,
     log_posterior = log_Gwishart_marginal_vals,
     nonconverge_flag = (laplace_failure_flag > 0)
   ))
-}
-
-
-#' Calculates pseudoprior value according to Carlin & Chib
-#'
-#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
-#' @param previous_model_fits_temp rlist. The parameter fit proposed for the next MCMC iteration.
-#' @param my_states vector. Current regime vector.
-#' @param my_states_temp vector. Proposed new regime vector.
-#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
-#'
-#' 
-#' @noRd
-#'
-#' 
-get_pseudoprior_prior_dens = function(previous_model_fits,
-                                      previous_model_fits_temp,
-                                      my_states,
-                                      my_states_temp,
-                                      hyperparameters) {
-  log_prob  = 0
-  total_mu_contribution     = 0
-  total_Lambda_contribution = 0
-  p         = hyperparameters$p
-  lambda    = hyperparameters$lambda
-  mu0       = hyperparameters$mu_0
-  df        = hyperparameters$wishart_df
-  scale_mat = hyperparameters$wishart_scale
-  
-  lambda_psuedo    = lambda
-  mu0_psuedo       = mu0
-  df_psuedo        = df
-  scale_mat_psuedo = scale_mat
-  
-  for (regime_index in 1:hyperparameters$regime_truncation) {
-    if (regime_index <= max(my_states)) {
-      comps_for_regime = previous_model_fits[[regime_index]]$cluster_assignments
-      for (comp_index in unique(comps_for_regime)) {
-        mu_old        = previous_model_fits[[regime_index]]$mu[[comp_index]]
-        prec_mat_old  = previous_model_fits[[regime_index]]$precision[[comp_index]]
-        pseudo_prior_wishart_old = (0.5 * (df - 2)) * log(abs(det(prec_mat_old))) - 0.5 *
-          sum(diag(prec_mat_old %*% scale_mat))
-        pseudo_prior_mu_old      = 0.5 * log(abs(det(lambda * prec_mat_old))) - 0.5 *
-          t(mu_old - mu0) %*% (lambda * prec_mat_old) %*% (mu_old - mu0)
-        total_mu_contribution     = total_mu_contribution + pseudo_prior_mu_old
-        total_Lambda_contribution = total_Lambda_contribution + pseudo_prior_wishart_old
-        log_prob = log_prob + pseudo_prior_mu_old + pseudo_prior_wishart_old
-      }
-    }
-    if (regime_index <= max(my_states_temp)) {
-      comps_for_regime = previous_model_fits_temp[[regime_index]]$cluster_assignments
-      for (comp_index in unique(comps_for_regime)) {
-        prec_mat_new  = previous_model_fits_temp[[regime_index]]$precision[[comp_index]]
-        mu_new        = previous_model_fits_temp[[regime_index]]$mu[[comp_index]]
-        pseudo_prior_wishart_new = (0.5 * (df - 2)) * log(abs(det(prec_mat_new))) - 0.5 *
-          sum(diag(prec_mat_new %*% scale_mat))
-        pseudo_prior_mu_new      = 0.5 * log(abs(det(lambda * prec_mat_new))) - 0.5 *
-          t(mu_new - mu0) %*% (lambda * prec_mat_new) %*% (mu_new - mu0)
-        total_mu_contribution     = total_mu_contribution - pseudo_prior_mu_new
-        total_Lambda_contribution = total_Lambda_contribution - pseudo_prior_wishart_new
-        log_prob = log_prob - pseudo_prior_wishart_new - pseudo_prior_mu_new
-      }
-    }
-  }
-  cat(paste("total pseudoprior mu contribution is:", total_mu_contribution, "\n"),file="verbose_log.txt", append=T)
-  cat(paste("total pseudoprior lambda contribution is:", total_Lambda_contribution, "\n"),file="verbose_log.txt", append=T)
-  return(log_prob)
 }
 
 
