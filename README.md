@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://raw.githubusercontent.com/sirmurphalot/bayesWatch/assets/bayes_watch.png" alt="logo"></img>
+<img src="assets/bayes_watch.png" alt="logo"></img>
 </div>
 
 # **bayesWatch** 
