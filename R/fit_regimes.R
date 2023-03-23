@@ -124,6 +124,8 @@ bayeswatch = function(data_woTimeValues,
   model_save_count = 1
   if (!is.null(names(data_woTimeValues))) {
     variable_names = names(data_woTimeValues)
+  } else {
+    variable_names = as.character(1:ncol(data_woTimeValues))
   }
   
   original_p         = ncol(data_woTimeValues)
@@ -238,107 +240,12 @@ bayeswatch = function(data_woTimeValues,
   
   
   if (is.null(previous_states)) {
-    if (verbose_logfile)
-      cat(
-        "using T2 to create initial guess on state vector\n",
-        file = 'verbose_log.txt',
-        append = T
-      )
     time_since_last_change   = 1
     current_regime           = 1
-    previous_states          = rep(1, times = (length(time_points) - 1))
-    
-    for (t in 3:(length(time_points) - 2)) {
-      data_before = NULL
-      data_after = NULL
-      for (index in 1:(length(time_points) - 1)) {
-        if ((index <= t) & ((index > (t - 3)))) {
-          data_before = rbind(data_before, data_set_list[[index]])
-        } else if (index == (t + 1)) {
-          data_after = rbind(data_after, data_set_list[[index]])
-        }
-      }
-      
-      # Calculate the Hotelling T^2 Scan Statistic
-      cov1  = empirical_cov_w_missing(data_before)
-      cov2  = empirical_cov_w_missing(data_after)
-      xbar1 = as.matrix(colMeans(data_before, na.rm = TRUE))
-      xbar2 = as.matrix(colMeans(data_after, na.rm = TRUE))
-      n1    = nrow(data_before)
-      n2    = nrow(data_after)
-      
-      x_stuff = list(mean = xbar1,
-                     cov = cov1,
-                     n = n1)
-      y_stuff = list(mean = xbar2,
-                     cov = cov2,
-                     n = n2)
-      
-      out = tryCatch({
-        x       = hotelling.test(x_stuff, y_stuff, var.equal = FALSE)
-        if ((det(x_stuff$cov) == 0) | (det(y_stuff$cov) == 0)) {
-          if (verbose_logfile)
-            cat(
-              "one of the cov matrices is precisely singular.\n",
-              file = 'verbose_log.txt',
-              append = T
-            )
-          p_value = 1
-        } else {
-          p_value = x$pval
-        }
-        p_value
-      }, error = function(cond) {
-        cat(
-          "-----------------------------------\n",
-          file = 'verbose_log.txt',
-          append = T
-        )
-        cat(
-          "-----------------------------------\n",
-          file = 'verbose_log.txt',
-          append = T
-        )
-        cat(
-          paste("Hotelling Calculation failed!\n"),
-          file = 'verbose_log.txt',
-          append = T
-        )
-        cat(
-          "-----------------------------------\n",
-          file = 'verbose_log.txt',
-          append = T
-        )
-        cat(
-          "-----------------------------------\n",
-          file = 'verbose_log.txt',
-          append = T
-        )
-        return(1)
-      })
-      
-      if (is.na(out)) {
-        time_since_last_change     = time_since_last_change + 1
-        previous_states[t + 1]       = current_regime
-      } else if (out <= 0.05) {
-        # Put in a change-point.
-        time_since_last_change     = time_since_last_change + 1
-        if (time_since_last_change > T2_window_size) {
-          time_since_last_change   = 1
-          current_regime           = current_regime + 1
-        }
-        previous_states[t + 1]       = current_regime
-      } else {
-        time_since_last_change     = time_since_last_change + 1
-        previous_states[t + 1]       = current_regime
-      }
-    }
+    previous_states          = rep(1,times=(length(time_points)-1))
   }
   
   my_states = previous_states
-  states_before_split1 = my_states[1:14]
-  states_before_split2 = my_states[15:34]
-  states_after_split2  = my_states[35:length(my_states)]
   if (verbose_logfile)
     cat(
       c("[1]  -----> current states are:",
@@ -348,19 +255,6 @@ bayeswatch = function(data_woTimeValues,
       append = T
     )
   
-  if (g.prior < 1) {
-    sink(nullfile())
-    bdgraph_object = BDgraph::bdgraph(
-      data_woTimeValues[1:Z_timepoint_indices[[max(which(previous_states == 1))]]$timepoint_last_index,],
-      g.prior = g.prior,
-      iter = 500,
-      method = "gcgm"
-    )
-    sink()
-  } else {
-    bdgraph_object = NA
-  }
-  
   p              = ncol(data_woTimeValues)
   
   if (is.null(scaleMatrix)) {
@@ -369,39 +263,36 @@ bayeswatch = function(data_woTimeValues,
     # Thus, to make the average of this Wishart distribution to be equal to the observed precision matrix, I'll
     # require the following scale matrix:
     sum_empirical_prec    = matrix(0, p, p)
-    for (regime_index in 1:max(previous_states)) {
-      # IMPORTANT NOTE: in the formulation of Lenkowski and Dobra, the average of the distribution is D^{-1} * (df.prior + p - 1).  Thus, when the
-      #                 following scale matrix is inverted, and multiplied by (df.prior + p - 1), what should remain is the empirical average precision.
-      min_index           = Z_timepoint_indices[[min(which(previous_states ==
-                                                             regime_index))]]$timepoint_first_index
-      max_index           = Z_timepoint_indices[[max(which(previous_states ==
-                                                             regime_index))]]$timepoint_last_index
-      temp_data           = data_woTimeValues[min_index:max_index,]
-      
-      temp_cov_matrix     = empirical_cov_w_missing(temp_data)
-      if (any(is.null(scaleMatrix) |
-              is.na(scaleMatrix)) | (det(temp_cov_matrix) == 0)) {
-        if (verbose_logfile)
-          cat(
-            "NOTE: We were not able to get a good initial guess for the precision matrix.",
-            file = 'verbose_log.txt',
-            append = T
-          )
-        if (is(bdgraph_object, 'bdgraph')) {
-          precMatrix_temp = bdgraph_object$K_hat
-        } else {
-          precMatrix_temp_temp                        = solve(cov(temp_data[, 1:original_p], use = "pairwise.complete.obs"))
-          precMatrix_temp                             = diag(p)
-          precMatrix_temp[1:original_p, 1:original_p] = precMatrix_temp_temp
-        }
-        
-      } else {
-        precMatrix_temp     = solve(temp_cov_matrix)
-      }
-      sum_empirical_prec  = sum_empirical_prec + precMatrix_temp
+    # IMPORTANT NOTE: in the formulation of Lenkowski and Dobra, the average of the distribution is D^{-1} * (df.prior + p - 1).  Thus, when the
+    #                 following scale matrix is inverted, and multiplied by (df.prior + p - 1), what should remain is the empirical average precision.
+    regime_index        = 1
+    min_index           = Z_timepoint_indices[[min(which(previous_states ==
+                                                           regime_index))]]$timepoint_first_index
+    max_index           = Z_timepoint_indices[[max(which(previous_states ==
+                                                           regime_index))]]$timepoint_last_index
+    temp_data           = data_woTimeValues[min_index:max_index,]
+    covMatrix           = empirical_cov_w_missing(temp_data)
+    if ((sum(eigen(covMatrix)$values<=0)>0)) {
+      if (verbose_logfile)
+        cat(
+          "NOTE: We were not able to get a good initial guess for the precision matrix.",
+          file = 'verbose_log.txt',
+          append = T
+        )
+      covMatrix         = cov(temp_data, use="pairwise.complete.obs")
+    } 
+    
+    if(sum(eigen(covMatrix)$values<=0)>0){
+      if (verbose_logfile)
+        cat(
+          "Was unable to get a starting covariance matrix for this data.  Starting with an identity matrix.",
+          file = 'verbose_log.txt',
+          append = T
+        )
+      my_func             = function(x){var(x,na.rm=T)}
+      covMatrix           = diag(apply(data_woTimeValues, 2, my_func))
     }
-    average_prec_estimate = sum_empirical_prec / max(previous_states)
-    covMatrix             = solve(average_prec_estimate)
+    
   }
   if (verbose_logfile)
     cat("Empirical Covariance Estimate: \n",
@@ -411,22 +302,18 @@ bayeswatch = function(data_woTimeValues,
     cat(covMatrix, file = 'verbose_log.txt', append = T)
   if (verbose_logfile)
     cat("\n", file = 'verbose_log.txt', append = T)
-  hyperparameters        = list(
-    hyperprior_b = hyperprior_b,
-    alpha = linger_parameter,
-    beta = move_parameter,
-    mu_0 = NA,
-    lambda = lambda,
-    p = NA,
-    hyperprior_scale_matrix = 0.25 * diag(p) * hyperprior_b,
-    wishart_scale_matrix = covMatrix * (wishart_df_inital +
-                                          p - 1),
-    wishart_df = wishart_df_inital,
-    log_wishart_prior_term = NA,
-    dirichlet_prior = dirichlet_prior,
-    component_truncation = component_truncation,
-    regime_truncation = regime_truncation,
-    g.prior = g.prior
+  hyperparameters        = list(hyperprior_b = hyperprior_b, alpha = linger_parameter, beta = move_parameter, 
+                                alpha_hyperparameter = linger_parameter, beta_hyperparameter = move_parameter,
+                                mu_0 = NA, lambda = lambda, p = NA, 
+                                hyperprior_scale_matrix = 2*diag(p), #solve(covMatrix)
+                                wishart_scale_matrix = covMatrix*(wishart_df_inital+p-1),#*component_truncation*regime_truncation,
+                                wishart_df = wishart_df_inital,
+                                original_wishart_df = wishart_df_inital,
+                                log_wishart_prior_term = NA, dirichlet_prior = dirichlet_prior,
+                                component_truncation = component_truncation,
+                                regime_truncation = regime_truncation,
+                                g.prior = g.prior,
+                                lambda_hyperparameter_shape = lambda
   )
   # | ------------------------ Fill in Missing Inputs ---------------------------------- |
   data_woTimeValues[is.infinite(data_woTimeValues)] = NA
@@ -494,23 +381,23 @@ bayeswatch = function(data_woTimeValues,
   if (is.null(set_G)) {
     # If G is not set, I'll draw from the distribution over all possible graphs determined by g.prior,
     # the probability of a given edge being present.
-    if (is(bdgraph_object, 'bdgraph')) {
-      previous_G              = BDgraph::select(bdgraph_object)
-    } else {
-      previous_G = matrix(1, hyperparameters$p, hyperparameters$p) - diag(hyperparameters$p)
-    }
-    
+    ### Code for choosing uniformly random graph according to g.prior.
+    rand_values                       = runif(p*p)
+    previous_G                        = matrix(0,p,p)
+    previous_G[rand_values<=g.prior]  = 1
+    previous_G                        = previous_G - diag(diag(previous_G))
+    previous_G[lower.tri(previous_G)] = 0
+    previous_G[lower.tri(previous_G)] = t(previous_G)[lower.tri(previous_G)]
+    previous_G                        = matrix(1,p,p) - diag(p)
     
   } else {
     previous_G    = set_G
   }
   hyperparameters$G = previous_G
   
-  if (is.null(g_sampling_distribution) &
-      (is(bdgraph_object, 'bdgraph'))) {
-    g_sampling_distribution = bdgraph_object$p_links
-    g_sampling_distribution = (1 - g_sampling_distribution) * (previous_G) + g_sampling_distribution *
-      (1 - previous_G)
+  if(is.null(g_sampling_distribution)){
+    g_sampling_distribution = matrix(g.prior, nrow = p, ncol = p)
+    g_sampling_distribution = (1-g_sampling_distribution)*(previous_G) + g_sampling_distribution*(1-previous_G)
   }
   
   
@@ -554,10 +441,8 @@ bayeswatch = function(data_woTimeValues,
       file = 'verbose_log.txt',
       append = T
     )
-  # n.cores_eachparent = max(min(regime_truncation, floor(n.cores / 2)), 1)
-  n.cores_eachparent = n.cores
-  # n.cores_eachchild  = max(floor((n.cores - n.cores_eachparent) / n.cores_eachparent), 1)
-  n.cores_eachchild  = 1
+  n.cores_eachparent = max(min(regime_truncation, floor(n.cores/4)), 1)
+  n.cores_eachchild  = max(4, floor(n.cores/n.cores_eachparent))
   if (verbose_logfile)
     cat(
       paste(
@@ -606,6 +491,7 @@ bayeswatch = function(data_woTimeValues,
         as.integer(hyperparameters$p),
         as.double(1e-8)
       )
+      result                   = result[['K']]
       new_scale                = matrix(result, hyperparameters$p, hyperparameters$p)
       
       previous_model_fits      = lapply(1:(regime_truncation + 1),
@@ -701,7 +587,7 @@ bayeswatch = function(data_woTimeValues,
   cholesky_failed_prec            = c()
   G_Wish_portion_trace            = c()
   D_prior_dens_trace              = c()
-  my_flag = 0
+  my_flag                         = 0
   
   mergesplit_accepted   = 0
   DRJ_accepted          = 0
@@ -754,9 +640,9 @@ bayeswatch = function(data_woTimeValues,
     parallel::clusterExport(clust, "upper_bound_is_equal", envir = environment())
     parallel::clusterExport(clust, "is_missing", envir = environment())
     parallel::clusterExport(clust, "not.cont", envir = environment())
+    parallel::clusterExport(clust, "n.cores_eachchild", envir=environment())
     data_subsets_z = parallel::parLapply(clust, 1:max(my_states), function(x) {
       # source("R/helpers.R")
-      print(x)
       first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
       last_index                = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
       temp_data                 = full_data_Z[first_index:last_index,]
@@ -772,7 +658,8 @@ bayeswatch = function(data_woTimeValues,
         temp_raw_data,
         is_missing_temp,
         upper_bound_is_equal_temp,
-        lower_bound_is_equal_temp
+        lower_bound_is_equal_temp,
+        n.cores_eachchild
       )
       if (anyNA(new_latent_data)) {
         stop("latent data redraw didn't work on C level -- NAs persist.")
@@ -905,89 +792,10 @@ bayeswatch = function(data_woTimeValues,
       stop("Gibbs update caused an error with state relabeling.")
     }
     
-    parallel::clusterExport(clust, "full_data_Z", envir = environment())
-    parallel::clusterExport(clust, "n.cores_eachchild", envir = environment())
-    parallel::clusterExport(clust, "Z_timepoint_indices", envir = environment())
-    parallel::clusterExport(clust, "my_states", envir = environment())
-    parallel::clusterExport(clust, "previous_G", envir = environment())
-    parallel::clusterExport(clust, "previous_model_fits", envir = environment())
-    parallel::clusterExport(clust, "transition_probabilities", envir = environment())
-    parallel::clusterExport(clust, "hyperparameters", envir = environment())
-    parallel::clusterExport(clust, "p", envir = environment())
-    models_temp = parallel::parSapply(clust, 1:regime_truncation, function(x) {
-      #source("R/helpers.R")
-      linger_parameter          = hyperparameters$alpha
-      move_parameter            = hyperparameters$beta
-      not.cont                  = hyperparameters$not.cont
-      
-      
-      new_parameter_values_temp = redraw_mixture_parameters(
-        my_states,
-        x,
-        previous_model_fits,
-        full_data_Z,
-        Z_timepoint_indices,
-        linger_parameter,
-        move_parameter,
-        not.cont,
-        previous_G,
-        hyperparameters
-      )
-      
-      list(new_lambda_item = new_parameter_values_temp[[x]]$precision,
-           new_mu_item     = new_parameter_values_temp[[x]]$mu)
-    })
     
-    if (verbose_logfile)
-      cat(
-        "-----> Finished Model draw post merge-split.  Accepted always.\b",
-        file = 'verbose_log.txt',
-        append = T
-      )
-    
-    if (length(models_temp[[1]][1]) != 0) {
-      for (index in 1:max(my_states)) {
-        previous_model_fits[[index]]$precision = models_temp[["new_lambda_item", index]]
-        previous_model_fits[[index]]$mu        = models_temp[["new_mu_item", index]]
-        previous_model_fits                    = shift_components(index, previous_model_fits)
-      }
-    } else {
-      if (verbose_logfile)
-        cat("-----> Conjugate update failed!! \n",
-            file = 'verbose_log.txt',
-            append = T)
-    }
-    
-    if (verbose_logfile)
-      cat("Finished model draw after gibbs sweep.\n",
-          file = 'verbose_log.txt',
-          append = T)
     # | ------------------ Merge-Split-Gibbs the Mixture Components ----------------------- |
     # I need to make sure that the component probabilities are well-behaved here,
     # so I'll update the component probabilities using a conjugate update.
-    new_hyperparameters                    = redraw_hyperparameters(
-      hyperparameters,
-      transition_probabilities,
-      previous_model_fits,
-      my_states,
-      verbose_logfile = verbose_logfile
-    )
-    hyperparameters                        = new_hyperparameters$hyperparameters_item
-    previous_model_fits                    = new_hyperparameters$previous_model_fits_item
-    
-    symmetric_scale                             = hyperparameters$wishart_scale_matrix
-    symmetric_scale[lower.tri(symmetric_scale)] = 0
-    symmetric_scale                             = symmetric_scale + t(symmetric_scale) - diag(diag(symmetric_scale))
-    D_prior_dens_trace                          = c(
-      D_prior_dens_trace,
-      CholWishart::dWishart(
-        symmetric_scale,
-        hyperparameters$wishart_df,
-        diag(hyperparameters$p),
-        log = TRUE
-      )
-    )
-    
     if (((allow_for_mixture_models) &
          (iter %% 5 == 1)) |
         ((allow_for_mixture_models) &
@@ -1069,9 +877,6 @@ bayeswatch = function(data_woTimeValues,
       parallel::clusterExport(clust, "previous_G", envir = environment())
       
       new_mixture_components = parallel::parLapply(clust, 1:max(my_states), function(x) {
-        # print(paste("starting", x))
-        #source("R/helpers.R")
-        # print("redrawing the components for state")
         first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
         last_index                = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
         temp_data                 = full_data_Z[first_index:last_index,]
@@ -1089,8 +894,6 @@ bayeswatch = function(data_woTimeValues,
       for (i in 1:max(my_states)) {
         previous_model_fits[[i]]$cluster_assignments = new_mixture_components[[i]]$assigns
         previous_model_fits                          = shift_components(i, previous_model_fits)
-        # print(paste("cluster assignments for regime", i, "are:"))
-        # print(previous_model_fits[[i]]$cluster_assignments)
       }
     }
     
@@ -1102,40 +905,6 @@ bayeswatch = function(data_woTimeValues,
         file = 'verbose_log.txt',
         append = T
       )
-    
-    # Periodically when we are still in burnin, we will update the graph G sampling distribution using the BDgraph package from CRAN.
-    if ((iter < burnin) && ((iter) %% 100 == 0)) {
-      if (verbose_logfile)
-        cat(
-          paste("-----> Redrawing the BDgraph object.\n"),
-          file = 'verbose_log.txt',
-          append = T
-        )
-      if (g.prior < 1) {
-        sink(nullfile())
-        out = tryCatch({
-          BDgraph::bdgraph(full_data_Z, g.prior = g.prior, iter = 1000)
-        },
-        error = function(cond) {
-          message("BDgraph failed, like due to computationally singular Ds")
-          message("Here's the original error message:")
-          message(cond)
-          # Choose a return value in case of error
-          return(NA)
-        })
-        sink()
-        if (!is.na(out)) {
-          bdgraph_object          = out
-          g_sampling_distribution = bdgraph_object$p_links
-          
-          g_sampling_distribution = (1 - g_sampling_distribution) * (previous_G) + g_sampling_distribution *
-            (1 - previous_G)
-        }
-      }
-      
-      
-      
-    }
     
     # Randomly select an edge based on the sampling distribution on the graph structure.
     if (g.prior < 1) {
@@ -1368,33 +1137,9 @@ bayeswatch = function(data_woTimeValues,
         log_MHratio_all_models   = NA
       }
     }
-    # | ----------------------------- Update Hyperparameters ---------------------------------------- |
     hyperparameters$G                      = previous_G
-    # Lastly, we would like to learn the move and linger parameters.
-    new_hyperparameters                    = redraw_hyperparameters(
-      hyperparameters,
-      transition_probabilities,
-      previous_model_fits,
-      my_states,
-      verbose_logfile = verbose_logfile
-    )
-    hyperparameters                        = new_hyperparameters$hyperparameters_item
-    previous_model_fits                    = new_hyperparameters$previous_model_fits_item
     
-    symmetric_scale                             = hyperparameters$wishart_scale_matrix
-    symmetric_scale[lower.tri(symmetric_scale)] = 0
-    symmetric_scale                             = symmetric_scale + t(symmetric_scale) - diag(diag(symmetric_scale))
-    D_prior_dens_trace                          = c(
-      D_prior_dens_trace,
-      CholWishart::dWishart(
-        symmetric_scale,
-        hyperparameters$wishart_df,
-        diag(hyperparameters$p),
-        log = TRUE
-      )
-    )
-    alphabeta_accepted                     = new_hyperparameters$accepted_item
-    
+    # | ----------------------------- Print Hyperparameters ---------------------------------------- |
     if (verbose_logfile)
       cat(
         paste(
