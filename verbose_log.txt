@@ -1,0 +1,20 @@
+This log outlines a VERY verbose log for debugging.
+It is suggested that you CTRL+F for issues.
+inside the fit function 
+Number of timepoints in day 1 is: 100 
+Number of timepoints in day 2 is: 100 
+Number of timepoints in day 3 is: 100 
+Number of timepoints in day 4 is: 100 
+Number of timepoints in day 5 is: 100 
+Number of timepoints in day 6 is: 100 
+Number of timepoints in day 7 is: 100 
+Number of timepoints in day 8 is: 100 
+Number of timepoints in day 9 is: 100 
+Number of timepoints in day 10 is: 100 
+[1]  -----> current states are: 1 1 1 1 1 1 1 1 1 1 
+Empirical Covariance Estimate: 
+0.2144935 0.02447522 0.01136504 -0.008292776 -0.003165165 0.02447522 1 -0.004748894 0.00685934 0.004423001 0.01136504 -0.004748894 1 0.5345167 0.02315754 -0.008292776 0.00685934 0.5345167 1 0.02137398 -0.003165165 0.004423001 0.02315754 0.02137398 0.121958
+establishing the starting graph structure.
+starting to fit the models for each state 
+data has been subset -- setting up parallelization 
+Setting up 2 children, each can fork 1 additional children.

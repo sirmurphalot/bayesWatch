@@ -1,6 +1,6 @@
 # Create simulated data with artificial change-point imposed.
-library(BDgraph)
-
+library(stats)
+library(SimDesign)
 
 #' Create simulated data used in the bayesWatch package.  This method copies much of the
 #' code used in the original paper (Murph et al 2023).  Much of the possible simulated examples
@@ -11,15 +11,16 @@ create_simulated_data = function(){
   job_num = 7
   set.seed(9)
   parameters_number         = 8
-  p                       = 5
+  p                         = 5
   orig_p = p
   discrete_vals = c(1,5)
   # discrete_vals = c()
   has_discretes = 1
   
-  mean_shift                = 1
+  mean_shift                = 0.001
+  var_shift                 = 0.6 
   prob_cutoff               = 0.1
-  half_dist_between_modes   = 0.5
+  half_dist_between_modes   = mean_shift
   percent_missing_index     = parameters_number
   base_data_size            = 50
   
@@ -27,11 +28,11 @@ create_simulated_data = function(){
   # day_dts value below.
   num_of_days               = 10
   
-  possible_missings_percent = c(20,0,20,20,20,0,20,0)
+  possible_missings_percent = c(20,0,20,20,20,0,20,20)
   missing_nonmissing        = c(1,0,1,1,1,0,1,1)
-  distribution_change       = c('miss','mean','cov','cov','cov','mean','mean', 'mean')
+  distribution_change       = c('miss','mean','cov','cov','cov','mean','miss', 'mean')
   modal_type                = c('unimodal','unimodal','unimodal','unimodal','bimodal','bimodal','unimodal','unimodal')
-  MAR_list                  = c(0,1,1,1,1,1,1,1)
+  MAR_list                  = c(0,1,1,1,1,1,0,1)
   MAR                       = MAR_list[parameters_number]
   
   should_include_missings   = 1
@@ -40,22 +41,17 @@ create_simulated_data = function(){
   port_number = (job_num-1)*31 + 11001
   
   not.cont = rep(0, times = p)
-  
-  data.sim.mixed_group1 = bdgraph.sim( n = rpois(1,100), p = p,
-                                        graph = "cluster", prob = 0.5)
-  graph_structure       = data.sim.mixed_group1$G
-  
-  suppressWarnings({
-    data.sim.mixed_group1 = bdgraph.sim( n = rpois(1,100), p = p,
-                                          graph = data.sim.mixed_group1$G)
-  })
-  S1      = data.sim.mixed_group1$sigma
+
+  graph_structure       = matrix(1,p,p) - diag(p)
+
+  df      = p + 50
+  S1      = rWishart(1, df, diag(p)/df )[,,1]
   orig_S2 = S1
-  S1      = S1* 0.25
+  # S1      = S1* 0.25
 
   S2      = S1
-  S2[3,3] = S2[3,3]*2
-  S2[4,4] = S2[4,4]*4
+  # S2[3,3] = S2[3,3]*2
+  # S2[4,4] = S2[4,4]*4
   S3      = S1
   mean1   = rep(0, p)
   mean2   = mean1 
@@ -77,156 +73,214 @@ create_simulated_data = function(){
     if(is.null(full_data)){
       
       if(modal_type[parameters_number]=='unimodal'){
-        data.sim.mixed_group1 = bdgraph.sim( n = 2*base_data_size, p = p,
-                                              graph = "fixed", 
-                                              sigma=S1, mean = mean1)
-        full_data             = data.sim.mixed_group1$data
+        # data.sim.mixed_group1 <- bdgraph.sim( n = 2*base_data_size, p = p,
+        #                                       graph = "fixed", 
+        #                                       sigma=S1, mean = mean1)
+        # full_data             = data.sim.mixed_group1$data
+        
+        data.sim.mixed_group1 = rmvnorm(2*base_data_size, mean = mean1, sigma = S1)
+        full_data             = data.sim.mixed_group1
+        
+
+        
         temp_day_log          = full_data
-        day_of_observations   = rep(day_dts[day+1], times = nrow(data.sim.mixed_group1$data))
+        day_of_observations   = rep(day_dts[day+1], times = nrow(data.sim.mixed_group1))#$data))
+        print(paste("means for day", day, "is:"))
+        print(paste(apply(temp_day_log, 2, mean)))
+        
       } else {
-        data.sim.mixed_group1 = bdgraph.sim( n = base_data_size, p = p,
-                                              graph = "fixed", 
-                                              sigma=S1, mean = mean1-half_dist_between_modes)
-        full_data = data.sim.mixed_group1$data
-        day_of_observations = rep(day_dts[day+1], times = nrow(data.sim.mixed_group1$data))
+        # data.sim.mixed_group1 <- bdgraph.sim( n = base_data_size, p = p,
+        #                                       graph = "fixed", 
+        #                                       sigma=S1, mean = mean1-half_dist_between_modes)
+        # full_data = data.sim.mixed_group1$data
+        
+        data.sim.mixed_group1 = rmvnorm(base_data_size, mean = mean1-half_dist_between_modes, sigma = S1)
+        full_data = data.sim.mixed_group1
+        
+        day_of_observations = rep(day_dts[day+1], times = nrow(data.sim.mixed_group1))#$data))
         temp_day_log = full_data
         
-        data.sim.mixed_group3 = bdgraph.sim( n = base_data_size, p = p,
-                                              graph = "fixed", 
-                                              sigma=S1, mean = mean1+half_dist_between_modes)
-        full_data = rbind(full_data, data.sim.mixed_group3$data)
-        day_of_observations =  c(day_of_observations,rep(day_dts[day+1], times = nrow(data.sim.mixed_group3$data)))
+        # data.sim.mixed_group3 <- bdgraph.sim( n = base_data_size, p = p,
+        #                                       graph = "fixed", 
+        #                                       sigma=S1, mean = mean1+half_dist_between_modes)
+        # full_data = rbind(full_data, data.sim.mixed_group3$data)
+        data.sim.mixed_group3 = rmvnorm(base_data_size, mean = mean1+half_dist_between_modes, sigma = S1)
+        full_data             = rbind(full_data, data.sim.mixed_group3)
         
-        temp_day_log = rbind(temp_day_log, data.sim.mixed_group3$data)
+        day_of_observations =  c(day_of_observations,rep(day_dts[day+1], times = nrow(data.sim.mixed_group3)))#$data)))
+        
+        temp_day_log = rbind(temp_day_log, data.sim.mixed_group3)#$data)
+        print(paste("means for day", day, "is:"))
+        print(paste(apply(temp_day_log, 2, mean)))
       }
       
-      
-      
-    }else if(count < 6){
+    }else if(count < 15){
       
       if(modal_type[parameters_number]=='unimodal'){
-        data.sim.mixed_group1 = bdgraph.sim( n = 2*base_data_size, p = p, 
-                                              graph = "fixed",
-                                              sigma=S1, mean = mean1)
-        full_data = rbind(full_data, data.sim.mixed_group1$data)
-        day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group1$data)))
+        # data.sim.mixed_group1 <- bdgraph.sim( n = 2*base_data_size, p = p, 
+        #                                       graph = "fixed",
+        #                                       sigma=S1, mean = mean1)
+        # full_data = rbind(full_data, data.sim.mixed_group1$data)
         
-        temp_day_log = data.sim.mixed_group1$data
+        data.sim.mixed_group1 = rmvnorm(2*base_data_size, mean = mean1, sigma = S1)
+        full_data = rbind(full_data, data.sim.mixed_group1)
+        
+        day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group1)))#$data)))
+        
+
+        temp_day_log = data.sim.mixed_group1#$data
+        print(paste("means for day", day, "is:"))
+        print(paste(apply(temp_day_log, 2, mean)))
         
       } else {
-        data.sim.mixed_group1 = bdgraph.sim( n = base_data_size, p = p, 
-                                              graph = "fixed",
-                                              sigma=S1, mean = mean1-half_dist_between_modes)
-        full_data = rbind(full_data, data.sim.mixed_group1$data)
-        temp_day_log = data.sim.mixed_group1$data
-        day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group1$data)))
-        data.sim.mixed_group3 = bdgraph.sim( n = base_data_size, p = p,
-                                              graph = "fixed", 
-                                              sigma=S1, mean = mean1+half_dist_between_modes)
-        full_data = rbind(full_data, data.sim.mixed_group3$data)
-        day_of_observations = c(day_of_observations,rep(day_dts[day+1], times = nrow(data.sim.mixed_group3$data)))
+        # data.sim.mixed_group1 <- bdgraph.sim( n = base_data_size, p = p, 
+        #                                       graph = "fixed",
+        #                                       sigma=S1, mean = mean1-half_dist_between_modes)
         
-        temp_day_log = rbind(temp_day_log, data.sim.mixed_group3$data)
+        data.sim.mixed_group1 = rmvnorm(base_data_size, mean = mean1-half_dist_between_modes, sigma = S1)
+        
+        full_data = rbind(full_data, data.sim.mixed_group1)#$data)
+        temp_day_log = data.sim.mixed_group1#$data
+        day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group1)))#$data)))
+        # data.sim.mixed_group3 <- bdgraph.sim( n = base_data_size, p = p,
+        #                                       graph = "fixed", 
+        #                                       sigma=S1, mean = mean1+half_dist_between_modes)
+        
+        data.sim.mixed_group3 = rmvnorm(base_data_size, mean = mean1+half_dist_between_modes, sigma = S1)
+        
+        full_data = rbind(full_data, data.sim.mixed_group3)#$data)
+        day_of_observations =  c(day_of_observations,rep(day_dts[day+1], times = nrow(data.sim.mixed_group3)))#$data)))
+        
+        temp_day_log = rbind(temp_day_log, data.sim.mixed_group3)#$data)
+        print(paste("means for day", day, "is:"))
+        print(paste(apply(temp_day_log, 2, mean)))
         
       }
       
-      # For the simulated data in the R package, the data simulation will never get to this final condition.
     } else if(count < 35) {
+
       
       if(modal_type[parameters_number]=='unimodal'){
+        # 
+        # if(data_type == "LinearDrift"){
+        #   if(distribution_change[parameters_number] == 'mean'){
+        #     mean1 = mean1 + mean_shift
+        #     mean2 = mean1
+        #   } else {
+        #     print(paste("count is currently",count))
+        #     alpha = (count-15)/21
+        #     S2 = solve(solve(S1)*(1-alpha) + solve(orig_S2)*(alpha))
+        #   }
+        # }
+        # data.sim.mixed_group2 = bdgraph.sim( n = 2*base_data_size, p = p, 
+        #                                       graph = "fixed",
+        #                                       sigma=S2, mean = mean2)
         
-        if(data_type == "LinearDrift"){
-          if(distribution_change[parameters_number] == 'mean'){
-            mean1 = mean1 + mean_shift
-            mean2 = mean1
-          } else {
-            alpha = (count-15)/21
-            S2 = solve(solve(S1)*(1-alpha) + solve(orig_S2)*(alpha))
-          }
-        }
-        data.sim.mixed_group2 = bdgraph.sim( n = 2*base_data_size, p = p, 
-                                             graph = "fixed",
-                                             sigma=S2, mean = mean2)
-        full_data             = rbind(full_data, data.sim.mixed_group2$data)
-        day_of_observations   = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group2$data)))
+        data.sim.mixed_group2 = rmvnorm(2*base_data_size, mean = mean2, sigma = S2)
         
-        temp_day_log = data.sim.mixed_group2$data
+        full_data             = rbind(full_data, data.sim.mixed_group2)#$data)
+        day_of_observations   = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group2)))#$data)))
+        
+        temp_day_log = data.sim.mixed_group2#$data
+        print(paste("means for day", day, "is:"))
+        print(paste(apply(temp_day_log, 2, mean)))
         
         
       } else {
         if(data_type == "MeanIsDifferent"){
-          bimodal_shift = mean_shift/2
+          print("We DID actually shift the means away from one other for the diabolical bimodal example.")
+          bimodal_shift = mean_shift
         } else {
           bimodal_shift = 0
         }
         
         
-        data.sim.mixed_group2 <- bdgraph.sim( n = base_data_size, p = p, 
-                                              graph = "fixed",
-                                              sigma=S2, mean = mean2-half_dist_between_modes - bimodal_shift)
-        full_data = rbind(full_data, data.sim.mixed_group2$data)
-        temp_day_log = data.sim.mixed_group2$data
-        day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group2$data)))
+        # data.sim.mixed_group2 <- bdgraph.sim( n = base_data_size, p = p, 
+        #                                       graph = "fixed",
+        #                                       sigma=S2, mean = mean2-half_dist_between_modes - bimodal_shift)
         
-        data_group_2 = rbind(data_group_2, data.sim.mixed_group2$data)
+        data.sim.mixed_group2 = rmvnorm(base_data_size, mean = mean2-half_dist_between_modes - bimodal_shift, sigma = S2)
         
-        data.sim.mixed_group4 <- bdgraph.sim( n = base_data_size, p = p, 
-                                              graph = "fixed",
-                                              sigma=S2, mean = mean2+half_dist_between_modes + bimodal_shift)
-        full_data = rbind(full_data, data.sim.mixed_group4$data)
-        day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group4$data)))
+        full_data = rbind(full_data, data.sim.mixed_group2)#$data)
+        temp_day_log = data.sim.mixed_group2#$data
+        day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group2)))#$data)))
         
-        data_group_2 = rbind(data_group_2, data.sim.mixed_group4$data)
+
+        # data.sim.mixed_group4 <- bdgraph.sim( n = base_data_size, p = p, 
+        #                                       graph = "fixed",
+        #                                       sigma=S2, mean = mean2+half_dist_between_modes + bimodal_shift)
         
-        temp_day_log = rbind(temp_day_log, data.sim.mixed_group4$data)
+        data.sim.mixed_group4 = rmvnorm(base_data_size, mean = mean2+half_dist_between_modes+bimodal_shift, sigma = S2)
+        
+        full_data = rbind(full_data, data.sim.mixed_group4)#$data)
+        day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group4)))#$data)))
+        
+
+        temp_day_log = rbind(temp_day_log, data.sim.mixed_group4)#$data)
       }
+      # print(paste("means for day", day, "is:"))
+      # print(paste(apply(temp_day_log, 2, mean)))
     } else {
       
       
       if(modal_type[parameters_number]=='unimodal'){
         
-        if(data_type == "LinearDrift"){
-          if((distribution_change[parameters_number] == 'mean')&&(count==35)){
-            mean1 = mean1 + 0.2*mean_shift
-            mean3 = mean1
-          } else if (distribution_change[parameters_number] == 'mean') {
-            mean3 = mean1
-          } else {
-            S3 = orig_S2
-          }
-        }
-        data.sim.mixed_group3 = bdgraph.sim( n = 2*base_data_size, p = p, 
-                                              graph = "fixed",
-                                              sigma=S3, mean = mean3)
-        full_data = rbind(full_data, data.sim.mixed_group3$data)
-        day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group3$data)))
+        # if(data_type == "LinearDrift"){
+        #   if((distribution_change[parameters_number] == 'mean')&&(count==35)){
+        #     mean1 = mean1 + 0.2*mean_shift
+        #     mean3 = mean1
+        #   } else if (distribution_change[parameters_number] == 'mean') {
+        #     mean3 = mean1
+        #   } else {
+        #     S3 = orig_S2
+        #   }
+        # }
+        # data.sim.mixed_group3 <- bdgraph.sim( n = 2*base_data_size, p = p, 
+        #                                       graph = "fixed",
+        #                                       sigma=S3, mean = mean3)
         
-        temp_day_log = data.sim.mixed_group3$data
+        data.sim.mixed_group3 = rmvnorm(2*base_data_size, mean = mean3, sigma = S3)
+        
+        full_data = rbind(full_data, data.sim.mixed_group3)#$data)
+        day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group3)))#$data)))
+        
+        temp_day_log = data.sim.mixed_group3#$data
+        print(paste("means for day", day, "is:"))
+        print(paste(apply(temp_day_log, 2, mean)))
         
         
       } else {
         if(data_type == "MeanIsDifferent"){
-          bimodal_shift = mean_shift
+          print("We DID actually shift the means away from one other for the diabolical bimodal example (next regime change).")
+          bimodal_shift = mean_shift*2
         } else {
           bimodal_shift = 0
         }
-        data.sim.mixed_group3 = bdgraph.sim( n = base_data_size, p = p, 
-                                              graph = "fixed",
-                                              sigma=S3, mean = mean3-half_dist_between_modes - bimodal_shift)
-        full_data = rbind(full_data, data.sim.mixed_group3$data)
-        data_group_3 = rbind(data_group_3, data.sim.mixed_group3$data)
-        temp_day_log = data.sim.mixed_group3$data
-        day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group3$data)))
+        # data.sim.mixed_group3 <- bdgraph.sim( n = base_data_size, p = p, 
+        #                                       graph = "fixed",
+        #                                       sigma=S3, mean = mean3-half_dist_between_modes - bimodal_shift)
         
-        data.sim.mixed_group4 = bdgraph.sim( n = base_data_size, p = p, 
-                                              graph = "fixed",
-                                              sigma=S3, mean = mean3+half_dist_between_modes + bimodal_shift)
-        full_data = rbind(full_data, data.sim.mixed_group4$data)
-        data_group_3 = rbind(data_group_3, data.sim.mixed_group4$data)
-        day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group4$data)))
+        data.sim.mixed_group3 = rmvnorm(base_data_size, mean = mean3-half_dist_between_modes - bimodal_shift, sigma = S3)
         
         
-        temp_day_log = rbind(temp_day_log, data.sim.mixed_group4$data)
+        full_data = rbind(full_data, data.sim.mixed_group3)#$data)
+        temp_day_log = data.sim.mixed_group3#$data
+        day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group3)))#$data)))
+        
+        # data.sim.mixed_group4 <- bdgraph.sim( n = base_data_size, p = p, 
+        #                                       graph = "fixed",
+        #                                       sigma=S3, mean = mean3+half_dist_between_modes + bimodal_shift)
+        
+        data.sim.mixed_group4 = rmvnorm(base_data_size, mean = mean3+half_dist_between_modes + bimodal_shift, sigma = S3)
+        
+        full_data = rbind(full_data, data.sim.mixed_group4)#$data)
+        day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group4)))#$data)))
+        
+        
+        temp_day_log = rbind(temp_day_log, data.sim.mixed_group4)#$data)
+        
+        # print(paste("means for day", day, "is:"))
+        # print(paste(apply(temp_day_log, 2, mean)))
       }
     }
   }
@@ -324,27 +378,10 @@ create_simulated_data = function(){
     upper_index   = upper_index + 2*base_data_size
   }
   
-  # # Perform Box-Cox Transformations on the variables as a pre-processing step
-  # all_lambdas = c()
-  # for(transform_index in 1:length(not.cont)){
-  #   if(!as.logical(not.cont[transform_index])){
-  #     # Then this variable is continuous, and I should try to do an automated box-cox transform:
-  #     temp_data_col                 = full_data[,transform_index]
-  #     minimum_value                 = min(temp_data_col,na.rm=T)
-  #     temp_data_col                 = temp_data_col - minimum_value + 1
-  #     temp_lambda                   = BoxCox.lambda(temp_data_col, method = "guerrero")
-  #     full_data[,transform_index]   = BoxCox(temp_data_col, temp_lambda)
-  #     full_data[,transform_index]   = full_data[,transform_index] + minimum_value - 1
-  #     # full_data[,transform_index]   = (full_data[,transform_index] - 
-  #     #                                    mean(full_data[,transform_index],na.rm=T))/sd(full_data[,transform_index],na.rm=T)
-  #     all_lambdas = c(all_lambdas, temp_lambda)
-  #   }
-  # }
   
-  
-  # saveRDS(full_data, "data/example_data.rds")
-  # saveRDS(day_of_observations, "data/day_of_observations.rds")
-  # saveRDS(day_dts, "data/day_dts.rds")
+  saveRDS(full_data, "data/example_data.rds")
+  saveRDS(day_of_observations, "data/day_of_observations.rds")
+  saveRDS(day_dts, "data/day_dts.rds")
   return(list(full_data=full_data, day_of_observations=day_of_observations, day_dts=day_dts))
 }
 

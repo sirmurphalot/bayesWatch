@@ -3,6 +3,7 @@
 
 #define EIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS
 #include <Eigen/Eigen>
+
 #include <RcppArmadillo.h>
 #include <RcppEigen.h>
 #include <Rcpp.h>

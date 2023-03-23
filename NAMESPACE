@@ -10,3 +10,6 @@ S3method( "print"  , "bayesWatch" )
 
 export(print.bayesWatch)
 export(plot.bayesWatch)
+export(bayeswatch)
+export(detect_faults)
+export(get_point_estimate)

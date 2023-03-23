@@ -40,7 +40,7 @@ print.bayesWatch = function(x, ...)
 #' @param move_parameter float. Prior parameter for Markov chain probability matrix.  Larger = more likely to change states.
 #' @param g.prior float in (0,1). Prior probability on edge inclusion for graph structure G.
 #' @param set_G matrix. Starting graph structure, if known.
-#' @param wishart_df_inital integer (>= 3).  Starting DF for G-Wishart prior.
+#' @param wishart_df_initial integer (>= 3).  Starting DF for G-Wishart prior.
 #' @param lambda float. Parameter for NI-G-W prior, controls affect of precision sample on the center sample.
 #' @param g_sampling_distribution matrix. Prior probability on edge inclusion if not uniform across G.
 #' @param n.cores integer. Number of cores available for parallelization.
@@ -70,7 +70,7 @@ print.bayesWatch = function(x, ...)
 #' 
 #' # x       = bayeswatch(full_data, day_of_observations, day_dts, 
 #' #                     iterations = 500, g.prior = 1, linger_parameter = 20, n.cores=3,
-#' #                     wishart_df_inital = 3, hyperprior_b = 3, lambda = 5)
+#' #                     wishart_df_initial = 3, hyperprior_b = 3, lambda = 5)
 #' 
 #' # print(x)
 #' # plot(x)
@@ -90,7 +90,7 @@ bayeswatch = function(data_woTimeValues,
                              move_parameter = 100,
                              g.prior = 0.2,
                              set_G = NULL,
-                             wishart_df_inital = 1500,
+                             wishart_df_initial = 1500,
                              lambda = 1500,
                              g_sampling_distribution = NULL,
                              n.cores = 1,
@@ -306,9 +306,9 @@ bayeswatch = function(data_woTimeValues,
                                 alpha_hyperparameter = linger_parameter, beta_hyperparameter = move_parameter,
                                 mu_0 = NA, lambda = lambda, p = NA, 
                                 hyperprior_scale_matrix = 2*diag(p), #solve(covMatrix)
-                                wishart_scale_matrix = covMatrix*(wishart_df_inital+p-1),#*component_truncation*regime_truncation,
-                                wishart_df = wishart_df_inital,
-                                original_wishart_df = wishart_df_inital,
+                                wishart_scale_matrix = covMatrix*(wishart_df_initial+p-1),#*component_truncation*regime_truncation,
+                                wishart_df = wishart_df_initial,
+                                original_wishart_df = wishart_df_initial,
                                 log_wishart_prior_term = NA, dirichlet_prior = dirichlet_prior,
                                 component_truncation = component_truncation,
                                 regime_truncation = regime_truncation,
@@ -354,7 +354,7 @@ bayeswatch = function(data_woTimeValues,
   }
   
   # | --------------------------- Gathering Data Values -------------------------------------- |
-  if (wishart_df_inital < 3)
+  if (wishart_df_initial < 3)
     stop(" 'hyperprior.df' must be >= 3.")
   if (iter < burnin)
     stop(" Number of iteration must be more than number of burn-in.")
@@ -461,7 +461,7 @@ bayeswatch = function(data_woTimeValues,
   if (is.null(previous_model_fits)) {
     # If we don't have model fits from a previous run, we need to fit models
     # based off of the states.
-    df_prior_on_wish_start = wishart_df_inital
+    df_prior_on_wish_start = wishart_df_initial
     previous_model_fits    = lapply(1:(regime_truncation + 1),
                                     function(x) {
                                       list(
@@ -479,7 +479,7 @@ bayeswatch = function(data_woTimeValues,
     parallel::clusterExport(clust, "data_woTimeValues", envir = environment())
     parallel::clusterExport(clust, "regime_truncation", envir = environment())
     parallel::clusterExport(clust, "component_truncation", envir = environment())
-    parallel::clusterExport(clust, "wishart_df_inital", envir = environment())
+    parallel::clusterExport(clust, "wishart_df_initial", envir = environment())
     parallel::clusterExport(clust, "scaleMatrix", envir = environment())
     models_temp = parallel::parSapply(clust, 1:(regime_truncation + 1), function(x) {
       # source("R/helpers.R")
