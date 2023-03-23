@@ -1,3 +1,7 @@
+<div align="center">
+<img src="https://raw.githubusercontent.com/sirmurphalot/bayesWatch/assets/bayes_watch.png" alt="logo"></img>
+</div>
+
 # **bayesWatch** 
   
 ![](https://www.r-pkg.org/badges/version/bayesWatch) ![](https://www.r-pkg.org/badges/last-release/bayesWatch)
