@@ -115,13 +115,9 @@ update_states_gibbs       = function(my_states,
           upper_bound_at_obs  = hyperparameters$upper_bound_is_equal[first_index:last_index,]
           lower_bound_at_obs  = hyperparameters$lower_bound_is_equal[first_index:last_index,]
           is_missing_at_obs   = hyperparameters$is_missing[first_index:last_index,]
-          components_at_obs   = previous_model_fits_temp[[temp_my_states[index]]]$cluster_assignments
-          components_at_obs   = components_at_obs[1:nrow(upper_bound_at_obs)]
           
           data_new_state      = temp_data_above
           data_old_state      = temp_data_above
-          components_at_obs   = previous_model_fits[[my_states[index]]]$cluster_assignments
-          components_at_obs   = components_at_obs[(length(components_at_obs) - nrow(upper_bound_at_obs) + 1):length(components_at_obs)]
           log_prob_new_model  = get_mix_log_dens_at_obs(
             index,
             temp_my_states,
@@ -187,13 +183,9 @@ update_states_gibbs       = function(my_states,
           upper_bound_at_obs       = hyperparameters$upper_bound_is_equal[first_index:last_index,]
           lower_bound_at_obs       = hyperparameters$lower_bound_is_equal[first_index:last_index,]
           is_missing_at_obs        = hyperparameters$is_missing[first_index:last_index,]
-          components_at_obs        = previous_model_fits_temp[[temp_my_states[index]]]$cluster_assignments
-          components_at_obs        = components_at_obs[(length(components_at_obs) - nrow(upper_bound_at_obs) + 1):length(components_at_obs)]
           
           data_old_state      = temp_data_below
           data_new_state      = temp_data_below
-          components_at_obs   = previous_model_fits[[my_states[index]]]$cluster_assignments
-          components_at_obs   = components_at_obs[1:nrow(upper_bound_at_obs)]
           log_prob_new_model  = get_mix_log_dens_at_obs(
             index,
             temp_my_states,
@@ -215,77 +207,58 @@ update_states_gibbs       = function(my_states,
                                                                             1]])
         }
         
-        # Get log probability of entire state vectors.
-        my_states_temp        = my_states
-        my_states_temp[index] = new_state
-        unique_states         = unique(my_states)
-        unique_states_temp    = unique(my_states_temp)
-        log_prob_old_state    = 0
-        log_prob_new_state    = 0
-        for (temp_index in 1:max(c(unique_states, unique_states_temp))) {
-          if (temp_index < length(unique_states_temp)) {
-            num_in_temp         = sum(my_states_temp == unique_states_temp[temp_index])
-            log_prob_new_state  = log_prob_new_state + (num_in_temp - 1) *
-              log(transition_probabilities[temp_index]) +
-              log(1 - transition_probabilities[temp_index])
-            
-          } else if (temp_index == length(unique_states_temp)) {
-            num_in_temp         = sum(my_states_temp == unique_states_temp[temp_index])
-            log_prob_new_state = log_prob_new_state + (num_in_temp -
-                                                         1) * log(transition_probabilities[temp_index])
-          }
-          
-          if (temp_index < length(unique_states_temp)) {
-            num_in              = sum(my_states == unique_states[temp_index])
-            log_prob_old_state  = log_prob_old_state + (num_in - 1) * log(transition_probabilities[temp_index]) +
-              log(1 - transition_probabilities[temp_index])
-          } else if (temp_index == length(unique_states)) {
-            num_in              = sum(my_states == unique_states[temp_index])
-            log_prob_old_state  = log_prob_old_state + (num_in - 1) * log(transition_probabilities[temp_index])
-          }
-          
-        }
         
-        alpha = log_prob_new_model + log_prob_new_state + log_prob_backward - #+ log_prob_old_data -
-          log_prob_old_model - log_prob_old_state - log_prob_forward #- log_prob_new_data
-        rand_value = log(runif(1))
         
-        if ((length(alpha) == 0) | (is.na(alpha))) {
-          if (verbose_logfile)
-            cat("alpha is weird!\n",
-                file = "verbose_log.txt",
-                append = T)
-          if (verbose_logfile)
-            cat(alpha, file = "verbose_log.txt", append = T)
-          if (verbose_logfile)
-            cat("\n", file = "verbose_log.txt", append = T)
-          stop("inside the gibbs swap function.")
+        logprob_of_state_change = log_prob_new_model + log_prob_forward
+        logprob_of_state_remain = log_prob_old_model + log_prob_backward
+        normalization_term      = max(logprob_of_state_change, logprob_of_state_remain)
+        prob_of_state_change    = exp(logprob_of_state_change - normalization_term)
+        prob_of_state_remain    = exp(logprob_of_state_remain - normalization_term)
+        prob_of_state_change    = prob_of_state_change/(prob_of_state_change+prob_of_state_remain)
+        rand_value              = runif(1)
+        
+        if((length(prob_of_state_change) == 0)|(is.na(prob_of_state_change))|(is.nan(prob_of_state_change))){
+          cat(
+            paste(
+              "-----> Probability values are poor in the Gibbs sampler",
+              "the value of prob_of_state_change is:",
+              prob_of_state_change,
+              "\n"
+            ),
+            file = "verbose_log.txt",
+            append = T
+          )
+          stop("There were precision issues with the Gibbs Swap algorithm.")
         }
-        if (!is.na(alpha)) {
-          if (rand_value <= alpha) {
-            if (verbose_logfile)
-              cat("accepted!\n",
-                  file = "verbose_log.txt",
-                  append = T)
+        if(!is.na(prob_of_state_change)){
+          if(rand_value <= prob_of_state_change){
             old_state             = my_states[index]
-            if (old_state != new_state) {
-              previous_model_fits = update_regime_components(
-                new_state,
-                old_state,
-                index,
-                previous_model_fits,
-                Z_timepoint_indices,
-                hyperparameters
+            if(old_state!=new_state){
+              cat(
+                "gibbs swap changed the state!",
+                file = "verbose_log.txt",
+                append = T
               )
+              previous_model_fits = update_regime_components(new_state, old_state, 
+                                                             index, previous_model_fits,
+                                                             Z_timepoint_indices, hyperparameters)
               previous_model_fits = previous_model_fits$previous_model_fits_item
+            } else {
+              cat(
+                "I'M PRETTY SURE THAT THIS SHOULD NEVER HAPPEN!!!!",
+                file = "verbose_log.txt",
+                append = T
+              )
             }
-            my_states[index]      = new_state
+            my_states             = my_states_temp
             accepted              = 1
           } else {
-            if (verbose_logfile)
-              cat("did not accept!\n",
-                  file = "verbose_log.txt",
-                  append = T)
+            cat(
+              "gibbs swap did not change the state!",
+              file = "verbose_log.txt",
+              append = T
+            )
+            accepted              = 1
           }
         }
         
