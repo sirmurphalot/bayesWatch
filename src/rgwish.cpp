@@ -117,6 +117,7 @@ void rgwish_c( double G[], double Ts[], double K[], int *b, int *p, double *thre
   
   double threshold_c = *threshold;
   double alpha = 1.0, beta  = 0.0;
+  int num_iters = 10000;
 
   char transN  = 'N', uplo  = 'U'; 
   
@@ -139,7 +140,7 @@ void rgwish_c( double G[], double Ts[], double K[], int *b, int *p, double *thre
   double mean_diff = 1.0;
     
   int counter = 0;
-	while( (mean_diff > threshold_c) and ( counter < 90000 ) )
+	while( (mean_diff > threshold_c) and ( counter < num_iters ) )
 	{
 	  counter++;
 		memcpy( &sigma_last[0], &sigma[0], sizeof( double ) * pxp );
@@ -204,6 +205,11 @@ void rgwish_c( double G[], double Ts[], double K[], int *b, int *p, double *thre
 		    mean_diff += fabs( static_cast<double>( sigma[ i ] - sigma_last[ i ] ) );
 		mean_diff /= pxp;
 	}
+	
+	if(counter==num_iters){
+	  *failed = 1;
+	}
+	
 	
 	 inverse( &sigma[0], K, &dim );
 }
@@ -385,7 +391,7 @@ Rcpp::NumericVector rwish_Rcpp( Rcpp::NumericVector Ts, int b, int p) {
 //' @noRd
 //' 
 // [[Rcpp::export]]
-Rcpp::NumericVector rgwish_Rcpp( const Rcpp::NumericVector G, 
+List rgwish_Rcpp( const Rcpp::NumericVector G, 
                                  const Rcpp::NumericVector D, 
                                  int b, int p, double threshold) {
   int pxp = p * p, failed;
@@ -409,10 +415,10 @@ Rcpp::NumericVector rgwish_Rcpp( const Rcpp::NumericVector G,
   // This draws from the G Wishart.
   rgwish_c( REAL(G), &Ts_vectorized[0], REAL(K), &b, &p, &threshold, &failed );
   
-  // return_items["failed"] = failed;
-  // return_items["K"]      = K;
+  return_items["failed"] = failed;
+  return_items["K"]      = K;
   
-  return(K);
+  return(return_items);
 }
 
 //' Approximates the G wishart normalizing using an MCMC algorithm.

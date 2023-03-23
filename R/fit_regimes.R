@@ -86,12 +86,12 @@ bayeswatch = function(data_woTimeValues,
                              upper_bounds = NULL,
                              previous_states = NULL,
                              previous_model_fits = NULL,
-                             linger_parameter = 10,
-                             move_parameter = 1,
+                             linger_parameter = 500,
+                             move_parameter = 100,
                              g.prior = 0.2,
                              set_G = NULL,
-                             wishart_df_inital = 20,
-                             lambda = 20,
+                             wishart_df_inital = 1500,
+                             lambda = 1500,
                              g_sampling_distribution = NULL,
                              n.cores = 1,
                              scaleMatrix = NULL,
@@ -441,8 +441,10 @@ bayeswatch = function(data_woTimeValues,
       file = 'verbose_log.txt',
       append = T
     )
-  n.cores_eachparent = max(min(regime_truncation, floor(n.cores/4)), 1)
-  n.cores_eachchild  = max(4, floor(n.cores/n.cores_eachparent))
+  # n.cores_eachparent = max(min(regime_truncation, floor(n.cores/4)), 1)
+  # n.cores_eachchild  = max(4, floor(n.cores/n.cores_eachparent))
+  n.cores_eachparent = max(n.cores-1, 1)
+  n.cores_eachchild  = 1
   if (verbose_logfile)
     cat(
       paste(
