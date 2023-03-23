@@ -1820,25 +1820,27 @@ redraw_hyperparameters    = function(hyperparameters,
   alpha          = hyperparameters$alpha
   beta           = hyperparameters$beta
   # Beta Hyperparameters for alpha, beta.  Assumes a gamma prior on each param.
-  shape_beta = 1
-  rate_beta = 1
-  shape_alpha  = 10
+  shape_beta  = hyperparameters$beta_hyperparameter
+  rate_beta   = 1
+  shape_alpha = hyperparameters$alpha_hyperparameter
   rate_alpha  = 1
   # Normal Hyperparameters for m
   p       = hyperparameters$p
   m_0     = rep(0, times = p)
-  prec_0  = 2 * diag(p)
+  prec_0  = diag(p)
   # Gamma hyperparameters for lambda
-  rate_0  = 1
-  shape_0 = 20
+  rate_0  = 10
+  shape_0 = hyperparameters$lambda_hyperparameter_shape*10
   
   # G-Wishart hyperparameters for Wishart scale matrix
   ## This update is NEARLY conjugate
-  scale_hyperprior_matrix = hyperparameters$hyperprior_scale_matrix
-  df_hyperprior           = hyperparameters$hyperprior_b
+  scale_hyperprior_matrix  = hyperparameters$hyperprior_scale_matrix
+  df_hyperprior            = hyperparameters$hyperprior_b
   
   # Gamma hyperparameters for degrees of freedom
-  spread_of_df_random_walk = 0.5
+  spread_of_df_random_walk = 1
+  rate_prior_for_wish_df   = 10
+  shape_prior_for_wish_df  = hyperparameters$original_wishart_df*10
   
   # | --------------------- Redraw Sticks from Truncated Dirichlet Process ------------------------- |
   temp_component_sticks = rep(0, times = hyperparameters$component_truncation)
@@ -1953,113 +1955,23 @@ redraw_hyperparameters    = function(hyperparameters,
     }
   }
   
-  hyperprior_mean = solve(prec_0 + sum_precision_matrices) %*% (prec_0 %*%
-                                                                  m_0 + sum_precision_times_mu)
-  new_mus = rmvn_Rcpp(as.double(hyperprior_mean),
-                      as.double((hyperparameters$lambda) * (sum_precision_matrices +
-                                                              prec_0)),
-                      as.integer(hyperparameters$p))
-  
-  if (!anyNA(new_mus)) {
-    hyperparameters$mu_0     = new_mus
+  epsilon = 1e-10
+  if(abs(rcond(prec_0 + sum_precision_matrices))>epsilon){
+    hyperprior_mean = solve(prec_0 + sum_precision_matrices) %*% (prec_0 %*%
+                                                                    m_0 + sum_precision_times_mu)
+    new_mus = rmvn_Rcpp(as.double(hyperprior_mean),
+                        as.double((hyperparameters$lambda) * (sum_precision_matrices +
+                                                                prec_0)),
+                        as.integer(hyperparameters$p))
+    
+    if (!anyNA(new_mus)) {
+      hyperparameters$mu_0     = new_mus
+    }
   }
   
   # | --------------------- Redraw Scale Matrix D ------------------------- |
-  df_of_regime                   = hyperparameters$wishart_df
-  old_scale_matrix               = hyperparameters$wishart_scale_matrix
-  scale_matrix_of_sampling_distn = sum_prec_matries_wo_lambda + scale_hyperprior_matrix
-  df_of_sampling_distn           = count_components * (df_of_regime + hyperparameters$p -
-                                                         1) +
-    hyperparameters$hyperprior_b
-  full_graph                     = matrix(1, nrow = hyperparameters$p, ncol =
-                                            hyperparameters$p) - diag(hyperparameters$p)
-  
-  result     = rgwish_Rcpp(
-    as.double(full_graph),
-    as.double(scale_matrix_of_sampling_distn),
-    as.integer(df_of_sampling_distn),
-    as.integer(p),
-    as.double(threshold)
-  )
-  new_scale  = matrix(result, p, p)
-  
-  if (df_of_regime > 10) {
-    posterior_value_1 = log_normalizing_g_wishart_posterior_laplace(as.matrix(unclass(hyperparameters$G)),
-                                                                    old_scale_matrix,
-                                                                    df_of_regime,
-                                                                    0,
-                                                                    hyperparameters$p)
-    posterior_value_2 = log_normalizing_g_wishart_posterior_laplace(as.matrix(unclass(hyperparameters$G)),
-                                                                    new_scale,
-                                                                    df_of_regime,
-                                                                    0,
-                                                                    hyperparameters$p)
-    MH_ratio          = count_components * (posterior_value_1$log_posterior - posterior_value_2$log_posterior) +
-      0.5 * count_components * (df_of_regime + hyperparameters$p -
-                                  1) * log(det(old_scale_matrix)) -
-      0.5 * count_components * (df_of_regime + hyperparameters$p -
-                                  1) * log(det(new_scale))
-    nonconverge_flag  = max(posterior_value_1$nonconverge_flag,
-                            posterior_value_2$nonconverge_flag)
-  } else {
-    MH_ratio          = count_components * BDgraph::gnorm(as.matrix(unclass(hyperparameters$G)),
-                                                          b = df_of_regime,
-                                                          old_scale_matrix,
-                                                          iter = 1000) -
-      count_components * BDgraph::gnorm(as.matrix(unclass(hyperparameters$G)),
-                                        b = df_of_regime,
-                                        new_scale,
-                                        iter = 1000) +
-      0.5 * count_components * (df_of_regime + hyperparameters$p -
-                                  1) * log(det(old_scale_matrix)) -
-      0.5 * count_components * (df_of_regime + hyperparameters$p -
-                                  1) * log(det(new_scale))
-    nonconverge_flag  = 0
-  }
-  
-  if (!is.nan(MH_ratio)) {
-    if ((log(runif(1)) <= MH_ratio) & (!nonconverge_flag)) {
-      hyperparameters$wishart_scale_matrix = new_scale
-      # if (verbose_logfile)
-      #   cat(
-      #     'scale matrix updated!  Mean of G-Wishart is:\n',
-      #     file = "verbose_log.txt",
-      #     append = T
-      #   )
-      # if (verbose_logfile)
-      #   cat(
-      #     solve(new_scale) * (hyperparameters$wishart_df + hyperparameters$p -
-      #                           1),
-      #     file = "verbose_log.txt",
-      #     append = T
-      #   )
-      if (verbose_logfile)
-        cat("\n", file = "verbose_log.txt", append = T)
-    } else {
-      if (verbose_logfile)
-        cat("SCALE MATRIX REJECTED\n",
-            file = "verbose_log.txt",
-            append = T)
-    }
-  } else{
-    if (verbose_logfile)
-      cat("SCALE MATRIX REJECTED\n",
-          file = "verbose_log.txt",
-          append = T)
-  }
-  if (verbose_logfile)
-    cat(
-      paste(
-        "the MH ratio was:",
-        MH_ratio,
-        "using a df of:",
-        df_of_regime,
-        "\n"
-      ),
-      file = "verbose_log.txt",
-      append = T
-    )
-  
+  # We removed this for this version of the algorithm.  See the paper for details on possible
+  # extensions in this method.
   
   # | --------------------- Redraw Degrees of Freedom b ------------------------- |
   old_df                 = hyperparameters$wishart_df
@@ -2099,6 +2011,8 @@ redraw_hyperparameters    = function(hyperparameters,
       MH_ratio   = MH_ratio * count_components
       MH_ratio   = MH_ratio - new_df * (-0.5 * sum(sum_log_det_prec_matrices) + old_df * (-0.5 *
                                                                                             sum(sum_log_det_prec_matrices)))
+      MH_ratio   = MH_ratio + dgamma(new_df, shape = shape_prior_for_wish_df, rate = rate_prior_for_wish_df, log = TRUE) - 
+                      dgamma(old_df, shape = shape_prior_for_wish_df, rate = rate_prior_for_wish_df, log = TRUE)
       
       if ((log(runif(1)) <= MH_ratio) |
           (laplace_failure_flag == 0)) {
@@ -2214,6 +2128,8 @@ draw_mvn_parameters       = function(current_G,
     as.integer(p),
     as.double(threshold)
   )
+  flag       = result[['failed']]
+  result     = result[['K']]
   
   new_K  = matrix(result, p, p)
   
