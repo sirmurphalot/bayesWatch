@@ -2175,7 +2175,7 @@ get_split_distribution    = function(current_G,
   # This method assumes that the number of indices in the regime is at least 2.
   # I'll likely do at least 3, since the split point for 2 is deterministic.
   # This value can be tuned for a precision vs. runtime tradeoff.
-  mu_dataframe = NULL
+  mu_dataframe               = NULL
   mu_0                       = hyperparameters$mu_0
   b                          = df_of_regime
   p                          = hyperparameters$p
@@ -2320,10 +2320,10 @@ get_split_distribution    = function(current_G,
             append = T
           )
       } else {
-        precision   = parameters_after$final_K
-        mu          = parameters_after$final_mu
-        data_after        = matrix(data_after, n_after, hyperparameters$p)
-        likelihood_after =  log_dmvnrm_arma_regular(data_after,
+        precision        = parameters_after$final_K
+        mu               = parameters_after$final_mu
+        data_after       = matrix(data_after, n_after, hyperparameters$p)
+        likelihood_after = log_dmvnrm_arma_regular(data_after,
                                                     parameters_after$final_mu,
                                                     parameters_after$final_K)
       }
@@ -2815,6 +2815,8 @@ redraw_mixture_parameters = function(my_states,
         as.integer(hyperparameters$p),
         as.double(1e-8)
       )
+      flag                = result[['failed']]
+      result              = result[['K']]
       starting_precision  = matrix(result, hyperparameters$p, hyperparameters$p)
       precision           = starting_precision
       
@@ -2842,6 +2844,8 @@ redraw_mixture_parameters = function(my_states,
         as.integer(hyperparameters$p),
         as.double(1e-8)
       )
+      flag                = result[['failed']]
+      result              = result[['K']]
       starting_precision  = matrix(result, hyperparameters$p, hyperparameters$p)
       precision           = starting_precision
       
@@ -2979,6 +2983,8 @@ redraw_G_with_mixture     = function(my_states,
         as.integer(hyperparameters$p),
         as.double(1e-8)
       )
+      flag                = result[['failed']]
+      result              = result[['K']]
       starting_precision  = matrix(result, hyperparameters$p, hyperparameters$p)
       precision           = starting_precision
       
@@ -3003,6 +3009,8 @@ redraw_G_with_mixture     = function(my_states,
         as.integer(hyperparameters$p),
         as.double(1e-8)
       )
+      flag                = result[['failed']]
+      result              = result[['K']]
       starting_precision  = matrix(result, hyperparameters$p, hyperparameters$p)
       precision           = starting_precision
       
@@ -3054,7 +3062,8 @@ redraw_G_with_mixture     = function(my_states,
         as.integer(p),
         as.double(1e-8)
       )
-      
+      flag           = lambda_0[['failed']]
+      lambda_0       = lambda_0[['K']]
       lambda_0       = matrix(lambda_0, p, p)
       current_lambda = cluster_precisions[[component_index]]
       current_mu     = cluster_mus[[component_index]]
@@ -3201,7 +3210,7 @@ get_mix_log_dens_at_obs   = function(index_of_observation,
 #' @param is_missing_state matrix. Indicators as to when elements of raw_data_from_state are missing.
 #' @param upper_bound_is_equal_state matrix. Indicators as to when elements of raw_data_from_state achieve their upper bounds.
 #' @param lower_bound_is_equal_state matrix. Indicators as to when elements of raw_data_from_state achieve their lower bounds.
-#'
+#' @param n_cores_each_child integer. Number of cores to use for paralellization at the C/C++ level.
 #' 
 #' @noRd
 #'
@@ -3213,7 +3222,8 @@ redraw_latent_data        = function(state_to_redraw,
                                      raw_data_from_state,
                                      is_missing_state,
                                      upper_bound_is_equal_state,
-                                     lower_bound_is_equal_state) {
+                                     lower_bound_is_equal_state,
+                                     n_cores_each_child=1) {
   # Method to redraw latent data FOR A SINGLE STATE ONLY.  Assumes Normal Mixture Model.
   components        = previous_model_fits[[state_to_redraw]]$cluster_assignments
   precisions        = previous_model_fits[[state_to_redraw]]$precision
@@ -3253,7 +3263,7 @@ redraw_latent_data        = function(state_to_redraw,
       is_missing_temp,
       continuous,
       temp_data_raw,
-      1
+      n_cores_each_child
     )
     new_data_for_comp         = matrix(redraw_output, n_value, hyperparameters$p)
     

@@ -1,7 +1,7 @@
 <div align="center">
 <img src="assets/bayes_watch.png" alt="logo" width=75%></img>
 </div>
-
+---
 ![](https://www.r-pkg.org/badges/version/bayesWatch) ![](https://www.r-pkg.org/badges/last-release/bayesWatch)
 
 The main method `bayeswatch` of this package fits an array of Gaussian Graphical Mixture Models to groupings of homogeneous data in time, called regimes, which we model as the observed states of a Markov process with unknown transition probabilities.   While the primary goal of this model is to identify when there is a regime change, as this indicates a significant change in input data distribution, an attractive consequence of this approach is a rich collection of models fit to many different possible regimes.  A fault detection system that leverages these model fits to describe the cause of a regime change is included in `detect_faults`.  For further technical details on these methods, see the Citations section.
