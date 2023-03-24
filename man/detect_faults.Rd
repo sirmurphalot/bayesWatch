@@ -2,8 +2,7 @@
 % Please edit documentation in R/fit_regimes.R
 \name{detect_faults}
 \alias{detect_faults}
-\title{Prints out fault detection graphics given a bayesWatch object. This method can only be run
-if fault detection was run on the bayesWatch fit (if model_params_save_every < iterations).}
+\title{Determine the cause of a change-point.}
 \usage{
 detect_faults(regime_fit_object)
 }

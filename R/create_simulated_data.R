@@ -1,6 +1,6 @@
 # Create simulated data with artificial change-point imposed.
-library(stats)
-library(SimDesign)
+library(CholWishart)
+library(MASS)
 
 #' Create simulated data used in the bayesWatch package.  This method copies much of the
 #' code used in the original paper (Murph et al 2023).  Much of the possible simulated examples
@@ -45,7 +45,7 @@ create_simulated_data = function(){
   graph_structure       = matrix(1,p,p) - diag(p)
 
   df      = p + 50
-  S1      = rWishart(1, df, diag(p)/df )[,,1]
+  S1      = CholWishart::rInvWishart(1, df, diag(p)/df )[,,1]
   orig_S2 = S1
   # S1      = S1* 0.25
 
@@ -78,7 +78,7 @@ create_simulated_data = function(){
         #                                       sigma=S1, mean = mean1)
         # full_data             = data.sim.mixed_group1$data
         
-        data.sim.mixed_group1 = rmvnorm(2*base_data_size, mean = mean1, sigma = S1)
+        data.sim.mixed_group1 = MASS::mvrnorm(2*base_data_size, mu = mean1, Sigma = S1)
         full_data             = data.sim.mixed_group1
         
 
@@ -94,7 +94,7 @@ create_simulated_data = function(){
         #                                       sigma=S1, mean = mean1-half_dist_between_modes)
         # full_data = data.sim.mixed_group1$data
         
-        data.sim.mixed_group1 = rmvnorm(base_data_size, mean = mean1-half_dist_between_modes, sigma = S1)
+        data.sim.mixed_group1 = MASS::mvrnorm(base_data_size, mu = mean1-half_dist_between_modes, Sigma = S1)
         full_data = data.sim.mixed_group1
         
         day_of_observations = rep(day_dts[day+1], times = nrow(data.sim.mixed_group1))#$data))
@@ -104,7 +104,7 @@ create_simulated_data = function(){
         #                                       graph = "fixed", 
         #                                       sigma=S1, mean = mean1+half_dist_between_modes)
         # full_data = rbind(full_data, data.sim.mixed_group3$data)
-        data.sim.mixed_group3 = rmvnorm(base_data_size, mean = mean1+half_dist_between_modes, sigma = S1)
+        data.sim.mixed_group3 = MASS::mvrnorm(base_data_size, mu = mean1+half_dist_between_modes, Sigma = S1)
         full_data             = rbind(full_data, data.sim.mixed_group3)
         
         day_of_observations =  c(day_of_observations,rep(day_dts[day+1], times = nrow(data.sim.mixed_group3)))#$data)))
@@ -122,7 +122,7 @@ create_simulated_data = function(){
         #                                       sigma=S1, mean = mean1)
         # full_data = rbind(full_data, data.sim.mixed_group1$data)
         
-        data.sim.mixed_group1 = rmvnorm(2*base_data_size, mean = mean1, sigma = S1)
+        data.sim.mixed_group1 = MASS::mvrnorm(2*base_data_size, mu = mean1, Sigma = S1)
         full_data = rbind(full_data, data.sim.mixed_group1)
         
         day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group1)))#$data)))
@@ -137,7 +137,7 @@ create_simulated_data = function(){
         #                                       graph = "fixed",
         #                                       sigma=S1, mean = mean1-half_dist_between_modes)
         
-        data.sim.mixed_group1 = rmvnorm(base_data_size, mean = mean1-half_dist_between_modes, sigma = S1)
+        data.sim.mixed_group1 = MASS::mvrnorm(base_data_size, mu = mean1-half_dist_between_modes, Sigma = S1)
         
         full_data = rbind(full_data, data.sim.mixed_group1)#$data)
         temp_day_log = data.sim.mixed_group1#$data
@@ -146,7 +146,7 @@ create_simulated_data = function(){
         #                                       graph = "fixed", 
         #                                       sigma=S1, mean = mean1+half_dist_between_modes)
         
-        data.sim.mixed_group3 = rmvnorm(base_data_size, mean = mean1+half_dist_between_modes, sigma = S1)
+        data.sim.mixed_group3 = MASS::mvrnorm(base_data_size, mu = mean1+half_dist_between_modes, Sigma = S1)
         
         full_data = rbind(full_data, data.sim.mixed_group3)#$data)
         day_of_observations =  c(day_of_observations,rep(day_dts[day+1], times = nrow(data.sim.mixed_group3)))#$data)))
@@ -176,7 +176,7 @@ create_simulated_data = function(){
         #                                       graph = "fixed",
         #                                       sigma=S2, mean = mean2)
         
-        data.sim.mixed_group2 = rmvnorm(2*base_data_size, mean = mean2, sigma = S2)
+        data.sim.mixed_group2 = MASS::mvrnorm(2*base_data_size, mu = mean2, Sigma = S2)
         
         full_data             = rbind(full_data, data.sim.mixed_group2)#$data)
         day_of_observations   = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group2)))#$data)))
@@ -199,7 +199,7 @@ create_simulated_data = function(){
         #                                       graph = "fixed",
         #                                       sigma=S2, mean = mean2-half_dist_between_modes - bimodal_shift)
         
-        data.sim.mixed_group2 = rmvnorm(base_data_size, mean = mean2-half_dist_between_modes - bimodal_shift, sigma = S2)
+        data.sim.mixed_group2 = MASS::mvrnorm(base_data_size, mu = mean2-half_dist_between_modes - bimodal_shift, Sigma = S2)
         
         full_data = rbind(full_data, data.sim.mixed_group2)#$data)
         temp_day_log = data.sim.mixed_group2#$data
@@ -210,7 +210,7 @@ create_simulated_data = function(){
         #                                       graph = "fixed",
         #                                       sigma=S2, mean = mean2+half_dist_between_modes + bimodal_shift)
         
-        data.sim.mixed_group4 = rmvnorm(base_data_size, mean = mean2+half_dist_between_modes+bimodal_shift, sigma = S2)
+        data.sim.mixed_group4 = MASS::mvrnorm(base_data_size, mu = mean2+half_dist_between_modes+bimodal_shift, Sigma = S2)
         
         full_data = rbind(full_data, data.sim.mixed_group4)#$data)
         day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group4)))#$data)))
@@ -239,7 +239,7 @@ create_simulated_data = function(){
         #                                       graph = "fixed",
         #                                       sigma=S3, mean = mean3)
         
-        data.sim.mixed_group3 = rmvnorm(2*base_data_size, mean = mean3, sigma = S3)
+        data.sim.mixed_group3 = MASS::mvrnorm(2*base_data_size, mu = mean3, Sigma = S3)
         
         full_data = rbind(full_data, data.sim.mixed_group3)#$data)
         day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group3)))#$data)))
@@ -260,7 +260,7 @@ create_simulated_data = function(){
         #                                       graph = "fixed",
         #                                       sigma=S3, mean = mean3-half_dist_between_modes - bimodal_shift)
         
-        data.sim.mixed_group3 = rmvnorm(base_data_size, mean = mean3-half_dist_between_modes - bimodal_shift, sigma = S3)
+        data.sim.mixed_group3 = MASS::mvrnorm(base_data_size, mu = mean3-half_dist_between_modes - bimodal_shift, Sigma = S3)
         
         
         full_data = rbind(full_data, data.sim.mixed_group3)#$data)
@@ -271,7 +271,7 @@ create_simulated_data = function(){
         #                                       graph = "fixed",
         #                                       sigma=S3, mean = mean3+half_dist_between_modes + bimodal_shift)
         
-        data.sim.mixed_group4 = rmvnorm(base_data_size, mean = mean3+half_dist_between_modes + bimodal_shift, sigma = S3)
+        data.sim.mixed_group4 = MASS::mvrnorm(base_data_size, mu = mean3+half_dist_between_modes + bimodal_shift, Sigma = S3)
         
         full_data = rbind(full_data, data.sim.mixed_group4)#$data)
         day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group4)))#$data)))
@@ -379,9 +379,9 @@ create_simulated_data = function(){
   }
   
   
-  saveRDS(full_data, "data/example_data.rds")
-  saveRDS(day_of_observations, "data/day_of_observations.rds")
-  saveRDS(day_dts, "data/day_dts.rds")
+  save(full_data, file = "data/example_data.RData")
+  save(day_of_observations, file = "data/day_of_observations.RData")
+  save(day_dts, file = "data/day_dts.RData")
   return(list(full_data=full_data, day_of_observations=day_of_observations, day_dts=day_dts))
 }
 

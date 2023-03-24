@@ -1,8 +1,8 @@
 useDynLib(bayesWatch, .registration=TRUE)
-import(ggplot2, BDgraph, gridExtra, parallel, Rcpp, Matrix, CholWishart, Hotelling)
-importFrom("stats", "cov", "dbeta", "density", "dgamma", "dnorm",
+import(ggplot2, gridExtra, parallel, Rcpp, Matrix, CholWishart, Hotelling, MASS)
+importFrom("stats", "dbeta", "density", "dgamma", "dnorm",
              "rbeta", "rbinom", "rgamma", "rnorm", "rpois", "runif",
-             "sd")
+             "sd", "cov")
 importFrom("methods", "is")
 
 S3method( "plot"   , "bayesWatch" )

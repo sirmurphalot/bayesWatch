@@ -2,18 +2,15 @@
 % Please edit documentation in R/fit_regimes.R
 \name{plot.bayesWatch}
 \alias{plot.bayesWatch}
-\title{Plots posterior probabilities of a change-point.}
+\title{Print function for a bayesWatch object.  Prints only the posterior change-point probabilities.}
 \usage{
-\method{plot}{bayesWatch}(x, ...)
+\method{bayesWatch}{plot}(x, ...)
 }
 \arguments{
-\item{x}{bayesWatch object. Fit with the bayesWatch method.}
+\item{x}{bayesWatch object. Fit from bayesWatch main method.}
 
 \item{...}{Additional plotting arguments.}
 }
-\value{
-a ggplot.
-}
 \description{
-Plots posterior probabilities of a change-point.
+Print function for a bayesWatch object.  Prints only the posterior change-point probabilities.
 }

@@ -2,8 +2,7 @@
 % Please edit documentation in R/fit_regimes.R
 \name{bayeswatch}
 \alias{bayeswatch}
-\title{Main method of package.  MCMC sampling for change-point probabilities with fault detection
-according to the model by Murph et al. 2023.  Creates a bayesWatch object for analysis of change-points.}
+\title{Fit a bayesWatch object.}
 \usage{
 bayeswatch(
   data_woTimeValues,
@@ -21,7 +20,7 @@ bayeswatch(
   move_parameter = 100,
   g.prior = 0.2,
   set_G = NULL,
-  wishart_df_inital = 1500,
+  wishart_df_initial = 1500,
   lambda = 1500,
   g_sampling_distribution = NULL,
   n.cores = 1,
@@ -70,7 +69,7 @@ bayeswatch(
 
 \item{set_G}{matrix. Starting graph structure, if known.}
 
-\item{wishart_df_inital}{integer (>= 3).  Starting DF for G-Wishart prior.}
+\item{wishart_df_initial}{integer (>= 3).  Starting DF for G-Wishart prior.}
 
 \item{lambda}{float. Parameter for NI-G-W prior, controls affect of precision sample on the center sample.}
 
@@ -117,7 +116,7 @@ according to the model by Murph et al. 2023.  Creates a bayesWatch object for an
 
 # x       = bayeswatch(full_data, day_of_observations, day_dts, 
 #                     iterations = 500, g.prior = 1, linger_parameter = 20, n.cores=3,
-#                     wishart_df_inital = 3, hyperprior_b = 3, lambda = 5)
+#                     wishart_df_initial = 3, hyperprior_b = 3, lambda = 5)
 
 # print(x)
 # plot(x)

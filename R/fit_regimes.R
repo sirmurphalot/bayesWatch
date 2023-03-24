@@ -12,9 +12,9 @@ require(Hotelling)
 #'
 #' @param x bayesWatch object. Fit from bayesWatch main method.
 #' @param ... Additional plotting arguments.
-#'
+#' 
+#' @method bayesWatch print
 #' @export
-#'
 print.bayesWatch = function(x, ...)
 {
   cat("\n     bayesWatch object\n")
@@ -23,6 +23,8 @@ print.bayesWatch = function(x, ...)
 }
 
 
+#' Fit a bayesWatch object.
+#' 
 #' Main method of package.  MCMC sampling for change-point probabilities with fault detection
 #' according to the model by Murph et al. 2023.  Creates a bayesWatch object for analysis of change-points.
 #'
@@ -289,7 +291,7 @@ bayeswatch = function(data_woTimeValues,
           file = 'verbose_log.txt',
           append = T
         )
-      my_func             = function(x){var(x,na.rm=T)}
+      my_func             = function(x){sd(x,na.rm=T)^2}
       covMatrix           = diag(apply(data_woTimeValues, 2, my_func))
     }
     
@@ -925,10 +927,6 @@ bayeswatch = function(data_woTimeValues,
             append = T
           )
         if (verbose_logfile)
-          cat(bdgraph_object$p_links,
-              file = 'verbose_log.txt',
-              append = T)
-        if (verbose_logfile)
           cat('\n', file = 'verbose_log.txt', append = T)
         stop("Check the BDgraph package access.")
       }
@@ -1342,6 +1340,8 @@ bayeswatch = function(data_woTimeValues,
 }
 
 
+#' Create an estimate on posterior distribution of change-points.
+#' 
 #' Given a bayesWatch object and a probability cutoff, finds change-points.
 #'
 #' @param regime_fit_object bayesWatch object. Fit with the bayesWatch method.
@@ -1377,14 +1377,13 @@ get_point_estimate = function(regime_fit_object, prob_cutoff) {
 }
 
 
-#' Plots posterior probabilities of a change-point.
+#' Print function for a bayesWatch object.  Prints only the posterior change-point probabilities.
 #'
-#' @param x bayesWatch object. Fit with the bayesWatch method.
+#' @param x bayesWatch object. Fit from bayesWatch main method.
 #' @param ... Additional plotting arguments.
-#'
-#' @return a ggplot.
+#' 
+#' @method bayesWatch plot
 #' @export
-#'
 plot.bayesWatch = function(x, ...) {
   time_point<-prob_value<-NULL
   regime_fit_object   = x
@@ -1402,6 +1401,8 @@ plot.bayesWatch = function(x, ...) {
 }
 
 
+#' Determine the cause of a change-point.
+#' 
 #' Prints out fault detection graphics given a bayesWatch object. This method can only be run
 #' if fault detection was run on the bayesWatch fit (if model_params_save_every < iterations).
 #'

@@ -1,6 +1,5 @@
 # Helper function for bd_gc_mcmc main method.
 require(parallel)
-# require(mvtnorm)
 
 
 #' Perform a Gibbs sweep on the current regime vector during the MCMC sampling.

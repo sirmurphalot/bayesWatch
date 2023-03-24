@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_regimes.R
 \name{get_point_estimate}
 \alias{get_point_estimate}
-\title{Given a bayesWatch object and a probability cutoff, finds change-points.}
+\title{Create an estimate on posterior distribution of change-points.}
 \usage{
 get_point_estimate(regime_fit_object, prob_cutoff)
 }
