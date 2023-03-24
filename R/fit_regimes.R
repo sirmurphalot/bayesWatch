@@ -9,12 +9,13 @@ require(Hotelling)
 
 
 #' Print function for a bayesWatch object.  Prints only the posterior change-point probabilities.
+#' 
 #'
 #' @param x bayesWatch object. Fit from bayesWatch main method.
 #' @param ... Additional plotting arguments.
 #' 
-#' @method bayesWatch print
-#' @export
+#' @usage \method{print}{bayesWatch}(x) <- NULL
+#' @exportS3Method 
 print.bayesWatch = function(x, ...)
 {
   cat("\n     bayesWatch object\n")
@@ -1378,12 +1379,13 @@ get_point_estimate = function(regime_fit_object, prob_cutoff) {
 
 
 #' Print function for a bayesWatch object.  Prints only the posterior change-point probabilities.
+#' 
 #'
 #' @param x bayesWatch object. Fit from bayesWatch main method.
 #' @param ... Additional plotting arguments.
 #' 
-#' @method bayesWatch plot
-#' @export
+#' @usage \method{plot}{bayesWatch}(x) <- value
+#' @exportS3Method 
 plot.bayesWatch = function(x, ...) {
   time_point<-prob_value<-NULL
   regime_fit_object   = x
