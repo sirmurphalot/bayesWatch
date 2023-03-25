@@ -26,7 +26,7 @@ print.bayesWatch = function(x, ...)
 
 #' Fit a bayesWatch object.
 #' 
-#' Main method of package.  MCMC sampling for change-point probabilities with fault detection
+#' @description Main method of package.  MCMC sampling for change-point probabilities with fault detection
 #' according to the model by Murph et al. 2023.  Creates a bayesWatch object for analysis of change-points.
 #'
 #' @param data_woTimeValues matrix. Raw data matrix without datetime stamps.
@@ -1343,7 +1343,7 @@ bayeswatch = function(data_woTimeValues,
 
 #' Create an estimate on posterior distribution of change-points.
 #' 
-#' Given a bayesWatch object and a probability cutoff, finds change-points.
+#' @description  Given a bayesWatch object and a probability cutoff, finds change-points.
 #'
 #' @param regime_fit_object bayesWatch object. Fit with the bayesWatch method.
 #' @param prob_cutoff float in (0,1). Posterior probabilities above this cutoff will be considered changepoints.
@@ -1405,7 +1405,7 @@ plot.bayesWatch = function(x, ...) {
 
 #' Determine the cause of a change-point.
 #' 
-#' Prints out fault detection graphics given a bayesWatch object. This method can only be run
+#' @description Prints out fault detection graphics given a bayesWatch object. This method can only be run
 #' if fault detection was run on the bayesWatch fit (if model_params_save_every < iterations).
 #'
 #' @param regime_fit_object bayesWatch object.  Fit with main method of package.
