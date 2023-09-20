@@ -314,6 +314,163 @@ empirical_cov_w_missing   = function(data_w_missing) {
   return(cov(data_w_missing))
 }
 
+#' Method to assist in the parallel state splits found in the fit_regimes methods.
+#'
+#' @param previous_model_fits_temp rlist. The proposed parameter fit at this MCMC iteration.
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param data_points_Z matrix.  The latent data at this MCMC iteration
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param current_state integer. State at which we want to perform the split.
+#' @param my_states_temp vector. Proposed regime vector.
+#' @param previous_model_fits_temp rlist. The parameter fit at this MCMC iteration.
+#' @param my_states vector. Current regime vector.
+#' 
+#'
+#' @noRd
+#'
+#'
+split_parallel_helper     = function(x,previous_model_fits_temp, Z_timepoint_indices, data_points_Z, hyperparameters, first_state, my_states_temp,
+                                     previous_model_fits, my_states){
+  if(x==1){
+    posterior_term                = log_Gwishart_marginals(previous_model_fits_temp,Z_timepoint_indices,data_points_Z,hyperparameters,first_state,my_states_temp)
+  }else if(x==2){
+    posterior_term                = log_Gwishart_marginals(previous_model_fits_temp,Z_timepoint_indices,data_points_Z,hyperparameters,first_state+1,my_states_temp)
+  }else if(x==3){
+    posterior_term                = log_Gwishart_marginals(previous_model_fits,Z_timepoint_indices,data_points_Z,hyperparameters,first_state,my_states)
+    posterior_term$log_posterior  = -posterior_term$log_posterior
+  }else{
+    posterior_term                = log_Gwishart_marginals(previous_model_fits,Z_timepoint_indices,data_points_Z,hyperparameters,max(my_states)+1,my_states)
+    posterior_term$log_posterior  = -posterior_term$log_posterior
+  }
+  return(posterior_term)
+}
+
+#' Method to assist in the parallel state merges found in the fit_regimes methods.
+#'
+#' @param previous_model_fits_temp rlist. The proposed parameter fit at this MCMC iteration.
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param data_points_Z matrix.  The latent data at this MCMC iteration
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param current_state integer. State at which we want to perform the merge (state before).
+#' @param my_states_temp vector. Proposed regime vector.
+#' @param previous_model_fits_temp rlist. The parameter fit at this MCMC iteration.
+#' @param my_states vector. Current regime vector.
+#' 
+#'
+#' @noRd
+#'
+#'
+merge_parallel_helper     = function(x,previous_model_fits_temp, Z_timepoint_indices, data_points_Z, hyperparameters, first_state, my_states_temp,
+                                     previous_model_fits, my_states){
+  if(x==1){
+    posterior_term                = log_Gwishart_marginals(previous_model_fits_temp,Z_timepoint_indices,data_points_Z,hyperparameters,first_state,my_states_temp)
+  }else if(x==2){
+    posterior_term                = log_Gwishart_marginals(previous_model_fits_temp,Z_timepoint_indices,data_points_Z,hyperparameters,max(my_states_temp)+1,my_states_temp)
+  }else if(x==3){
+    posterior_term                = log_Gwishart_marginals(previous_model_fits,Z_timepoint_indices,data_points_Z,hyperparameters,first_state,  my_states)
+    posterior_term$log_posterior  = -posterior_term$log_posterior
+  }else{
+    posterior_term                = log_Gwishart_marginals(previous_model_fits,Z_timepoint_indices,data_points_Z,hyperparameters,first_state+1,my_states)
+    posterior_term$log_posterior  = -posterior_term$log_posterior
+  }
+  posterior_term
+}
+
+#' Method to assist in the parallel latent data redraws found in the fit_regimes methods.
+#'
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param full_data_Z matrix.  The latent data at this MCMC iteration
+#' @param data_woTimeValues matrix.  The full raw data given by the user.
+#' @param is_missing matrix.  Indicator matrix on whether each individual value is missing.
+#' @param upper_bound_is_equal matrix.  Indicator matrix on whether each individual value achieves its upper bound.
+#' @param lower_bound_is_equal matrix.  Indicator matrix on whether each individual value achieves its lower bound.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param my_states vector. Current regime vector.
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param ordinal_levels vector.  Indicates the number of ordinal levels for each variable
+#' @param levels_assignments vector.
+#' @param discrete_levels_indicator vector.
+#' 
+#'
+#' @noRd
+#'
+#'
+latent_data_parallel_helper = function(x, Z_timepoint_indices, full_data_Z, data_woTimeValues, is_missing, 
+                                       upper_bound_is_equal, lower_bound_is_equal, previous_model_fits,
+                                       my_states, hyperparameters, ordinal_levels, 
+                                       levels_assignments, discrete_levels_indicator){
+  
+  first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
+  last_index                = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
+  temp_data                 = full_data_Z[first_index:last_index,]
+  temp_raw_data             = data_woTimeValues[first_index:last_index,]
+  is_missing_temp           = is_missing[first_index:last_index,]
+  upper_bound_is_equal_temp = upper_bound_is_equal[first_index:last_index,]
+  lower_bound_is_equal_temp = lower_bound_is_equal[first_index:last_index,]
+  new_latent_data           = redraw_latent_data(x, previous_model_fits, 
+                                                 hyperparameters, temp_data, temp_raw_data,
+                                                 is_missing_temp, upper_bound_is_equal_temp,
+                                                 lower_bound_is_equal_temp, ordinal_levels, 
+                                                 levels_assignments, discrete_levels_indicator,
+                                                 1)
+  if(anyNA(new_latent_data)){
+    stop("latent data redraw didn't work on C level -- NAs persist.")
+  }
+  # return(new_latent_data)
+  return(new_latent_data)
+  
+}
+
+#' Method to assist in the parallel split-merge algorithm on the components.
+#'
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param my_states vector. Current regime vector.
+#' @param full_data_Z matrix.  The latent data at this MCMC iteration
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' 
+#'
+#' @noRd
+#'
+#'
+splitmerge_comps_parallel_helper = function(x, Z_timepoint_indices, my_states, full_data_Z, 
+                                            previous_model_fits, hyperparameters){
+  first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
+  last_index                = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
+  temp_data                 = full_data_Z[first_index:last_index,]
+  
+  new_components_for_state  = splitmerge_gibbs_comps(my_states, previous_model_fits, temp_data,
+                                                     x, hyperparameters, Z_timepoint_indices,
+                                                     full_data_Z)
+  # print(new_components_for_state)
+  return(list(precisions        = new_components_for_state$precisions,
+              mus               = new_components_for_state$mus,
+              assigns           = new_components_for_state$assigns,
+              component_probs   = new_components_for_state$comp_probs,
+              component_sticks  = new_components_for_state$comp_sticks))
+}
+
+#' Method to assist in the parallel split-merge algorithm on the components.
+#'
+#' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
+#' @param full_data_Z matrix.  The latent data at this MCMC iteration
+#' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
+#' @param my_states vector. Current regime vector.
+#' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
+#' 
+#'
+#' @noRd
+#'
+#'
+gibbsswap_comps_parallel_helper = function(x, Z_timepoint_indices, full_data_Z, hyperparameters, 
+                                           my_states, previous_model_fits){
+  first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
+  last_index                = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
+  temp_data                 = full_data_Z[first_index:last_index,]
+  new_components_for_state  = gibbs_swap_comps(temp_data, previous_model_fits[[x]]$cluster_assignments, previous_model_fits[[x]]$component_log_probs,
+                                               previous_model_fits[[x]]$precision, previous_model_fits[[x]]$mu, hyperparameters$component_truncation, 2)
+  return(list(assigns           = as.vector(new_components_for_state)))
+}
 
 #' Merge-split-swap algorithm on the regime vector as outlined in Murph et al 2023.
 #'
@@ -3238,7 +3395,10 @@ redraw_latent_data        = function(state_to_redraw,
                                      raw_data_from_state,
                                      is_missing_state,
                                      upper_bound_is_equal_state,
-                                     lower_bound_is_equal_state,
+                                     lower_bound_is_equal_state, 
+                                     ordinal_levels, 
+                                     levels_assignments, 
+                                     discrete_levels_indicator,
                                      n_cores_each_child = 1) {
   # Method to redraw latent data FOR A SINGLE STATE ONLY.  Assumes Normal Mixture Model.
   components        = previous_model_fits[[state_to_redraw]]$cluster_assignments
@@ -3278,7 +3438,10 @@ redraw_latent_data        = function(state_to_redraw,
       upper_bound_is_equal_temp,
       is_missing_temp,
       continuous,
-      temp_data_raw,
+      temp_data_raw, 
+      ordinal_levels, 
+      levels_assignments, 
+      discrete_levels_indicator,
       n_cores_each_child
     )
     new_data_for_comp         = matrix(redraw_output, n_value, hyperparameters$p)
