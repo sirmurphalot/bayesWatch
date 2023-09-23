@@ -62,12 +62,12 @@ update_states_gibbs       = function(my_states,
         # Now, whatever change is made will leave at least 2 observations in every state.
         first_index       = Z_timepoint_indices[[index]]$timepoint_first_index
         last_index        = Z_timepoint_indices[[index]]$timepoint_last_index
-        temp_data         = data_points_Z[first_index:last_index, ]
+        temp_data         = data_points_Z[first_index:last_index,]
         n_value           = nrow(temp_data)
         
-        upper_bound_is_equal_temp = hyperparameters$upper_bound_is_equal[first_index:last_index, ]
-        lower_bound_is_equal_temp = hyperparameters$lower_bound_is_equal[first_index:last_index, ]
-        is_missing_temp           = hyperparameters$is_missing[first_index:last_index, ]
+        upper_bound_is_equal_temp = hyperparameters$upper_bound_is_equal[first_index:last_index,]
+        lower_bound_is_equal_temp = hyperparameters$lower_bound_is_equal[first_index:last_index,]
+        is_missing_temp           = hyperparameters$is_missing[first_index:last_index,]
         
         if (my_states[index] == my_states[index - 1]) {
           new_state             = my_states[index + 1]
@@ -110,10 +110,10 @@ update_states_gibbs       = function(my_states,
           
           first_index         = Z_timepoint_indices[[index]]$timepoint_first_index
           last_index          = Z_timepoint_indices[[index]]$timepoint_last_index
-          temp_data_above     = data_points_Z[first_index:last_index, ]
-          upper_bound_at_obs  = hyperparameters$upper_bound_is_equal[first_index:last_index, ]
-          lower_bound_at_obs  = hyperparameters$lower_bound_is_equal[first_index:last_index, ]
-          is_missing_at_obs   = hyperparameters$is_missing[first_index:last_index, ]
+          temp_data_above     = data_points_Z[first_index:last_index,]
+          upper_bound_at_obs  = hyperparameters$upper_bound_is_equal[first_index:last_index,]
+          lower_bound_at_obs  = hyperparameters$lower_bound_is_equal[first_index:last_index,]
+          is_missing_at_obs   = hyperparameters$is_missing[first_index:last_index,]
           
           data_new_state      = temp_data_above
           data_old_state      = temp_data_above
@@ -178,10 +178,10 @@ update_states_gibbs       = function(my_states,
           
           first_index              = Z_timepoint_indices[[index]]$timepoint_first_index
           last_index               = Z_timepoint_indices[[index]]$timepoint_last_index
-          temp_data_below          = data_points_Z[first_index:last_index, ]
-          upper_bound_at_obs       = hyperparameters$upper_bound_is_equal[first_index:last_index, ]
-          lower_bound_at_obs       = hyperparameters$lower_bound_is_equal[first_index:last_index, ]
-          is_missing_at_obs        = hyperparameters$is_missing[first_index:last_index, ]
+          temp_data_below          = data_points_Z[first_index:last_index,]
+          upper_bound_at_obs       = hyperparameters$upper_bound_is_equal[first_index:last_index,]
+          lower_bound_at_obs       = hyperparameters$lower_bound_is_equal[first_index:last_index,]
+          is_missing_at_obs        = hyperparameters$is_missing[first_index:last_index,]
           
           data_old_state      = temp_data_below
           data_new_state      = temp_data_below
@@ -218,7 +218,8 @@ update_states_gibbs       = function(my_states,
         rand_value              = runif(1)
         
         if ((length(prob_of_state_change) == 0) |
-            (is.na(prob_of_state_change)) | (is.nan(prob_of_state_change))) {
+            (is.na(prob_of_state_change)) |
+            (is.nan(prob_of_state_change))) {
           if (verbose_logfile)
             cat(
               paste(
@@ -293,7 +294,9 @@ update_states_gibbs       = function(my_states,
 #' @noRd
 #'
 #'
-empirical_cov_w_missing   = function(data_w_missing) {
+empirical_cov_w_missing   = function(data_w_missing,
+                                     Z_timepoint_indices,
+                                     previous_states) {
   # In response to some reading that I've done on the issues of using the "pairwise.complete.obs," I am going
   # to write a better method to get a good empirical covariance matrix from data with missing values.
   # Essentially, I am going to cluster the data, impute each missing value with the average value of that value's cluster,
@@ -301,14 +304,31 @@ empirical_cov_w_missing   = function(data_w_missing) {
   
   # I originally wanted to do the clustering approach, but the kmeans w missing values has turned out to be more of
   # a meaty problem than I was expecting.  I may return to do that lift if the simple mean-imputation approach is not
-  mean_remove_func   = function(x) {
+  temp_full_data      = data_w_missing
+  var_remove_func     = function(x) {
+    var(x, na.rm = T)
+  }
+  mean_remove_func    = function(x) {
     mean(x, na.rm = T)
   }
-  means_of_cols_temp = apply(data_w_missing, 2, mean_remove_func)
-  for (col_index in 1:ncol(data_w_missing)) {
-    temp_col                   = data_w_missing[, col_index]
-    temp_col[is.na(temp_col)]  = means_of_cols_temp[col_index]
-    data_w_missing[, col_index] = temp_col
+  for (day_index in 1:length(previous_states)) {
+    # For each day, impute values from a normal distribution with a mean & var that
+    # match that day's mean and variance.
+    min_index           = Z_timepoint_indices[[day_index]]$timepoint_first_index
+    max_index           = Z_timepoint_indices[[day_index]]$timepoint_last_index
+    temp_data           = data_w_missing[min_index:max_index, ]
+    means_of_cols_temp  = apply(temp_data, 2, mean_remove_func)
+    vars_of_cols_temp   = apply(temp_data, 2, var_remove_func)
+    for (col_index in 1:ncol(data_w_missing)) {
+      temp_col                   = temp_data[, col_index]
+      normal_distn_values        = rnorm(sum(is.na(temp_col)),
+                                         mean = means_of_cols_temp[col_index],
+                                         sd   = sqrt(vars_of_cols_temp[col_index]))
+      temp_col[is.na(temp_col)]  = normal_distn_values
+      temp_data[, col_index] = temp_col
+    }
+    data_w_missing[min_index:max_index, ] = temp_data
+    
   }
   
   return(cov(data_w_missing))
@@ -324,22 +344,57 @@ empirical_cov_w_missing   = function(data_w_missing) {
 #' @param my_states_temp vector. Proposed regime vector.
 #' @param previous_model_fits_temp rlist. The parameter fit at this MCMC iteration.
 #' @param my_states vector. Current regime vector.
-#' 
+#'
 #'
 #' @noRd
 #'
 #'
-split_parallel_helper     = function(x,previous_model_fits_temp, Z_timepoint_indices, data_points_Z, hyperparameters, first_state, my_states_temp,
-                                     previous_model_fits, my_states){
-  if(x==1){
-    posterior_term                = log_Gwishart_marginals(previous_model_fits_temp,Z_timepoint_indices,data_points_Z,hyperparameters,first_state,my_states_temp)
-  }else if(x==2){
-    posterior_term                = log_Gwishart_marginals(previous_model_fits_temp,Z_timepoint_indices,data_points_Z,hyperparameters,first_state+1,my_states_temp)
-  }else if(x==3){
-    posterior_term                = log_Gwishart_marginals(previous_model_fits,Z_timepoint_indices,data_points_Z,hyperparameters,first_state,my_states)
+split_parallel_helper     = function(x,
+                                     previous_model_fits_temp,
+                                     Z_timepoint_indices,
+                                     data_points_Z,
+                                     hyperparameters,
+                                     first_state,
+                                     my_states_temp,
+                                     previous_model_fits,
+                                     my_states) {
+  if (x == 1) {
+    posterior_term                = log_Gwishart_marginals(
+      previous_model_fits_temp,
+      Z_timepoint_indices,
+      data_points_Z,
+      hyperparameters,
+      first_state,
+      my_states_temp
+    )
+  } else if (x == 2) {
+    posterior_term                = log_Gwishart_marginals(
+      previous_model_fits_temp,
+      Z_timepoint_indices,
+      data_points_Z,
+      hyperparameters,
+      first_state + 1,
+      my_states_temp
+    )
+  } else if (x == 3) {
+    posterior_term                = log_Gwishart_marginals(
+      previous_model_fits,
+      Z_timepoint_indices,
+      data_points_Z,
+      hyperparameters,
+      first_state,
+      my_states
+    )
     posterior_term$log_posterior  = -posterior_term$log_posterior
-  }else{
-    posterior_term                = log_Gwishart_marginals(previous_model_fits,Z_timepoint_indices,data_points_Z,hyperparameters,max(my_states)+1,my_states)
+  } else{
+    posterior_term                = log_Gwishart_marginals(
+      previous_model_fits,
+      Z_timepoint_indices,
+      data_points_Z,
+      hyperparameters,
+      max(my_states) + 1,
+      my_states
+    )
     posterior_term$log_posterior  = -posterior_term$log_posterior
   }
   return(posterior_term)
@@ -355,22 +410,57 @@ split_parallel_helper     = function(x,previous_model_fits_temp, Z_timepoint_ind
 #' @param my_states_temp vector. Proposed regime vector.
 #' @param previous_model_fits_temp rlist. The parameter fit at this MCMC iteration.
 #' @param my_states vector. Current regime vector.
-#' 
+#'
 #'
 #' @noRd
 #'
 #'
-merge_parallel_helper     = function(x,previous_model_fits_temp, Z_timepoint_indices, data_points_Z, hyperparameters, first_state, my_states_temp,
-                                     previous_model_fits, my_states){
-  if(x==1){
-    posterior_term                = log_Gwishart_marginals(previous_model_fits_temp,Z_timepoint_indices,data_points_Z,hyperparameters,first_state,my_states_temp)
-  }else if(x==2){
-    posterior_term                = log_Gwishart_marginals(previous_model_fits_temp,Z_timepoint_indices,data_points_Z,hyperparameters,max(my_states_temp)+1,my_states_temp)
-  }else if(x==3){
-    posterior_term                = log_Gwishart_marginals(previous_model_fits,Z_timepoint_indices,data_points_Z,hyperparameters,first_state,  my_states)
+merge_parallel_helper     = function(x,
+                                     previous_model_fits_temp,
+                                     Z_timepoint_indices,
+                                     data_points_Z,
+                                     hyperparameters,
+                                     first_state,
+                                     my_states_temp,
+                                     previous_model_fits,
+                                     my_states) {
+  if (x == 1) {
+    posterior_term                = log_Gwishart_marginals(
+      previous_model_fits_temp,
+      Z_timepoint_indices,
+      data_points_Z,
+      hyperparameters,
+      first_state,
+      my_states_temp
+    )
+  } else if (x == 2) {
+    posterior_term                = log_Gwishart_marginals(
+      previous_model_fits_temp,
+      Z_timepoint_indices,
+      data_points_Z,
+      hyperparameters,
+      max(my_states_temp) + 1,
+      my_states_temp
+    )
+  } else if (x == 3) {
+    posterior_term                = log_Gwishart_marginals(
+      previous_model_fits,
+      Z_timepoint_indices,
+      data_points_Z,
+      hyperparameters,
+      first_state,
+      my_states
+    )
     posterior_term$log_posterior  = -posterior_term$log_posterior
-  }else{
-    posterior_term                = log_Gwishart_marginals(previous_model_fits,Z_timepoint_indices,data_points_Z,hyperparameters,first_state+1,my_states)
+  } else{
+    posterior_term                = log_Gwishart_marginals(
+      previous_model_fits,
+      Z_timepoint_indices,
+      data_points_Z,
+      hyperparameters,
+      first_state + 1,
+      my_states
+    )
     posterior_term$log_posterior  = -posterior_term$log_posterior
   }
   posterior_term
@@ -390,30 +480,46 @@ merge_parallel_helper     = function(x,previous_model_fits_temp, Z_timepoint_ind
 #' @param ordinal_levels vector.  Indicates the number of ordinal levels for each variable
 #' @param levels_assignments vector.
 #' @param discrete_levels_indicator vector.
-#' 
+#'
 #'
 #' @noRd
 #'
 #'
-latent_data_parallel_helper = function(x, Z_timepoint_indices, full_data_Z, data_woTimeValues, is_missing, 
-                                       upper_bound_is_equal, lower_bound_is_equal, previous_model_fits,
-                                       my_states, hyperparameters, ordinal_levels, 
-                                       levels_assignments, discrete_levels_indicator){
-  
+latent_data_parallel_helper = function(x,
+                                       Z_timepoint_indices,
+                                       full_data_Z,
+                                       data_woTimeValues,
+                                       is_missing,
+                                       upper_bound_is_equal,
+                                       lower_bound_is_equal,
+                                       previous_model_fits,
+                                       my_states,
+                                       hyperparameters,
+                                       ordinal_levels,
+                                       levels_assignments,
+                                       discrete_levels_indicator) {
   first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
   last_index                = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
-  temp_data                 = full_data_Z[first_index:last_index,]
-  temp_raw_data             = data_woTimeValues[first_index:last_index,]
-  is_missing_temp           = is_missing[first_index:last_index,]
-  upper_bound_is_equal_temp = upper_bound_is_equal[first_index:last_index,]
-  lower_bound_is_equal_temp = lower_bound_is_equal[first_index:last_index,]
-  new_latent_data           = redraw_latent_data(x, previous_model_fits, 
-                                                 hyperparameters, temp_data, temp_raw_data,
-                                                 is_missing_temp, upper_bound_is_equal_temp,
-                                                 lower_bound_is_equal_temp, ordinal_levels, 
-                                                 levels_assignments, discrete_levels_indicator,
-                                                 1)
-  if(anyNA(new_latent_data)){
+  temp_data                 = full_data_Z[first_index:last_index, ]
+  temp_raw_data             = data_woTimeValues[first_index:last_index, ]
+  is_missing_temp           = is_missing[first_index:last_index, ]
+  upper_bound_is_equal_temp = upper_bound_is_equal[first_index:last_index, ]
+  lower_bound_is_equal_temp = lower_bound_is_equal[first_index:last_index, ]
+  new_latent_data           = redraw_latent_data(
+    x,
+    previous_model_fits,
+    hyperparameters,
+    temp_data,
+    temp_raw_data,
+    is_missing_temp,
+    upper_bound_is_equal_temp,
+    lower_bound_is_equal_temp,
+    ordinal_levels,
+    levels_assignments,
+    discrete_levels_indicator,
+    1
+  )
+  if (anyNA(new_latent_data)) {
     stop("latent data redraw didn't work on C level -- NAs persist.")
   }
   # return(new_latent_data)
@@ -428,26 +534,40 @@ latent_data_parallel_helper = function(x, Z_timepoint_indices, full_data_Z, data
 #' @param full_data_Z matrix.  The latent data at this MCMC iteration
 #' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
 #' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
-#' 
+#'
 #'
 #' @noRd
 #'
 #'
-splitmerge_comps_parallel_helper = function(x, Z_timepoint_indices, my_states, full_data_Z, 
-                                            previous_model_fits, hyperparameters){
+splitmerge_comps_parallel_helper = function(x,
+                                            Z_timepoint_indices,
+                                            my_states,
+                                            full_data_Z,
+                                            previous_model_fits,
+                                            hyperparameters) {
   first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
   last_index                = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
-  temp_data                 = full_data_Z[first_index:last_index,]
+  temp_data                 = full_data_Z[first_index:last_index, ]
   
-  new_components_for_state  = splitmerge_gibbs_comps(my_states, previous_model_fits, temp_data,
-                                                     x, hyperparameters, Z_timepoint_indices,
-                                                     full_data_Z)
+  new_components_for_state  = splitmerge_gibbs_comps(
+    my_states,
+    previous_model_fits,
+    temp_data,
+    x,
+    hyperparameters,
+    Z_timepoint_indices,
+    full_data_Z
+  )
   # print(new_components_for_state)
-  return(list(precisions        = new_components_for_state$precisions,
-              mus               = new_components_for_state$mus,
-              assigns           = new_components_for_state$assigns,
-              component_probs   = new_components_for_state$comp_probs,
-              component_sticks  = new_components_for_state$comp_sticks))
+  return(
+    list(
+      precisions        = new_components_for_state$precisions,
+      mus               = new_components_for_state$mus,
+      assigns           = new_components_for_state$assigns,
+      component_probs   = new_components_for_state$comp_probs,
+      component_sticks  = new_components_for_state$comp_sticks
+    )
+  )
 }
 
 #' Method to assist in the parallel split-merge algorithm on the components.
@@ -457,18 +577,29 @@ splitmerge_comps_parallel_helper = function(x, Z_timepoint_indices, my_states, f
 #' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
 #' @param my_states vector. Current regime vector.
 #' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
-#' 
+#'
 #'
 #' @noRd
 #'
 #'
-gibbsswap_comps_parallel_helper = function(x, Z_timepoint_indices, full_data_Z, hyperparameters, 
-                                           my_states, previous_model_fits){
+gibbsswap_comps_parallel_helper = function(x,
+                                           Z_timepoint_indices,
+                                           full_data_Z,
+                                           hyperparameters,
+                                           my_states,
+                                           previous_model_fits) {
   first_index               = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
   last_index                = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
-  temp_data                 = full_data_Z[first_index:last_index,]
-  new_components_for_state  = gibbs_swap_comps(temp_data, previous_model_fits[[x]]$cluster_assignments, previous_model_fits[[x]]$component_log_probs,
-                                               previous_model_fits[[x]]$precision, previous_model_fits[[x]]$mu, hyperparameters$component_truncation, 2)
+  temp_data                 = full_data_Z[first_index:last_index, ]
+  new_components_for_state  = gibbs_swap_comps(
+    temp_data,
+    previous_model_fits[[x]]$cluster_assignments,
+    previous_model_fits[[x]]$component_log_probs,
+    previous_model_fits[[x]]$precision,
+    previous_model_fits[[x]]$mu,
+    hyperparameters$component_truncation,
+    2
+  )
   return(list(assigns           = as.vector(new_components_for_state)))
 }
 
@@ -507,6 +638,8 @@ update_states_mergesplit  = function(my_states,
                                      n.cores,
                                      allow_mixtures = FALSE,
                                      min_regime_length = 1,
+                                     regime_selection_multiplicative_prior = NULL,
+                                     split_selection_multiplicative_prior = NULL,
                                      verbose_logfile = FALSE) {
   linger_parameter         = hyperparameters$alpha
   move_parameter           = hyperparameters$beta
@@ -522,7 +655,45 @@ update_states_mergesplit  = function(my_states,
   
   if (merge_or_split) {
     # |------------------------ Perform a split action ------------------------|
-    # Choose the first state randomly.
+    if ((!is.null(regime_selection_multiplicative_prior)) &
+        (max(my_states) > 1)) {
+      if (regime_selection_multiplicative_prior <= 1) {
+        stop("The regime selection multiplicative prior must be > 1.")
+      }
+      
+      # I start by randomly selecting a regime to split according to the regime selection prior.
+      possible_regimes       = 1:(max(my_states))
+      regime_distribution    = ((possible_regimes - 1) / (max(my_states) - 1)) *
+        (regime_selection_multiplicative_prior - 1) + 1
+      sum_density_values     = 0
+      rand_value             = runif(1, min = 0, max = sum(regime_distribution))
+      
+      for (regime_index in 1:length(regime_distribution)) {
+        sum_density_values = sum_density_values + regime_distribution[regime_index]
+        if (rand_value <= sum_density_values) {
+          first_state                = possible_regimes[regime_index]
+          log_prob_of_regime_forward = log(regime_distribution[regime_index] / sum(regime_distribution))
+          break
+        }
+      }
+      
+      # Now I need to determine the return probability, given the split, that I choose this regime to merge.
+      possible_regimes             = 1:(max(my_states) + 1)
+      regime_distribution          = ((possible_regimes - 1) / (max(my_states) - 1)) *
+        (regime_selection_multiplicative_prior - 1) + 1
+      first_state                  = possible_regimes[regime_index]
+      log_prob_of_regime_backward  = log(regime_distribution[regime_index] / sum(regime_distribution))
+      
+    } else {
+      first_state                = sample(1:(max(my_states)), 1)
+      # I can choose any regime to split:
+      log_prob_of_regime_forward  = log(1 / max(max(my_states)))
+      # I can choose any regime but the last regime to merge
+      log_prob_of_regime_backward = log(1 / max(max(my_states)))
+      
+    }
+    log_prob_of_regime_forward  = 0
+    log_prob_of_regime_backward = 0
     
     first_state           = sample(1:(max(my_states)), 1)
     if (verbose_logfile)
@@ -595,6 +766,7 @@ update_states_mergesplit  = function(my_states,
       components_of_regime,
       hyperparameters$wishart_scale_matrix,
       hyperparameters$wishart_df,
+      split_selection_multiplicative_prior,
       verbose_logfile = verbose_logfile
     )
     
@@ -668,7 +840,6 @@ update_states_mergesplit  = function(my_states,
     
     my_states_temp[indices_of_state_changed] = max(my_states) + 1
     
-    # if( (length(my_states_temp[indices_of_state_changed]) < min_regime_length) | (length(my_states_temp[indices_of_state_unchanged]) < min_regime_length)){
     if ((length(which(my_states_temp == 1)) < min_regime_length)) {
       if (verbose_logfile)
         cat(
@@ -694,18 +865,18 @@ update_states_mergesplit  = function(my_states,
     # Find the first and last row of the data matrix the is included in this regime.
     Z_index_of_regime_start_changed     = Z_timepoint_indices[[min(indices_of_state_changed)]]$timepoint_first_index
     Z_index_of_regime_end_changed       = Z_timepoint_indices[[max(indices_of_state_changed)]]$timepoint_last_index
-    Z_values_changed                    = data_points_Z[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
-    upper_bounds_changed                = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
-    lower_bounds_changed                = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
-    is_missing_changed                  = hyperparameters$is_missing[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
+    Z_values_changed                    = data_points_Z[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
+    upper_bounds_changed                = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
+    lower_bounds_changed                = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
+    is_missing_changed                  = hyperparameters$is_missing[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
     
     #
     Z_index_of_regime_start_unchanged   = Z_timepoint_indices[[min(indices_of_state_unchanged)]]$timepoint_first_index
     Z_index_of_regime_end_unchanged     = Z_timepoint_indices[[max(indices_of_state_unchanged)]]$timepoint_last_index
-    Z_values_unchanged                  = data_points_Z[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
-    upper_bounds_unchanged              = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
-    lower_bounds_unchanged              = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
-    is_missing_unchanged                = hyperparameters$is_missing[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
+    Z_values_unchanged                  = data_points_Z[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
+    upper_bounds_unchanged              = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
+    lower_bounds_unchanged              = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
+    is_missing_unchanged                = hyperparameters$is_missing[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
     
     # Gather all the data into one matrix as well.
     z_values_of_full_group_nochange = rbind(Z_values_unchanged, Z_values_changed)
@@ -717,31 +888,22 @@ update_states_mergesplit  = function(my_states,
     temp_n_unchanged                = nrow(Z_values_unchanged)
     
     # I need the new components for the split before I redraw the mixture parameters.
-    if (allow_mixtures) {
-      log_forward_prob_component_split   = 0
-      all_components                     = previous_model_fits_temp[[first_state]]$cluster_assignments
-      comps_after                        = all_components[(Z_index_of_regime_end_unchanged -
-                                                             Z_index_of_regime_start_unchanged + 2):length(all_components)]
-      comps_before                       = all_components[1:(Z_index_of_regime_end_unchanged -
-                                                               Z_index_of_regime_start_unchanged + 1)]
-      
-      previous_model_fits_temp[[first_state]]$cluster_assignments         = comps_before
-      previous_model_fits_temp[[max(my_states_temp)]]$cluster_assignments = comps_after
-    } else {
-      log_forward_prob_component_split   = 0
-      component_split_list               = split_regime_components(
-        first_state,
-        my_states,
-        index_of_split,
-        previous_model_fits_temp,
-        Z_timepoint_indices,
-        hyperparameters,
-        Z_values_changed
-      )
-      previous_model_fits_temp           = component_split_list$previous_model_fits_item
-    }
+    log_forward_prob_component_split   = 0
+    all_components                     = previous_model_fits_temp[[first_state]]$cluster_assignments
+    comps_after                        = all_components[(Z_index_of_regime_end_unchanged -
+                                                           Z_index_of_regime_start_unchanged + 2):length(all_components)]
+    comps_before                       = all_components[1:(Z_index_of_regime_end_unchanged -
+                                                             Z_index_of_regime_start_unchanged + 1)]
     
-    for (regime_index in 1:hyperparameters$regime_truncation) {
+    previous_model_fits_temp[[first_state]]$cluster_assignments         = comps_before
+    previous_model_fits_temp[[max(my_states_temp)]]$cluster_assignments = comps_after
+    
+    relabel_fits                                             = shift_states(my_states_temp, previous_model_fits_temp)
+    previous_model_fits_temp                                 = relabel_fits$previous_model_fits_item
+    my_states_temp                                           = relabel_fits$my_states_item
+    
+    redraw_states = c(max(my_states_temp), first_state)
+    for (regime_index in redraw_states) {
       previous_model_fits_temp             = redraw_mixture_parameters(
         my_states_temp,
         regime_index,
@@ -755,62 +917,39 @@ update_states_mergesplit  = function(my_states,
         hyperparameters
       )
     }
+    log_leftover_value_betaterms = calc_regimes_log_prob(my_states_temp, transition_probabilities) -
+      calc_regimes_log_prob(my_states, transition_probabilities)
     
     # I now have new component assignments and new Mixture Model Parameters.  I need to calculate the return probability for the merged state.
     # I've already handled this return probability for the parameters -- I also need it for the component assignments.
     log_backward_prob_component_split = 0
     log_comp_prob_and_assignment_move = 0
     
-    # Gather information about new proposed parameters.  Set necessary values to these parameter values.
-    relabel_fits                                             = shift_states(my_states_temp, previous_model_fits_temp)
-    previous_model_fits_temp                                 = relabel_fits$previous_model_fits_item
-    my_states_temp                                           = relabel_fits$my_states_item
+    myfunc_5 = function(x) {
+      return(
+        split_parallel_helper(
+          x,
+          previous_model_fits_temp,
+          Z_timepoint_indices,
+          data_points_Z,
+          hyperparameters,
+          first_state,
+          my_states_temp,
+          previous_model_fits,
+          my_states
+        )
+      )
+    }
     
-    log_leftover_value_betaterms = calc_regimes_log_prob(my_states_temp, transition_probabilities) -
-      calc_regimes_log_prob(my_states, transition_probabilities)
+    models_temp = mclapply(1:4, myfunc_5)
+    log_leftover_value_wishartterms     = 0
+    laplace_nonconverge_flag            = 0
     
-    posterior_term_1                = log_Gwishart_marginals(
-      previous_model_fits_temp,
-      Z_timepoint_indices,
-      data_points_Z,
-      hyperparameters,
-      first_state,
-      my_states_temp
-    )
-    posterior_term_2                = log_Gwishart_marginals(
-      previous_model_fits_temp,
-      Z_timepoint_indices,
-      data_points_Z,
-      hyperparameters,
-      first_state + 1,
-      my_states_temp
-    )
-    posterior_term_3                = log_Gwishart_marginals(
-      previous_model_fits,
-      Z_timepoint_indices,
-      data_points_Z,
-      hyperparameters,
-      first_state,
-      my_states
-    )
-    posterior_term_4                = log_Gwishart_marginals(
-      previous_model_fits,
-      Z_timepoint_indices,
-      data_points_Z,
-      hyperparameters,
-      max(my_states) + 1,
-      my_states
-    )
-    log_leftover_value_wishartterms = posterior_term_1[["log_posterior"]] + posterior_term_2[["log_posterior"]] -
-      posterior_term_3[["log_posterior"]] - posterior_term_4[["log_posterior"]]
-    laplace_nonconverge_flag        = max(c(
-      posterior_term_1[["nonconverge_flag"]],
-      posterior_term_2[["nonconverge_flag"]],
-      posterior_term_3[["nonconverge_flag"]],
-      posterior_term_4[["nonconverge_flag"]]
-    ))
-    
-    
+    for (list_index in 1:4) {
+      log_leftover_value_wishartterms   = log_leftover_value_wishartterms + models_temp[[list_index]]$log_posterior
+      laplace_nonconverge_flag          = max(laplace_nonconverge_flag,
+                                              models_temp[[list_index]]$nonconverge_flag)
+    }
     
     log_leftover_value_mu_distn     = log_mu_marginals(
       previous_model_fits_temp,
@@ -857,9 +996,9 @@ update_states_mergesplit  = function(my_states,
     log_likelihood_old_model = get_mixture_log_density(first_state,
                                                        previous_model_fits,
                                                        z_values_of_full_group_nochange)
-    MH_ratio        =  -log_prob_of_split - log(M + 1) + log(M) + log_leftover_value_betaterms +
-      log_leftover_value_wishartterms  + log_leftover_value_mu_distn +
-      log_forward_prob_component_split - log_backward_prob_component_split + log_comp_prob_and_assignment_move + pseudoprior_values
+    MH_ratio        =  -log_prob_of_split + log_leftover_value_betaterms + log_prob_of_regime_backward - log_prob_of_regime_forward +
+      log_leftover_value_wishartterms  + log_leftover_value_mu_distn -
+      log_forward_prob_component_split + log_backward_prob_component_split + log_comp_prob_and_assignment_move + pseudoprior_values
     
     if (is.infinite(log_forward_prob_component_split - log_backward_prob_component_split) |
         is.na(log_forward_prob_component_split - log_backward_prob_component_split)) {
@@ -916,8 +1055,7 @@ update_states_mergesplit  = function(my_states,
     if (verbose_logfile)
       cat(
         paste(
-          "-----------> Portion of this from backwards prob:",
-          -log_backward_prob_component_split,
+          "-----------> Portion of this from backwards prob:",-log_backward_prob_component_split,
           '\n'
         ),
         file = "verbose_log.txt",
@@ -936,8 +1074,7 @@ update_states_mergesplit  = function(my_states,
     if (verbose_logfile)
       cat(
         paste(
-          "--------> Portion of this from proposal distribution:",
-          -log_prob_of_split,
+          "--------> Portion of this from proposal distribution:",-log_prob_of_split,
           '\n'
         ),
         file = "verbose_log.txt",
@@ -966,8 +1103,7 @@ update_states_mergesplit  = function(my_states,
     if (verbose_logfile)
       cat(
         paste(
-          "--------> Value of the old likelihood:",
-          -log_likelihood_old_model,
+          "--------> Value of the old likelihood:",-log_likelihood_old_model,
           '\n'
         ),
         file = "verbose_log.txt",
@@ -986,8 +1122,7 @@ update_states_mergesplit  = function(my_states,
     if (verbose_logfile)
       cat(
         paste(
-          "--------> Portion of this from regime selection:",
-          -log(M + 1) + log(M),
+          "--------> Portion of this from regime selection:",-log(M + 1) + log(M),
           '\n'
         ),
         file = "verbose_log.txt",
@@ -1161,6 +1296,38 @@ update_states_mergesplit  = function(my_states,
       )
     }
     # Otherwise, choose the first state randomly.
+    if ((!is.null(regime_selection_multiplicative_prior)) &
+        (max(my_states) > 2)) {
+      if (regime_selection_multiplicative_prior <= 1) {
+        stop("The regime selection multiplicative prior must be > 1.")
+      }
+      
+      # I start by randomly selecting a regime to split according to the regime selection prior.
+      possible_regimes       = 1:(max(my_states) - 1)
+      regime_distribution    = ((possible_regimes - 1) / (max(possible_regimes) - 1)) *
+        (regime_selection_multiplicative_prior - 1) + 1
+      sum_density_values     = 0
+      rand_value             = runif(1, min = 0, max = sum(regime_distribution))
+      for (regime_index in 1:length(regime_distribution)) {
+        sum_density_values = sum_density_values + regime_distribution[regime_index]
+        if (rand_value <= sum_density_values) {
+          first_state                = possible_regimes[regime_index]
+          log_prob_of_regime_forward = log(regime_distribution[regime_index] / sum(regime_distribution))
+          break
+        }
+      }
+      
+    } else {
+      first_state                = sample(1:(max(my_states)), 1)
+      # I can choose any regime to split:
+      log_prob_of_regime_forward  = log(1 / max(max(my_states)))
+      # I can choose any regime but the last regime to merge
+      log_prob_of_regime_backward = log(1 / max(max(my_states)))
+      
+    }
+    log_prob_of_regime_forward  = 0
+    log_prob_of_regime_backward = 0
+    
     first_state                              = sample(1:(max(my_states) -
                                                            1), 1)
     if (verbose_logfile)
@@ -1193,6 +1360,7 @@ update_states_mergesplit  = function(my_states,
       components_of_regime,
       hyperparameters$wishart_scale_matrix,
       hyperparameters$wishart_df,
+      split_selection_multiplicative_prior,
       verbose_logfile = verbose_logfile
     )
     
@@ -1249,16 +1417,16 @@ update_states_mergesplit  = function(my_states,
     # I need to get the Z values for the individual groups.
     Z_index_of_regime_start_changed   = Z_timepoint_indices[[min(indices_of_state_changed)]]$timepoint_first_index
     Z_index_of_regime_end_changed     = Z_timepoint_indices[[max(indices_of_state_changed)]]$timepoint_last_index
-    Z_values_changed                  = data_points_Z[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
-    upper_bounds_changed              = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
-    lower_bounds_changed              = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
-    is_missing_changed                = hyperparameters$is_missing[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
+    Z_values_changed                  = data_points_Z[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
+    upper_bounds_changed              = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
+    lower_bounds_changed              = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
+    is_missing_changed                = hyperparameters$is_missing[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
     Z_index_of_regime_start_unchanged = Z_timepoint_indices[[min(indices_of_state_unchanged)]]$timepoint_first_index
     Z_index_of_regime_end_unchanged   = Z_timepoint_indices[[max(indices_of_state_unchanged)]]$timepoint_last_index
-    Z_values_unchanged                = data_points_Z[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
-    upper_bounds_unchanged            = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
-    lower_bounds_unchanged            = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
-    is_missing_unchanged              = hyperparameters$is_missing[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged, ]
+    Z_values_unchanged                = data_points_Z[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
+    upper_bounds_unchanged            = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
+    lower_bounds_unchanged            = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
+    is_missing_unchanged              = hyperparameters$is_missing[Z_index_of_regime_start_unchanged:Z_index_of_regime_end_unchanged,]
     Z_values_of_full_group_merged     = rbind(Z_values_unchanged, Z_values_changed)
     upper_bounds_full_group           = rbind(upper_bounds_unchanged, upper_bounds_changed)
     lower_bounds_full_group           = rbind(lower_bounds_unchanged, lower_bounds_changed)
@@ -1272,23 +1440,22 @@ update_states_mergesplit  = function(my_states,
     # we use the transition from the second_to_last to the new_parameter as our transition probability.
     temp_n                               = nrow(Z_values_of_full_group_merged)
     
-    if (allow_mixtures) {
-      log_forward_prob_component_split   = 0
-      previous_model_fits_temp[[first_state]]$cluster_assignments   = c(
-        previous_model_fits_temp[[first_state]]$cluster_assignments,
-        previous_model_fits_temp[[first_state + 1]]$cluster_assignments
-      )
-      previous_model_fits_temp[[first_state + 1]]$cluster_assignments = NA
-    } else {
-      log_forward_prob_component_split   = 0
-      component_merge_list               = merge_regime_components(first_state,
-                                                                   previous_model_fits,
-                                                                   hyperparameters,
-                                                                   Z_values_changed)
-      previous_model_fits_temp           = component_merge_list$previous_model_fits_item
-    }
+    log_forward_prob_component_split   = 0
+    previous_model_fits_temp[[first_state]]$cluster_assignments   = c(
+      previous_model_fits_temp[[first_state]]$cluster_assignments,
+      previous_model_fits_temp[[first_state +
+                                  1]]$cluster_assignments
+    )
+    previous_model_fits_temp[[first_state + 1]]$cluster_assignments = NA
     
-    for (regime_index in 1:hyperparameters$regime_truncation) {
+    relabel_fits                                                  = shift_states(my_states_temp, previous_model_fits_temp)
+    previous_model_fits_temp                                      = relabel_fits$previous_model_fits_item
+    my_states_temp                                                = relabel_fits$my_states_item
+    
+    previous_model_fits_temp[[max(my_states_temp) + 1]]$cluster_assignments = NA
+    
+    regime_states = c(first_state)
+    for (regime_index in regime_states) {
       previous_model_fits_temp             = redraw_mixture_parameters(
         my_states_temp,
         regime_index,
@@ -1303,54 +1470,34 @@ update_states_mergesplit  = function(my_states,
       )
     }
     
+    #   # # Whenever you split components, we will make it deterministic.
     log_backward_prob_component_split    = 0
     log_comp_prob_and_assignment_move    = 0
     
+    myfunc_6 = function(x) {
+      return(
+        merge_parallel_helper(
+          x,
+          previous_model_fits_temp,
+          Z_timepoint_indices,
+          data_points_Z,
+          hyperparameters,
+          first_state,
+          my_states_temp,
+          previous_model_fits,
+          my_states
+        )
+      )
+    }
+    models_temp = mclapply(1:4, myfunc_6)
     
-    relabel_fits                                       = shift_states(my_states_temp, previous_model_fits_temp)
-    previous_model_fits_temp                           = relabel_fits$previous_model_fits_item
-    my_states_temp                                     = relabel_fits$my_states_item
-    
-    posterior_term_1                = log_Gwishart_marginals(
-      previous_model_fits_temp,
-      Z_timepoint_indices,
-      data_points_Z,
-      hyperparameters,
-      first_state,
-      my_states_temp
-    )
-    posterior_term_2                = log_Gwishart_marginals(
-      previous_model_fits_temp,
-      Z_timepoint_indices,
-      data_points_Z,
-      hyperparameters,
-      max(my_states_temp) + 1,
-      my_states_temp
-    )
-    posterior_term_3                = log_Gwishart_marginals(
-      previous_model_fits,
-      Z_timepoint_indices,
-      data_points_Z,
-      hyperparameters,
-      first_state,
-      my_states
-    )
-    posterior_term_4                = log_Gwishart_marginals(
-      previous_model_fits,
-      Z_timepoint_indices,
-      data_points_Z,
-      hyperparameters,
-      first_state + 1,
-      my_states
-    )
-    log_leftover_value_wishartterms = posterior_term_1[["log_posterior"]] + posterior_term_2[["log_posterior"]] -
-      posterior_term_3[["log_posterior"]] - posterior_term_4[["log_posterior"]]
-    laplace_nonconverge_flag        = max(c(
-      posterior_term_1[["nonconverge_flag"]],
-      posterior_term_2[["nonconverge_flag"]],
-      posterior_term_3[["nonconverge_flag"]],
-      posterior_term_4[["nonconverge_flag"]]
-    ))
+    log_leftover_value_wishartterms   = 0
+    laplace_nonconverge_flag          = 0
+    for (list_index in 1:4) {
+      log_leftover_value_wishartterms   = log_leftover_value_wishartterms + models_temp[[list_index]]$log_posterior
+      laplace_nonconverge_flag          = max(laplace_nonconverge_flag,
+                                              models_temp[[list_index]]$nonconverge_flag)
+    }
     
     log_leftover_mu_distn           = log_mu_marginals(
       previous_model_fits_temp,
@@ -1393,9 +1540,9 @@ update_states_mergesplit  = function(my_states,
     
     # Now, either accept this split, or reject.
     M                     = length(unique(my_states))
-    MH_ratio              = log_prob_of_split + log(M) - log(M - 1) + log_leftover_value_betaterms +
-      log_leftover_value_wishartterms + log_leftover_mu_distn + #+ log_wishart_prior_term
-      log_forward_prob_component_split - log_backward_prob_component_split + log_comp_prob_and_assignment_move + pseudoprior_values
+    MH_ratio              = log_prob_of_split + log_leftover_value_betaterms + #+ log(M) - log(M-1)
+      log_leftover_value_wishartterms + log_leftover_mu_distn + log_prob_of_regime_backward - log_prob_of_regime_forward - #+ log_wishart_prior_term
+      log_forward_prob_component_split + log_backward_prob_component_split + log_comp_prob_and_assignment_move + pseudoprior_values
     if (is.infinite(log_forward_prob_component_split - log_backward_prob_component_split) |
         is.na(log_forward_prob_component_split - log_backward_prob_component_split)) {
       if (verbose_logfile)
@@ -1456,8 +1603,7 @@ update_states_mergesplit  = function(my_states,
     if (verbose_logfile)
       cat(
         paste(
-          "-----------> Portion of this from backwards prob:",
-          -log_backward_prob_component_split,
+          "-----------> Portion of this from backwards prob:",-log_backward_prob_component_split,
           '\n'
         ),
         file = "verbose_log.txt",
@@ -1711,6 +1857,7 @@ shift_components          = function(current_state, previous_model_fits) {
   return(previous_model_fits)
 }
 
+
 #' There are leftover G-wishart normalizing terms when performing the Metropolis-Hastings
 #' updating step in the merge-split algorithm for the regime vector.  This method calculates
 #' these values.  See Murph et al 2023 for more details.
@@ -1764,7 +1911,7 @@ log_Gwishart_marginals    = function(previous_model_fits,
   
   Z_index_of_regime_start_changed   = Z_timepoint_indices[[min(indices_of_state)]]$timepoint_first_index
   Z_index_of_regime_end_changed     = Z_timepoint_indices[[max(indices_of_state)]]$timepoint_last_index
-  Z_values                          = data_points_Z[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed, ]
+  Z_values                          = data_points_Z[Z_index_of_regime_start_changed:Z_index_of_regime_end_changed,]
   
   # Iterate over the number of possible components and add in the corresponding marginal terms.
   log_Gwishart_marginal_vals = 0
@@ -1776,7 +1923,7 @@ log_Gwishart_marginals    = function(previous_model_fits,
       next
     } else if (length(indices_of_comp) == 1) {
       # print("getting the marginal for a single obs")
-      temp_Z_values = Z_values[indices_of_comp, ]
+      temp_Z_values = Z_values[indices_of_comp,]
       temp_n        = 1
       mu            = matrix(Z_values, nrow = p, ncol = 1)
       xbar          = matrix(rep(mu, times = temp_n), temp_n, p, byrow =
@@ -1787,7 +1934,7 @@ log_Gwishart_marginals    = function(previous_model_fits,
                                                                           lambda)) * (mu - mu_0) %*% t(mu - mu_0)
     } else {
       # print("getting the marginal for a multiple obs")
-      temp_Z_values = Z_values[indices_of_comp, ]
+      temp_Z_values = Z_values[indices_of_comp,]
       temp_n        = nrow(temp_Z_values)
       mu            = apply(temp_Z_values, 2, mean)
       xbar          = matrix(rep(mu, times = temp_n), temp_n, p, byrow =
@@ -2344,6 +2491,7 @@ get_split_distribution    = function(current_G,
                                      components_of_regime,
                                      scale_matrix_of_regime,
                                      df_of_regime,
+                                     split_selection_multiplicative_prior = NULL,
                                      verbose_logfile = FALSE) {
   # This method assumes that the number of indices in the regime is at least 2.
   # I'll likely do at least 3, since the split point for 2 is deterministic.
@@ -2354,7 +2502,7 @@ get_split_distribution    = function(current_G,
   p                          = hyperparameters$p
   lambda                     = hyperparameters$lambda
   scale_matrix_D             = scale_matrix_of_regime
-  discretization_val         = 3
+  discretization_val         = 5
   split_distribution         = rep(0, times = (length(indices_of_regime) -
                                                  1))
   number_of_breaks           = max(floor((length(
@@ -2393,12 +2541,12 @@ get_split_distribution    = function(current_G,
     
     # Split data, draw parameters, evaluate the likelihood.
     Z_index_of_eval                       = Z_timepoint_indices[[evaluation_point]]$timepoint_last_index
-    data_before_full                      = data_points_Z[Z_index_of_regime_start:Z_index_of_eval, ]
+    data_before_full                      = data_points_Z[Z_index_of_regime_start:Z_index_of_eval,]
     likelihood_value                      = 0
     components_before                     = components_of_regime[1:(Z_index_of_eval - Z_index_of_regime_start + 1)]
     
     for (component_index in unique(components_before)) {
-      data_before          = data_before_full[which(components_before == component_index), ]
+      data_before          = data_before_full[which(components_before == component_index),]
       n_before             = nrow(data_before)
       if (is.null(n_before)) {
         n_before                  = 1
@@ -2449,11 +2597,11 @@ get_split_distribution    = function(current_G,
     }
     
     
-    data_after_full      = data_points_Z[(Z_index_of_eval + 1):Z_index_of_regime_end,]
+    data_after_full      = data_points_Z[(Z_index_of_eval + 1):Z_index_of_regime_end, ]
     components_after     = components_of_regime[(Z_index_of_eval - Z_index_of_regime_start + 2):(length(components_of_regime))]
     
     for (component_index in unique(components_after)) {
-      data_after          = data_after_full[which(components_after == component_index), ]
+      data_after          = data_after_full[which(components_after == component_index),]
       n_after             = nrow(data_after)
       if (is.null(n_after)) {
         n_after = 1
@@ -2539,6 +2687,18 @@ get_split_distribution    = function(current_G,
   }))
   split_distribution[order(-split_distribution)] = exponential_values
   
+  # At this point, I rescale things based on the split_selection_multiplicative_prior.
+  if ((!is.null(split_selection_multiplicative_prior)) &
+      (length(split_distribution) > 1)) {
+    if (split_selection_multiplicative_prior < 1) {
+      stop("split_selection_multiplicative_prior must be >= 1.")
+    }
+    possible_split_points = 1:length(split_distribution)
+    multipliers           = (possible_split_points - 1) / (max(possible_split_points) -
+                                                             1) * (split_selection_multiplicative_prior - 1) + 1
+    split_distribution    = split_distribution * multipliers
+  }
+  
   return(split_distribution)
 }
 
@@ -2589,10 +2749,10 @@ splitmerge_gibbs_comps    = function(my_states,
     ## GET THE LAUNCH STATE VECTOR
     # I will start by acquiring a launch vector for the split proposal.
     assignments_launch   = cluster_assignments
-    data_point_of_first  = data_points_of_state[uniform_draw_components[1], ]
-    data_point_of_second = data_points_of_state[uniform_draw_components[2], ]
+    data_point_of_first  = data_points_of_state[uniform_draw_components[1],]
+    data_point_of_second = data_points_of_state[uniform_draw_components[2],]
     for (launch_index in 1:length(assignments_launch)) {
-      current_data_point = data_points_of_state[launch_index, ]
+      current_data_point = data_points_of_state[launch_index,]
       first_norm_value   = norm(current_data_point - data_point_of_first, '2')
       second_norm_value  = norm(current_data_point - data_point_of_second, '2')
       if (is.na(first_norm_value) | is.na(second_norm_value)) {
@@ -2742,10 +2902,10 @@ splitmerge_gibbs_comps    = function(my_states,
     
     # Now, do precisely what we did for the split move, to get the launch vector.
     assignments_launch    = cluster_assignments
-    data_point_of_first   = data_points_of_state[uniform_draw_components[1], ]
-    data_point_of_second  = data_points_of_state[uniform_draw_components[2], ]
+    data_point_of_first   = data_points_of_state[uniform_draw_components[1],]
+    data_point_of_second  = data_points_of_state[uniform_draw_components[2],]
     for (launch_index in 1:length(assignments_launch)) {
-      current_data_point  = data_points_of_state[launch_index, ]
+      current_data_point  = data_points_of_state[launch_index,]
       first_norm_value    = norm(current_data_point - data_point_of_first, '2')
       second_norm_value   = norm(current_data_point - data_point_of_second, '2')
       if (is.na(first_norm_value) | is.na(second_norm_value)) {
@@ -2965,10 +3125,10 @@ redraw_mixture_parameters = function(my_states,
   if (length(indices_of_state) > 0) {
     Z_index_of_regime_start   = Z_timepoint_indices[[min(indices_of_state)]]$timepoint_first_index
     Z_index_of_regime_end     = Z_timepoint_indices[[max(indices_of_state)]]$timepoint_last_index
-    Z_values_of_regime        = data_points_Z[Z_index_of_regime_start:Z_index_of_regime_end, ]
-    upper_bound_is_equal      = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start:Z_index_of_regime_end, ]
-    lower_bound_is_equal      = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start:Z_index_of_regime_end, ]
-    is_missing                = hyperparameters$is_missing[Z_index_of_regime_start:Z_index_of_regime_end, ]
+    Z_values_of_regime        = data_points_Z[Z_index_of_regime_start:Z_index_of_regime_end,]
+    upper_bound_is_equal      = hyperparameters$upper_bound_is_equal[Z_index_of_regime_start:Z_index_of_regime_end,]
+    lower_bound_is_equal      = hyperparameters$lower_bound_is_equal[Z_index_of_regime_start:Z_index_of_regime_end,]
+    is_missing                = hyperparameters$is_missing[Z_index_of_regime_start:Z_index_of_regime_end,]
   } else {
     Z_values_of_regime        = NA
   }
@@ -3038,10 +3198,10 @@ redraw_mixture_parameters = function(my_states,
       # Otherwise, draw the precision and mu from the mvn posterior.
       indices_of_comp_in_regime = which(cluster_assignments == component_index)
       
-      Z_values                  = Z_values_of_regime[indices_of_comp_in_regime, ]
-      upper_bound_is_equal_temp = upper_bound_is_equal[indices_of_comp_in_regime, ]
-      lower_bound_is_equal_temp = lower_bound_is_equal[indices_of_comp_in_regime, ]
-      is_missing_temp           = is_missing[indices_of_comp_in_regime, ]
+      Z_values                  = Z_values_of_regime[indices_of_comp_in_regime,]
+      upper_bound_is_equal_temp = upper_bound_is_equal[indices_of_comp_in_regime,]
+      lower_bound_is_equal_temp = lower_bound_is_equal[indices_of_comp_in_regime,]
+      is_missing_temp           = is_missing[indices_of_comp_in_regime,]
       
       temp_n                    = nrow(Z_values)
       if (is.null(temp_n)) {
@@ -3138,7 +3298,7 @@ redraw_G_with_mixture     = function(my_states,
   if (length(indices_of_state) > 0) {
     Z_index_of_regime_start   = Z_timepoint_indices[[min(indices_of_state)]]$timepoint_first_index
     Z_index_of_regime_end     = Z_timepoint_indices[[max(indices_of_state)]]$timepoint_last_index
-    Z_values_of_regime        = data_points_Z[Z_index_of_regime_start:Z_index_of_regime_end, ]
+    Z_values_of_regime        = data_points_Z[Z_index_of_regime_start:Z_index_of_regime_end,]
   } else {
     Z_values_of_regime        = NA
   }
@@ -3203,10 +3363,10 @@ redraw_G_with_mixture     = function(my_states,
       # Otherwise, draw the precision and mu from the mvn posterior.
       indices_of_comp_in_regime = which(cluster_assignments == component_index)
       
-      Z_values                  = Z_values_of_regime[indices_of_comp_in_regime, ]
-      upper_bound_is_equal_temp = upper_bound_is_equal[indices_of_comp_in_regime, ]
-      lower_bound_is_equal_temp = lower_bound_is_equal[indices_of_comp_in_regime, ]
-      is_missing_temp           = is_missing[indices_of_comp_in_regime, ]
+      Z_values                  = Z_values_of_regime[indices_of_comp_in_regime,]
+      upper_bound_is_equal_temp = upper_bound_is_equal[indices_of_comp_in_regime,]
+      lower_bound_is_equal_temp = lower_bound_is_equal[indices_of_comp_in_regime,]
+      is_missing_temp           = is_missing[indices_of_comp_in_regime,]
       
       temp_n                    = nrow(Z_values)
       if (is.null(temp_n)) {
@@ -3304,7 +3464,7 @@ get_mixture_log_density   = function(current_state,
     current_precision     = cluster_precisions[[cluster_index]]
     current_mu            = cluster_mus[[cluster_index]]
     indicies_of_cluster   = which(cluster_assignments == cluster_index)
-    data_of_cluster       = data_points_of_state[indicies_of_cluster, ]
+    data_of_cluster       = data_points_of_state[indicies_of_cluster,]
     if (length(indicies_of_cluster) == 1) {
       data_of_cluster = t(as.matrix(data_of_cluster))
     }
@@ -3353,7 +3513,7 @@ get_mix_log_dens_at_obs   = function(index_of_observation,
     current_precision     = cluster_precisions[[cluster_index]]
     current_mu            = cluster_mus[[cluster_index]]
     cluster_indices       = which(cluster_assignments == cluster_index)
-    data_of_cluster       = data_of_observation[cluster_indices, ]
+    data_of_cluster       = data_of_observation[cluster_indices,]
     if (length(cluster_indices) == 1) {
       data_of_cluster     = t(as.matrix(data_of_cluster))
     }
@@ -3395,9 +3555,9 @@ redraw_latent_data        = function(state_to_redraw,
                                      raw_data_from_state,
                                      is_missing_state,
                                      upper_bound_is_equal_state,
-                                     lower_bound_is_equal_state, 
-                                     ordinal_levels, 
-                                     levels_assignments, 
+                                     lower_bound_is_equal_state,
+                                     ordinal_levels,
+                                     levels_assignments,
                                      discrete_levels_indicator,
                                      n_cores_each_child = 1) {
   # Method to redraw latent data FOR A SINGLE STATE ONLY.  Assumes Normal Mixture Model.
@@ -3408,21 +3568,21 @@ redraw_latent_data        = function(state_to_redraw,
   
   for (component_index in 1:max(components)) {
     indices_of_data           = which(components == component_index)
-    temp_data                 = latent_data_of_state[indices_of_data,]
-    temp_data_raw             = raw_data_from_state[indices_of_data,]
+    temp_data                 = latent_data_of_state[indices_of_data, ]
+    temp_data_raw             = raw_data_from_state[indices_of_data, ]
     n_value                   = nrow(temp_data)
     
     if (is.null(n_value)) {
       n_value = 1
       temp_data = t(as.matrix(temp_data))
       temp_data_raw = t(as.matrix(temp_data_raw))
-      upper_bound_is_equal_temp = t(as.matrix(upper_bound_is_equal_state[indices_of_data, ]))
-      lower_bound_is_equal_temp = t(as.matrix(lower_bound_is_equal_state[indices_of_data, ]))
-      is_missing_temp           = t(as.matrix(is_missing_state[indices_of_data, ]))
+      upper_bound_is_equal_temp = t(as.matrix(upper_bound_is_equal_state[indices_of_data,]))
+      lower_bound_is_equal_temp = t(as.matrix(lower_bound_is_equal_state[indices_of_data,]))
+      is_missing_temp           = t(as.matrix(is_missing_state[indices_of_data,]))
     } else {
-      upper_bound_is_equal_temp = upper_bound_is_equal_state[indices_of_data, ]
-      lower_bound_is_equal_temp = lower_bound_is_equal_state[indices_of_data, ]
-      is_missing_temp           = is_missing_state[indices_of_data, ]
+      upper_bound_is_equal_temp = upper_bound_is_equal_state[indices_of_data,]
+      lower_bound_is_equal_temp = lower_bound_is_equal_state[indices_of_data,]
+      is_missing_temp           = is_missing_state[indices_of_data,]
     }
     prec_of_component         = precisions[[component_index]]
     mu_of_component           = mus[[component_index]]
@@ -3438,16 +3598,16 @@ redraw_latent_data        = function(state_to_redraw,
       upper_bound_is_equal_temp,
       is_missing_temp,
       continuous,
-      temp_data_raw, 
-      ordinal_levels, 
-      levels_assignments, 
+      temp_data_raw,
+      ordinal_levels,
+      levels_assignments,
       discrete_levels_indicator,
       n_cores_each_child
     )
     new_data_for_comp         = matrix(redraw_output, n_value, hyperparameters$p)
     
     # Update the data for that component.
-    latent_data_of_state[indices_of_data, ] = new_data_for_comp
+    latent_data_of_state[indices_of_data,] = new_data_for_comp
   }
   return(latent_data_of_state)
 }
@@ -3666,7 +3826,7 @@ split_regime_components   = function(state_split,
     for (new_comp_index in 1:length(available_components)) {
       indices_of_this_component = which(components_to_add == comp_index)
       if (length(indices_of_this_component) > 1) {
-        data_of_this_component                  = data_of_state_changed[indices_of_this_component, ]
+        data_of_this_component                  = data_of_state_changed[indices_of_this_component,]
         current_mu                              = mus_gained_state[[available_components[new_comp_index]]]
         current_precision                       = precisions_gained_state[[available_components[new_comp_index]]]
         prob_distn[new_comp_index]              = log_dmvnrm_arma_regular(data_of_this_component,
@@ -3674,7 +3834,7 @@ split_regime_components   = function(state_split,
                                                                           current_precision)
         prob_distn_just_density[new_comp_index] = prob_distn[new_comp_index]
       } else if (length(indices_of_this_component) == 1) {
-        data_of_this_component                  = matrix(data_of_state_changed[indices_of_this_component, ], nrow =
+        data_of_this_component                  = matrix(data_of_state_changed[indices_of_this_component,], nrow =
                                                            1)
         current_mu                              = mus_gained_state[[available_components[new_comp_index]]]
         current_precision                       = precisions_gained_state[[available_components[new_comp_index]]]
@@ -3775,7 +3935,7 @@ merge_regime_components   = function(state_merged,
       # Add in log prob mass from the density:
       indices_of_this_component = which(components_to_add == comp_index)
       if (length(indices_of_this_component) > 1) {
-        data_of_this_component                  = data_in_second_state[indices_of_this_component, ]
+        data_of_this_component                  = data_in_second_state[indices_of_this_component,]
         current_mu                              = mus_gained_state[[available_components[new_comp_index]]]
         current_precision                       = precisions_gained_state[[available_components[new_comp_index]]]
         prob_distn[new_comp_index]              = log_dmvnrm_arma_regular(data_of_this_component,
@@ -3783,7 +3943,7 @@ merge_regime_components   = function(state_merged,
                                                                           current_precision)
         prob_distn_just_density[new_comp_index] = prob_distn[new_comp_index]
       } else if (length(indices_of_this_component) == 1) {
-        data_of_this_component                  = matrix(data_in_second_state[indices_of_this_component, ], nrow =
+        data_of_this_component                  = matrix(data_in_second_state[indices_of_this_component,], nrow =
                                                            1)
         current_mu                              = mus_gained_state[[available_components[new_comp_index]]]
         current_precision                       = precisions_gained_state[[available_components[new_comp_index]]]

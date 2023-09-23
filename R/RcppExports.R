@@ -89,8 +89,8 @@ log_dmvnrm_arma_regular <- function(data_x, mean, prec) {
 #' 
 #' @noRd
 #' 
-redraw_Z_arma <- function(current_data, current_precision, current_mu, p, lower_bounds, upper_bounds, lower_bound_is_equal, upper_bound_is_equal, is_missing, is_continuous, raw_data, cores) {
-    .Call(`_bayesWatch_redraw_Z_arma`, current_data, current_precision, current_mu, p, lower_bounds, upper_bounds, lower_bound_is_equal, upper_bound_is_equal, is_missing, is_continuous, raw_data, cores)
+redraw_Z_arma <- function(current_data, current_precision, current_mu, p, lower_bounds, upper_bounds, lower_bound_is_equal, upper_bound_is_equal, is_missing, is_continuous, raw_data, ordinal_levels, is_ordinal, discrete_levels_indicator, cores) {
+    .Call(`_bayesWatch_redraw_Z_arma`, current_data, current_precision, current_mu, p, lower_bounds, upper_bounds, lower_bound_is_equal, upper_bound_is_equal, is_missing, is_continuous, raw_data, ordinal_levels, is_ordinal, discrete_levels_indicator, cores)
 }
 
 #' Redraw latent data for missing values only (not including for discrete values).

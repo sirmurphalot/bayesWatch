@@ -4,7 +4,7 @@ useDynLib(bayesWatch, .registration=TRUE)
 import(ggplot2, gridExtra, parallel, Rcpp, Matrix, CholWishart, Hotelling, MASS, ess, BDgraph)
 importFrom("stats", "dbeta", "density", "dgamma", "dnorm",
              "rbeta", "rbinom", "rgamma", "rnorm", "rpois", "runif",
-             "sd", "cov")
+             "sd", "cov", "var")
 importFrom("methods", "is")
 
 S3method(plot,bayesWatch)
@@ -12,4 +12,5 @@ S3method(print,bayesWatch)
 export(bayeswatch)
 export(detect_faults)
 export(get_point_estimate)
+export(rgwish_Rcpp)
 import(parallel)

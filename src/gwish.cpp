@@ -6,6 +6,9 @@
 #include "graph.h"
 #include "Rcpp.h"
 
+#include <iostream>
+using namespace std;
+
 // #include <RcppArmadillo.h>
 // #include <boost/math/special_functions/erf.hpp>
 // using namespace Rcpp;

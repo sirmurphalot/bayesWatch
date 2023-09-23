@@ -30,7 +30,7 @@ arma::vec draw_values_parallel(const arma::vec& data_vector, const arma::mat& pr
   NumericVector levels_of_var;
   // Determine which values are missing for this row, subset the appropriate precision matrix, and redraw them:
   int total_number_missing = (int)accu(row_is_missing), count_redraw = 0, count_nonredraw = 0, 
-    total_number_nonmissing = p - total_number_missing, discrete_val, num_of_levels, index_of_level, level_indicator_for_var;
+    total_number_nonmissing = p - total_number_missing, discrete_val, num_of_levels, index_of_level, level_indicator_for_var=0;
   
   double ordinal_data_value, cutoff_difference, categorical_cutoff_value, cdf_value_1, cdf_value_2;
   arma::vec levels_of_var_arma;

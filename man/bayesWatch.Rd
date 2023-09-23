@@ -14,6 +14,9 @@ bayeswatch(
   burnin = floor(iterations/2),
   lower_bounds = NULL,
   upper_bounds = NULL,
+  ordinal_indicators = NULL,
+  list_of_ordinal_levels = NULL,
+  categorical_indicators = NULL,
   previous_states = NULL,
   previous_model_fits = NULL,
   linger_parameter = 500,
@@ -26,7 +29,7 @@ bayeswatch(
   n.cores = 1,
   scaleMatrix = NULL,
   allow_for_mixture_models = FALSE,
-  dirichlet_prior = 0.004,
+  dirichlet_prior = 0.001,
   component_truncation = 7,
   regime_truncation = 15,
   hyperprior_b = 20,
@@ -35,6 +38,10 @@ bayeswatch(
   T2_window_size = 3,
   determining_p_cutoff = FALSE,
   prob_cutoff = 0.5,
+  model_log_type = "NoModelSpecified",
+  regime_selection_multiplicative_prior = 2,
+  split_selection_multiplicative_prior = 2,
+  is_initial_fit = TRUE,
   verbose_logfile = FALSE
 )
 }
@@ -56,6 +63,12 @@ bayeswatch(
 \item{lower_bounds}{vector. Lower bounds for each data column.}
 
 \item{upper_bounds}{vector. Upper bounds for each data column.}
+
+\item{ordinal_indicators}{vector.}
+
+\item{list_of_ordinal_levels}{vector.}
+
+\item{categorical_indicators}{vector.}
 
 \item{previous_states}{vector. Starting regime vector, if known, of the same length as the number of 'days' in time_points.}
 
@@ -114,7 +127,7 @@ according to the model by Murph et al. 2023.  Creates a bayesWatch object for an
 # data("day_of_observations")
 # data("day_dts")
 
-# x       = bayeswatch(full_data, day_of_observations, day_dts, 
+# x       = bayeswatch(full_data, day_of_observations, day_dts,
 #                     iterations = 500, g.prior = 1, linger_parameter = 20, n.cores=3,
 #                     wishart_df_initial = 3, hyperprior_b = 3, lambda = 5)
 

@@ -38,9 +38,9 @@ print.bayesWatch = function(x, ...)
 #' @param burnin integer. Number of burn-in samples. iterations > burnin necessarily.
 #' @param lower_bounds vector. Lower bounds for each data column.
 #' @param upper_bounds vector. Upper bounds for each data column.
-#' @param ordinal_indicators vector. 
-#' @param list_of_ordinal_levels vector. 
-#' @param categorical_indicators vector. 
+#' @param ordinal_indicators vector.
+#' @param list_of_ordinal_levels vector.
+#' @param categorical_indicators vector.
 #' @param previous_states vector. Starting regime vector, if known, of the same length as the number of 'days' in time_points.
 #' @param previous_model_fits rlist. Starting parameter fits corresponding to regime vector previous_states.
 #' @param linger_parameter float. Prior parameter for Markov chain probability matrix.  Larger = less likely to change states.
@@ -91,9 +91,9 @@ bayeswatch = function(data_woTimeValues,
                       burnin = floor(iterations / 2),
                       lower_bounds = NULL,
                       upper_bounds = NULL,
-                      ordinal_indicators = NULL, 
-                      list_of_ordinal_levels = NULL, 
-                      categorical_indicators = NULL,,
+                      ordinal_indicators = NULL,
+                      list_of_ordinal_levels = NULL,
+                      categorical_indicators = NULL,
                       previous_states = NULL,
                       previous_model_fits = NULL,
                       linger_parameter = 500,
@@ -118,11 +118,14 @@ bayeswatch = function(data_woTimeValues,
                       model_log_type = "NoModelSpecified",
                       regime_selection_multiplicative_prior = 2,
                       split_selection_multiplicative_prior = 2,
-                      is_initial_fit = TRUE
+                      is_initial_fit = TRUE,
                       verbose_logfile = FALSE) {
+  scale_matrix = NULL
   # If the user wants a verbose output of the entire model, this is saved to a log file (it is very very long).
   if (verbose_logfile) {
-    file.remove("verbose_log.txt")
+    if (file.exists('verbose_log.txt')) {
+      file.remove("verbose_log.txt")
+    }
     file.create("verbose_log.txt")
     cat("This log outlines a VERY verbose log for debugging.\n",
         file = "verbose_log.txt")
@@ -165,7 +168,7 @@ bayeswatch = function(data_woTimeValues,
         file = "verbose_log.txt",
         append = T)
   # Sort days and observations
-  data_woTimeValues    = data_woTimeValues[order(time_of_observations), ]
+  data_woTimeValues    = data_woTimeValues[order(time_of_observations),]
   time_of_observations = time_of_observations[order(time_of_observations)]
   time_points          = time_points[order(time_points)]
   data_set_list        = list()
@@ -249,7 +252,7 @@ bayeswatch = function(data_woTimeValues,
       Z_timepoint_indices[[i - negative_count]]$timepoint_last_index  = max(indices_of_timepoint)
     }
     data_set_list[[i - negative_count]] = data_woTimeValues[Z_timepoint_indices[[i -
-                                                                                   negative_count]]$timepoint_first_index:Z_timepoint_indices[[i - negative_count]]$timepoint_last_index, ]
+                                                                                   negative_count]]$timepoint_first_index:Z_timepoint_indices[[i - negative_count]]$timepoint_last_index,]
   }
   
   
@@ -284,7 +287,7 @@ bayeswatch = function(data_woTimeValues,
                                                            regime_index))]]$timepoint_first_index
     max_index           = Z_timepoint_indices[[max(which(previous_states ==
                                                            regime_index))]]$timepoint_last_index
-    temp_data           = data_woTimeValues[min_index:max_index, ]
+    temp_data           = data_woTimeValues[min_index:max_index,]
     covMatrix           = cov(temp_data, use = "pairwise.complete.obs")
     
     if ((sum(eigen(covMatrix)$values <= 0) > 0)) {
@@ -304,10 +307,10 @@ bayeswatch = function(data_woTimeValues,
           file = 'verbose_log.txt',
           append = T
         )
-      my_func             = function(x) {
+      my_func_1             = function(x) {
         sd(x, na.rm = T) ^ 2
       }
-      covMatrix           = diag(apply(data_woTimeValues, 2, my_func))
+      covMatrix             = diag(apply(data_woTimeValues, 2, my_func_1))
     }
     
   }
@@ -362,12 +365,12 @@ bayeswatch = function(data_woTimeValues,
     not.cont     = rep(0, times = ncol(data_woTimeValues))
   }
   
-  if(is.null(ordinal_indicators)){
+  if (is.null(ordinal_indicators)) {
     ordinal_indicators     = rep(0, times = ncol(data_woTimeValues))
     list_of_ordinal_levels = list()
   }
   
-  if(is.null(categorical_indicators)){
+  if (is.null(categorical_indicators)) {
     categorical_indicators = rep(0, times = ncol(data_woTimeValues))
   }
   
@@ -563,7 +566,7 @@ bayeswatch = function(data_woTimeValues,
   if (is.null(previous_model_fits)) {
     # If we don't have model fits from a previous run, we need to fit models
     # based off of the states.
-    df_prior_on_wish_start = wishart_df_inital
+    df_prior_on_wish_start = wishart_df_initial
     previous_model_fits    = lapply(1:(regime_truncation + 1),
                                     function(x) {
                                       list(
@@ -576,7 +579,6 @@ bayeswatch = function(data_woTimeValues,
                                     })
     models_temp = list()
     for (x in 1:(regime_truncation + 1)) {
-      source("_helpers_DRJ.R")
       linger_parameter         = hyperparameters$alpha
       move_parameter           = hyperparameters$beta
       not.cont                 = hyperparameters$not.cont
@@ -626,7 +628,7 @@ bayeswatch = function(data_woTimeValues,
         first_index = Z_timepoint_indices[[min(which(my_states == x))]]$timepoint_first_index
         last_index  = Z_timepoint_indices[[max(which(my_states == x))]]$timepoint_last_index
         indicies    = c(first_index:last_index)
-        temp_data   = data_woTimeValues[first_index:last_index,]
+        temp_data   = data_woTimeValues[first_index:last_index, ]
       }
       
       # Start by drawing a prior for everything.
@@ -761,7 +763,7 @@ bayeswatch = function(data_woTimeValues,
         append = T
       )
     
-    myfunc = function(x_num) {
+    myfunc_2       = function(x_num) {
       return(
         latent_data_parallel_helper(
           x_num,
@@ -780,7 +782,7 @@ bayeswatch = function(data_woTimeValues,
         )
       )
     }
-    data_subsets_z = mclapply(1:max(my_states), myfunc)
+    data_subsets_z = mclapply(1:max(my_states), myfunc_2)
     
     full_data_Z = NULL
     for (i in 1:max(my_states)) {
@@ -923,7 +925,7 @@ bayeswatch = function(data_woTimeValues,
           file = 'verbose_log.txt',
           append = T
         )
-      myfunc = function(x) {
+      myfunc_3               = function(x) {
         return(
           splitmerge_comps_parallel_helper(
             x,
@@ -935,7 +937,7 @@ bayeswatch = function(data_woTimeValues,
           )
         )
       }
-      new_mixture_components = mclapply(1:max(my_states), myfunc)
+      new_mixture_components = mclapply(1:max(my_states), myfunc_3)
       
       for (i in 1:max(my_states)) {
         previous_model_fits[[i]]$precision           = new_mixture_components[[i]]$precisions
@@ -958,7 +960,7 @@ bayeswatch = function(data_woTimeValues,
     } else if (allow_for_mixture_models) {
       # This is the case where (in between the regular split merge steps that i do every 5 iterations) I
       # just do a quick gibbs swap.
-      myfunc = function(x) {
+      myfunc_4 = function(x) {
         return(
           gibbsswap_comps_parallel_helper(
             x,
@@ -971,7 +973,7 @@ bayeswatch = function(data_woTimeValues,
         )
       }
       
-      new_mixture_components = mclapply(1:max(my_states), myfunc)
+      new_mixture_components = mclapply(1:max(my_states), myfunc_4)
       for (i in 1:max(my_states)) {
         previous_model_fits[[i]]$cluster_assignments = new_mixture_components[[i]]$assigns
         previous_model_fits                          = shift_components(i, previous_model_fits)
@@ -1344,7 +1346,7 @@ bayeswatch = function(data_woTimeValues,
   for (i in 2:length(my_states)) {
     states_df = rbind(states_df, data.frame(matrix(my_states[[i]], nrow = 1)))
   }
-  states_df_burnt = states_df[floor(2 * nrow(states_df) / 4):nrow(states_df),]
+  states_df_burnt = states_df[floor(2 * nrow(states_df) / 4):nrow(states_df), ]
   prop_mat = matrix(0, nrow = 1, ncol = (ncol(states_df_burnt) - 1))
   number_of_segments = nrow(states_df)
   for (j in 1:(ncol(states_df_burnt) - 1)) {
@@ -1414,7 +1416,7 @@ get_point_estimate = function(regime_fit_object, prob_cutoff) {
   for (i in 2:length(my_states)) {
     states_df = rbind(states_df, data.frame(matrix(my_states[[i]], nrow = 1)))
   }
-  states_df_burnt = states_df[floor(2 * nrow(states_df) / 4):nrow(states_df),]
+  states_df_burnt = states_df[floor(2 * nrow(states_df) / 4):nrow(states_df), ]
   prop_mat = matrix(0, nrow = 1, ncol = (ncol(states_df_burnt) - 1))
   number_of_segments = nrow(states_df)
   for (j in 1:(ncol(states_df_burnt) - 1)) {
