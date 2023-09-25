@@ -24,11 +24,6 @@ extern "C" {
 
   void rgwish_c( double G[], double D[], double K[], int *b, int *p, double *threshold, int *failed);
 
-	// void rgwish_sigma( int G[], int size_node[], double Ts[], double K[], double sigma[], int *b_star, 
-	// 				int *p, double *threshold,
-	// 				double sigma_start[], double inv_C[], double beta_star[], double sigma_i[], 
-	// 				vector<double> &sigma_start_N_i, vector<double> &sigma_N_i, vector<int> &N_i );
-
   void log_exp_mc( int G[], int nu[], int *b, double H[], int *check_H, int *mc, int *p, double f_T[] );
 }
 #endif

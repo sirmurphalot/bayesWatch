@@ -112,6 +112,14 @@ bayeswatch(
 
 \item{prob_cutoff}{float. Changepoints are determined (for fault detection process) if posterior probability exceeds this value.}
 
+\item{model_log_type}{character vector. The type of log (used to distinguish logfiles).}
+
+\item{regime_selection_multiplicative_prior}{float. Must be >=1.  Gives additional probability to the most recent day for the selection of a new split point.}
+
+\item{split_selection_multiplicative_prior}{float.}
+
+\item{is_initial_fit}{logical. True when there is no previously fit bayesWatch object fed through the algorithm..}
+
 \item{verbose_logfile}{logical. Writes verbose model output to file for debugging when TRUE.}
 }
 \value{

@@ -63,6 +63,10 @@ print.bayesWatch = function(x, ...)
 #' @param determining_p_cutoff logical. Method for estimating the probability cutoff on the posterior distribution for determining change-points.  Deprecated at package launch date.
 #' @param variable_names vector. Vector of names of columnsof data_woTimeValues.
 #' @param prob_cutoff float. Changepoints are determined (for fault detection process) if posterior probability exceeds this value.
+#' @param model_log_type character vector. The type of log (used to distinguish logfiles).
+#' @param regime_selection_multiplicative_prior float. Must be >=1.  Gives additional probability to the most recent day for the selection of a new split point.
+#' @param split_selection_multiplicative_prior float. 
+#' @param is_initial_fit logical. True when there is no previously fit bayesWatch object fed through the algorithm..
 #' @param verbose_logfile logical. Writes verbose model output to file for debugging when TRUE.
 #'
 #' @return bayesWatch object. A model fit for the analysis of posterior change-points and fault detection.

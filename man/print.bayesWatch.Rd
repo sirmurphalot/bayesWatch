@@ -3,9 +3,6 @@
 \name{print.bayesWatch}
 \alias{print.bayesWatch}
 \title{Print function for a bayesWatch object.  Prints only the posterior change-point probabilities.}
-\usage{
-\method{print}{bayesWatch}(x) <- NULL
-}
 \arguments{
 \item{x}{bayesWatch object. Fit from bayesWatch main method.}
 
