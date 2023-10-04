@@ -1,2 +1,2 @@
-# mypackage 0.1.0
+# bayesWatch 0.1.0
 First release!

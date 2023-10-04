@@ -38,9 +38,9 @@ print.bayesWatch = function(x, ...)
 #' @param burnin integer. Number of burn-in samples. iterations > burnin necessarily.
 #' @param lower_bounds vector. Lower bounds for each data column.
 #' @param upper_bounds vector. Upper bounds for each data column.
-#' @param ordinal_indicators vector.
-#' @param list_of_ordinal_levels vector.
-#' @param categorical_indicators vector.
+#' @param ordinal_indicators vector. Discrete values, one for each column, indicating which variables are ordinal.
+#' @param list_of_ordinal_levels vector. Discrete values, one for each column, indicating which variables are part of the same ordinal group.
+#' @param categorical_indicators vector.  Each nominal d categorical variable must be broken down into d different indicator variables.  This vector marks which variables are such indicators.
 #' @param previous_states vector. Starting regime vector, if known, of the same length as the number of 'days' in time_points.
 #' @param previous_model_fits rlist. Starting parameter fits corresponding to regime vector previous_states.
 #' @param linger_parameter float. Prior parameter for Markov chain probability matrix.  Larger = less likely to change states.
