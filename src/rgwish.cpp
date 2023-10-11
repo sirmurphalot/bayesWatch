@@ -15,6 +15,9 @@
 #include "matrix.h"
 #include "util.h"
 #include <Rcpp.h>
+#include <Eigen/Dense>
+#define EIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS
+#include <Eigen/Eigen>
   
   
 extern "C" {
@@ -23,9 +26,9 @@ extern "C" {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - |
 void rmvn_c( double rand_values[], double mus[], double K[], int p )
 {
-  int dim = p, pxp = dim * dim, one = 1, num_upper = dim*( dim + 1 )/2;
-  double alpha = 1.0, beta   = 0.0;
-  char upper = 'U';																	
+  int k, dim = p, pxp = dim * dim, num_upper = dim*( dim + 1 )/2; //, one = 1
+//  double alpha = 1.0, beta   = 0.0;
+//  char upper = 'U';																	
   
   vector<double> rand_normal( dim, 0.0 );
   vector<double> copy_K( pxp, 0.0 );
@@ -57,12 +60,42 @@ void rmvn_c( double rand_values[], double mus[], double K[], int p )
     // #pragma omp for collapse(2)
       for( int i = 0; i < dim; i++ )
         for( int j = 0; j <= i; j++ )
+          // I believe that this assumes chol_cov is in row-major order.
           chol_cov_compact[ j + i ] = chol_cov[ j * dim + i ];	
   // }
   // - - - Calculate the Random Normal Values - - - - - - - - - - - - - - - - - - - - - - - - - - - |
   // rand_values = chol_cov %*% rand_normal
-  F77_NAME(dspmv)( &upper, &dim, &alpha, &chol_cov_compact[0], &rand_normal[0], &one, &beta, rand_values, &one FCONE );
-  
+    
+    Eigen::MatrixXd chol_cov_mat(1,1);
+    chol_cov_mat.resize(p,p);
+    Eigen::MatrixXd rand_normal_mat(1,1);
+    rand_normal_mat.resize(p,p);
+    
+    k = 0;
+    for(int i = 0; i < p; i++)
+    {
+        for(int j = 0; j < p; j++)
+        {
+          chol_cov_mat(i,j) = chol_cov[k];
+          rand_normal_mat(i,j) = rand_normal[k];
+          k++;
+        }
+    }
+
+    Eigen::MatrixXd rand_values_mat = chol_cov_mat * rand_normal_mat;
+    
+    k = 0;
+    for(int i = 0; i < p; i++)
+    {
+        for(int j = 0; j < p; j++)
+        {
+          rand_values[ k ] = rand_values_mat(i,j);
+          k++;
+        }
+    }
+    
+//  F77_NAME(dspmv)( &upper, &dim, &alpha, &chol_cov_compact[0], &rand_normal[0], &one, &beta, rand_values, &one FCONE );
+    
   // #pragma omp parallel
   // {
     // #pragma omp for
@@ -77,11 +110,12 @@ void rmvn_c( double rand_values[], double mus[], double K[], int p )
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - |
 void rwish_c( double Ts[], double K[], int *b, int *p )
 {
-	int dim = *p, pxp = dim * dim, bK = *b;
-	double alpha = 1.0, beta   = 0.0;
-	char transT  = 'T', transN = 'N', side = 'R', upper = 'U';																	
+	int k, dim = *p, pxp = dim * dim, bK = *b;
+//	double alpha = 1.0, beta   = 0.0;
+//	char transT  = 'T', transN = 'N', side = 'R', upper = 'U';																	
 
 	vector<double> psi( pxp, 0.0 ); 
+//    vector<double> psi2( pxp, 0.0 ); 
 
 	// - - - Sample values in Psi matrix - - - - - - - - - - - - - - - - - - - - - - - - - - - - - |
 	GetRNGstate();
@@ -97,14 +131,56 @@ void rwish_c( double Ts[], double K[], int *b, int *p )
 	PutRNGstate();
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - |
 
-  // C = psi %*% Ts   I used   psi = psi %*% Ts
-	// dtrmm (SIDE, UPLO, TRANSA, DIAG, M, N, ALPHA, A, LDA, B, LDB)
-	F77_NAME(dtrmm)( &side, &upper, &transN, &transN, &dim, &dim, &alpha, Ts, &dim, &psi[0], &dim FCONE FCONE FCONE FCONE );
-
-	// This is where K is updated.
-	// K = t(C) %*% C 
-	// LAPACK function to compute  C := alpha * A * B + beta * C																				
-	F77_NAME(dgemm)( &transT, &transN, &dim, &dim, &dim, &alpha, &psi[0], &dim, &psi[0], &dim, &beta, K, &dim FCONE FCONE );
+    Eigen::MatrixXd psi_mat(1,1);
+    psi_mat.resize(*p,*p);
+    k = 0;
+    for(int i = 0; i < *p; i++)
+    {
+        for(int j = 0; j < *p; j++)
+        {
+          psi_mat(i,j) = psi[k];
+          k++;
+        }
+    }
+    
+    Eigen::MatrixXd T_mat(1,1);
+    T_mat.resize(*p,*p);
+    k = 0;
+    for(int i = 0; i < *p; i++)
+    {
+        for(int j = 0; j < *p; j++)
+        {
+          T_mat(i,j) = psi[k];
+          k++;
+        }
+    }
+    
+    //  printf("original matrix: \n");
+    //  std::cout << mat << std::endl;
+    
+    Eigen::MatrixXd C = psi_mat * T_mat;
+    Eigen::MatrixXd K_mat = C.transpose() * C;
+    
+//    // C = psi %*% Ts   I used   psi = psi %*% Ts
+//	// dtrmm (SIDE, UPLO, TRANSA, DIAG, M, N, ALPHA, A, LDA, B, LDB)
+//	F77_NAME(dtrmm)( &side, &upper, &transN, &transN, &dim, &dim, &alpha, Ts, &dim, &psi[0], &dim FCONE FCONE FCONE FCONE );
+//
+//	// This is where K is updated.
+//	// K = t(C) %*% C 
+//	// LAPACK function to compute  C := alpha * A * B + beta * C																				
+//	F77_NAME(dgemm)( &transT, &transN, &dim, &dim, &dim, &alpha, &psi[0], &dim, &psi[0], &dim, &beta, K, &dim FCONE FCONE );
+    
+    k = 0;
+    // again, this is row-major order!
+    for(int i = 0; i < *p; i++)
+    {
+      for(int j = 0; j < *p; j++)
+        {
+          K[ k ] = K_mat(i,j);	
+          k++;
+        }
+    }
+    
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - |
@@ -113,13 +189,13 @@ void rwish_c( double Ts[], double K[], int *b, int *p )
 
 void rgwish_c( double G[], double Ts[], double K[], int *b, int *p, double *threshold, int *failed )
 {
-  int info, i, j, l, size_node, one = 1, dim = *p, pxp = dim * dim;	
+  int i, j, l, k, size_node, dim = *p, pxp = dim * dim; //info,, one = 1 	
   
   double threshold_c = *threshold;
-  double alpha = 1.0, beta  = 0.0;
+//  double alpha = 1.0, beta  = 0.0;
   int num_iters = 10000;
 
-  char transN  = 'N', uplo  = 'U'; 
+//  char transN  = 'N', uplo  = 'U'; 
   
   rwish_c( Ts, K, b, &dim );
   
@@ -137,9 +213,20 @@ void rgwish_c( double G[], double Ts[], double K[], int *b, int *p, double *thre
 	vector<int> N_i( dim );                  // For dynamic memory used
 	vector<double> sigma_N_i( pxp );         // For dynamic memory used
 
-  double mean_diff = 1.0;
+    double mean_diff = 1.0;
     
-  int counter = 0;
+    Eigen::MatrixXd sigma_start_N_i_mat(1,1);
+    sigma_start_N_i_mat.resize(*p,*p);
+    Eigen::MatrixXd sigma_start_i_mat(1,1);
+    sigma_start_i_mat.resize(*p,*p);
+    Eigen::MatrixXd sigma_mat(1,1);
+    sigma_mat.resize(*p,*p);
+    Eigen::MatrixXd beta_star_mat(1,1);
+    beta_star_mat.resize(*p,1);
+    Eigen::MatrixXd sigma_N_i_mat(1,1);
+    
+    
+    int counter = 0;
 	while( (mean_diff > threshold_c) and ( counter < num_iters ) )
 	{
 	  counter++;
@@ -166,14 +253,59 @@ void rgwish_c( double G[], double Ts[], double K[], int *b, int *p, double *thre
 				// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - |
 				
 				sub_matrix( &sigma[0], &sigma_N_i[0], &N_i[0], &size_node, &dim );
+                                
+                // This is a dirty fix since CRAN won't easily allow for LAPACK:
+                sigma_N_i_mat.resize(size_node,size_node);
+                k = 0;
+                for(int i = 0; i < size_node; i++)
+                {
+                    for(int j = 0; j < size_node; j++)
+                    {
+                      sigma_mat(i,j) = sigma[k];
+                      sigma_N_i_mat(i,j) = sigma_N_i[k];
+                      k++;
+                    }
+                }
+                
+                sigma_start_N_i.resize(size_node,1);
+                k = 0;
+                for(int i = 0; i < size_node; i++)
+                {
+                  sigma_start_N_i_mat(i,1) = sigma_start_N_i[k];
+                  k++;
+                }
+                
 					
 				// A * X = B   for   sigma_start_N_i := (sigma_N_i)^{-1} * sigma_start_N_i
-				F77_NAME(dposv)( &uplo, &size_node, &one, &sigma_N_i[0], &size_node, &sigma_start_N_i[0], &size_node, &info FCONE );
+//				F77_NAME(dposv)( &uplo, &size_node, &one, &sigma_N_i[0], &size_node, &sigma_start_N_i[0], &size_node, &info FCONE );
+                
+                sigma_start_N_i_mat = sigma_N_i_mat.colPivHouseholderQr().solve(sigma_start_N_i_mat);
+                    
 
-				for( j = 0; j < size_node; j++ ) beta_star[ N_i[ j ] ] = sigma_start_N_i[ j ];
+				for( j = 0; j < size_node; j++ ) beta_star[ N_i[ j ] ] = sigma_start_N_i_mat(j,1);
+                
+                int k = 0;
+                for(int i = 0; i < size_node; i++)
+                {
+                  beta_star_mat(i,1) = beta_star[ k ];
+                  k++;
+                }
 				
-				F77_NAME(dgemm)( &transN, &transN, &dim, &one, &dim, &alpha, &sigma[0], &dim, &beta_star[0], &dim, &beta, &sigma_start_i[0], &dim FCONE FCONE );
+                // From LAPACK: C := alpha*op( A )*op( B ) + beta*C,
+//				F77_NAME(dgemm)( &transN, &transN, &dim, &one, &dim, &alpha, &sigma[0], &dim, &beta_star[0], &dim, &beta, &sigma_start_i[0], &dim FCONE FCONE );
+                sigma_start_i_mat = sigma_mat * beta_star_mat;
+                
+                k = 0;
+                for(int i = 0; i < dim; i++)
+                {
+                    for(int j = 0; j < dim; j++)
+                    {
+                      sigma_start_i[k] = sigma_start_i_mat(i,j);
+                      k++;
+                    }
+                }
 				
+                
 				for( j = 0; j < i; j++ )
 				{
 					sigma[ j * dim + i ] = sigma_start_i[ j ];
@@ -403,6 +535,8 @@ List rgwish_Rcpp( const Rcpp::NumericVector G,
   
   List return_items;
   
+  // From R, these objects are fed in via row-major order.  Note that the filling below
+  // simply copies the vector -- it does not dictate the major of the order.
   for( int i = 0; i < p; i++ ){
     for( int j = 0; j < p; j++ ){
       Ds_vectorized[ j * p + i ] = D(j * p + i );

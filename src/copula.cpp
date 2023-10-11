@@ -102,16 +102,45 @@ void copula_NA( double Z[], double K[], int R[], int not_continuous[], int *n, i
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - |
 void get_Ds( double Z[], double D[], double Ds[], double S[], int *n, int *p )
 {
-	int dim = *p;
+//	int dim = *p;
 	
 	// S <- t(Z) %*% Z; NOTE, I'm using Ds instead of S, for saving memory
-	double alpha = 1.0, beta  = 0.0;
-	char transA = 'T', transB = 'N';
-	F77_NAME(dgemm)( &transA, &transB, &dim, &dim, n, &alpha, Z, n, Z, n, &beta, &S[0], &dim FCONE FCONE );		
+//	double alpha = 1.0, beta  = 0.0;
+//	char transA = 'T', transB = 'N';
+    
+//	F77_NAME(dgemm)( &transA, &transB, &dim, &dim, n, &alpha, Z, n, Z, n, &beta, &S[0], &dim FCONE FCONE );		
+    
+    Eigen::MatrixXd mat(1,1);
+    mat.resize(*p,*p);
+    int k = 0;
+    for(int i = 0; i < *p; i++)
+    {
+        for(int j = 0; j < *p; j++)
+        {
+          mat(i,j) = Z[k];
+          k++;
+        }
+    }
+    //  printf("original matrix: \n");
+    //  std::cout << mat << std::endl;
+    
+    Eigen::MatrixXd S_mat = mat.transpose() * mat;
+    k = 0;
+    // again, this is row-major order!
+    for(int i = 0; i < *p; i++)
+    {
+      for(int j = 0; j < *p; j++)
+        {
+          Ds[ k ] = D[ k ] + S_mat(i,j);	
+          S[k] = S_mat(i,j);
+          k++;
+        }
+    }
+    
 	
 //    #pragma omp parallel for
-	for( int i = 0; i < dim * dim; i++ ) 
-	    Ds[ i ] = D[ i ] + S[ i ];		
+//	for( int i = 0; i < dim * dim; i++ ) 
+//	    Ds[ i ] = D[ i ] + S[ i ];		
 }
     
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - |

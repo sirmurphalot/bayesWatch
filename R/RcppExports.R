@@ -109,14 +109,6 @@ get_justmissings_density <- function(current_data, current_precision, current_mu
     .Call(`_bayesWatch_get_justmissings_density`, current_data, current_precision, current_mu, p, lower_bounds, upper_bounds, lower_bound_is_equal, upper_bound_is_equal, is_missing, is_continuous, cores)
 }
 
-#' Calculates the normalizing constant for a G-Wishart with fixed graph structure using a Laplace approximation.
-#' 
-#' @noRd
-#' 
-log_normalizing_g_wishart_posterior_laplace <- function(graph, D_post, Delta, n, p) {
-    .Call(`_bayesWatch_log_normalizing_g_wishart_posterior_laplace`, graph, D_post, Delta, n, p)
-}
-
 #' Calculates the probability of a component for the Gibbs sweep update.
 #' 
 #' @noRd
