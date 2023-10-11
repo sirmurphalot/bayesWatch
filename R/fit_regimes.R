@@ -604,15 +604,28 @@ bayeswatch = function(data_woTimeValues,
         
         
       } else {
-        result                   = rgwish_Rcpp(
-          as.double(previous_G),
-          as.double(hyperparameters$hyperprior_scale_matrix),
-          as.integer(hyperparameters$hyperprior_b),
-          as.integer(hyperparameters$p),
-          as.double(1e-8)
+        # result                   = rgwish_Rcpp(
+        #   as.double(previous_G),
+        #   as.double(hyperparameters$hyperprior_scale_matrix),
+        #   as.integer(hyperparameters$hyperprior_b),
+        #   as.integer(hyperparameters$p),
+        #   as.double(1e-8)
+        # )
+        # result                   = result[['K']]
+        # new_scale                = matrix(result, hyperparameters$p, hyperparameters$p)
+        
+        Ggraph = igraph::graph_from_adjacency_matrix(
+          previous_G
         )
-        result                   = result[['K']]
-        new_scale                = matrix(result, hyperparameters$p, hyperparameters$p)
+        
+        result = BDgraph::rgwish( 1,
+                                  adj = previous_G,
+                                  D = hyperparameters$hyperprior_scale_matrix,
+                                  b = hyperparameters$hyperprior_b
+        )
+        flag       = 0
+        new_scale = result
+        
       }
       
       previous_model_fits      = lapply(1:(regime_truncation + 1),

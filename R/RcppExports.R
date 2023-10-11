@@ -109,6 +109,10 @@ get_justmissings_density <- function(current_data, current_precision, current_mu
     .Call(`_bayesWatch_get_justmissings_density`, current_data, current_precision, current_mu, p, lower_bounds, upper_bounds, lower_bound_is_equal, upper_bound_is_equal, is_missing, is_continuous, cores)
 }
 
+log_normalizing_g_wishart_posterior_laplace <- function(graph, D_post, Delta, n, p) {
+    .Call(`_bayesWatch_log_normalizing_g_wishart_posterior_laplace`, graph, D_post, Delta, n, p)
+}
+
 #' Calculates the probability of a component for the Gibbs sweep update.
 #' 
 #' @noRd
@@ -147,14 +151,6 @@ rmvn_Rcpp <- function(mus, K, p) {
 #' 
 rwish_Rcpp <- function(Ts, b, p) {
     .Call(`_bayesWatch_rwish_Rcpp`, Ts, b, p)
-}
-
-#' Samples from a G-Wishart distribution according to the algorithm by Dobra and Lenkowski.
-#' 
-#' @noRd
-#' 
-rgwish_Rcpp <- function(G, D, b, p, threshold) {
-    .Call(`_bayesWatch_rgwish_Rcpp`, G, D, b, p, threshold)
 }
 
 #' Approximates the G wishart normalizing using an MCMC algorithm.

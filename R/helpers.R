@@ -2441,18 +2441,31 @@ draw_mvn_parameters       = function(current_G,
   threshold      = 1e-8
   
   # | ----------- Draw Precision -------------- |
-  result = rgwish_Rcpp(
-    as.double(current_G),
-    as.double(scale_matrix_n),
-    as.integer(b + n),
-    as.integer(p),
-    as.double(threshold)
+  # result = BDgraph::rgwish(
+  #   as.double(current_G),
+  #   as.double(scale_matrix_n),
+  #   as.integer(b + n),
+  #   as.integer(p),
+  #   as.double(threshold)
+  # )
+  # flag       = result[['failed']]
+  # result     = result[['K']]
+  
+  # Ggraph = igraph::graph_from_adjacency_matrix(
+  #   current_G
+  # )
+  
+  result = BDgraph::rgwish( 1,
+    adj = current_G,
+    D = scale_matrix_n,
+    b = b + n
   )
-  flag       = result[['failed']]
-  result     = result[['K']]
+  flag       = 0
+  # result     = result[['K']]
   
-  new_K  = matrix(result, p, p)
   
+  # new_K  = matrix(result, p, p)
+  new_K = result
   # | ----------- Draw New Mu ----------------- |
   new_mu = rmvn_Rcpp(as.double(mu_n),
                      as.double((lambda + n) * new_K), as.integer(p))
@@ -3141,15 +3154,27 @@ redraw_mixture_parameters = function(my_states,
         any(is.na(Z_values_of_regime))) {
       # In this case, there are no assignments to this component.  We just draw
       # precisions and mus from our prior.
-      result              = rgwish_Rcpp(
-        as.double(hyperparameters$G),
-        as.double(scale_matrix),
-        as.integer(df),
-        as.integer(hyperparameters$p),
-        as.double(1e-8)
+      # result              = rgwish_Rcpp(
+      #   as.double(hyperparameters$G),
+      #   as.double(scale_matrix),
+      #   as.integer(df),
+      #   as.integer(hyperparameters$p),
+      #   as.double(1e-8)
+      # )
+      Ggraph = igraph::graph_from_adjacency_matrix(
+        hyperparameters$G
       )
-      flag                = result[['failed']]
-      result              = result[['K']]
+      
+      result = BDgraph::rgwish( 1,
+                                adj = hyperparameters$G,
+                                D = scale_matrix,
+                                b = df
+      )
+      flag       = 0
+      
+      
+      # flag                = result[['failed']]
+      # result              = result[['K']]
       starting_precision  = matrix(result, hyperparameters$p, hyperparameters$p)
       precision           = starting_precision
       
@@ -3170,15 +3195,27 @@ redraw_mixture_parameters = function(my_states,
     } else if (sum(cluster_assignments == component_index) == 0) {
       # I'm doing the same thing as last time, since this condition also needs the prior draw,
       # but I can't verify it this way unless I have non-null values for cluster_assignments.
-      result              = rgwish_Rcpp(
-        as.double(hyperparameters$G),
-        as.double(scale_matrix),
-        as.integer(df),
-        as.integer(hyperparameters$p),
-        as.double(1e-8)
+      # result              = rgwish_Rcpp(
+      #   as.double(hyperparameters$G),
+      #   as.double(scale_matrix),
+      #   as.integer(df),
+      #   as.integer(hyperparameters$p),
+      #   as.double(1e-8)
+      # )
+      
+      Ggraph = igraph::graph_from_adjacency_matrix(
+        hyperparameters$G
       )
-      flag                = result[['failed']]
-      result              = result[['K']]
+      
+      result = BDgraph::rgwish( 1,
+                                adj = hyperparameters$G,
+                                D = scale_matrix,
+                                b = df
+      )
+      flag       = 0
+      
+      # flag                = result[['failed']]
+      # result              = result[['K']]
       starting_precision  = matrix(result, hyperparameters$p, hyperparameters$p)
       precision           = starting_precision
       
@@ -3309,15 +3346,26 @@ redraw_G_with_mixture     = function(my_states,
         any(is.na(Z_values_of_regime))) {
       # In this case, there are no assignments to this component.  We just draw
       # precisions and mus from our prior.  This may be cheating, but it also seems practical.
-      result               = rgwish_Rcpp(
-        as.double(new_proposed_G),
-        as.double(new_scale_mat_proposal),
-        as.integer(df),
-        as.integer(hyperparameters$p),
-        as.double(1e-8)
+      # result               = rgwish_Rcpp(
+      #   as.double(new_proposed_G),
+      #   as.double(new_scale_mat_proposal),
+      #   as.integer(df),
+      #   as.integer(hyperparameters$p),
+      #   as.double(1e-8)
+      # )
+      Ggraph = igraph::graph_from_adjacency_matrix(
+        new_proposed_G
       )
-      flag                = result[['failed']]
-      result              = result[['K']]
+      
+      result = BDgraph::rgwish( 1,
+                                adj = new_proposed_G,
+                                D = new_scale_mat_proposal,
+                                b = df
+      )
+      flag       = 0
+      
+      # flag                = result[['failed']]
+      # result              = result[['K']]
       starting_precision  = matrix(result, hyperparameters$p, hyperparameters$p)
       precision           = starting_precision
       
@@ -3335,15 +3383,27 @@ redraw_G_with_mixture     = function(my_states,
       previous_model_fits[[state_to_redraw]]$cluster_assignments = NA
       
     } else if (sum(cluster_assignments == component_index) == 0) {
-      result              = rgwish_Rcpp(
-        as.double(new_proposed_G),
-        as.double(new_scale_mat_proposal),
-        as.integer(df),
-        as.integer(hyperparameters$p),
-        as.double(1e-8)
+      # result              = rgwish_Rcpp(
+      #   as.double(new_proposed_G),
+      #   as.double(new_scale_mat_proposal),
+      #   as.integer(df),
+      #   as.integer(hyperparameters$p),
+      #   as.double(1e-8)
+      # )
+      # flag                = result[['failed']]
+      # result              = result[['K']]
+      
+      Ggraph = igraph::graph_from_adjacency_matrix(
+        new_proposed_G
       )
-      flag                = result[['failed']]
-      result              = result[['K']]
+      
+      result = BDgraph::rgwish( 1,
+                                adj = new_proposed_G,
+                                D = new_scale_mat_proposal,
+                                b = df
+      )
+      flag       = 0
+      
       starting_precision  = matrix(result, hyperparameters$p, hyperparameters$p)
       precision           = starting_precision
       
@@ -3388,15 +3448,28 @@ redraw_G_with_mixture     = function(my_states,
       }
       
       # Sample the half-jump lambda_0 (I do it out here b/c of a FORTRAN conflict within Armadillo code)
-      lambda_0       = rgwish_Rcpp(
-        as.double(new_G_proposed),
-        as.double(new_scale_mat_proposal),
-        as.integer(df),
-        as.integer(p),
-        as.double(1e-8)
+      # lambda_0       = rgwish_Rcpp(
+      #   as.double(new_G_proposed),
+      #   as.double(new_scale_mat_proposal),
+      #   as.integer(df),
+      #   as.integer(p),
+      #   as.double(1e-8)
+      # )
+      # flag           = lambda_0[['failed']]
+      # lambda_0       = lambda_0[['K']]
+      
+      Ggraph = igraph::graph_from_adjacency_matrix(
+        new_G_proposed
       )
-      flag           = lambda_0[['failed']]
-      lambda_0       = lambda_0[['K']]
+      
+      result = BDgraph::rgwish( 1,
+                                adj = new_G_proposed,
+                                D = new_scale_mat_proposal,
+                                b = df
+      )
+      flag       = 0
+      
+      
       lambda_0       = matrix(lambda_0, p, p)
       current_lambda = cluster_precisions[[component_index]]
       current_mu     = cluster_mus[[component_index]]

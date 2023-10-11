@@ -18,6 +18,10 @@
 #include <Eigen/Dense>
 #define EIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS
 #include <Eigen/Eigen>
+#include <iostream>
+#include <sstream> 
+using std::ostringstream; // <-- Added
+using Eigen::EigenBase;   // <-- Added
   
   
 extern "C" {
@@ -155,9 +159,6 @@ void rwish_c( double Ts[], double K[], int *b, int *p )
         }
     }
     
-    //  printf("original matrix: \n");
-    //  std::cout << mat << std::endl;
-    
     Eigen::MatrixXd C = psi_mat * T_mat;
     Eigen::MatrixXd K_mat = C.transpose() * C;
     
@@ -189,8 +190,10 @@ void rwish_c( double Ts[], double K[], int *b, int *p )
 
 void rgwish_c( double G[], double Ts[], double K[], int *b, int *p, double *threshold, int *failed )
 {
-  int i, j, l, k, size_node, dim = *p, pxp = dim * dim; //info,, one = 1 	
-  
+  int i, j, l, k, m, size_node, dim = *p, pxp = dim * dim; //info,, one = 1 	
+  *failed = 0;
+  m = 0;
+    
   double threshold_c = *threshold;
 //  double alpha = 1.0, beta  = 0.0;
   int num_iters = 10000;
@@ -216,20 +219,24 @@ void rgwish_c( double G[], double Ts[], double K[], int *b, int *p, double *thre
     double mean_diff = 1.0;
     
     Eigen::MatrixXd sigma_start_N_i_mat(1,1);
-    sigma_start_N_i_mat.resize(*p,*p);
+    sigma_start_N_i_mat.resize(dim,1);
+    
     Eigen::MatrixXd sigma_start_i_mat(1,1);
     sigma_start_i_mat.resize(*p,*p);
+    
     Eigen::MatrixXd sigma_mat(1,1);
     sigma_mat.resize(*p,*p);
+    
     Eigen::MatrixXd beta_star_mat(1,1);
     beta_star_mat.resize(*p,1);
-    Eigen::MatrixXd sigma_N_i_mat(1,1);
     
+    Eigen::MatrixXd sigma_N_i_mat(1,1);
+    sigma_N_i_mat.resize(*p,*p);
     
     int counter = 0;
 	while( (mean_diff > threshold_c) and ( counter < num_iters ) )
 	{
-	  counter++;
+	    counter++;
 		memcpy( &sigma_last[0], &sigma[0], sizeof( double ) * pxp );
 		
 		for( i = 0; i < dim; i++ )
@@ -247,62 +254,65 @@ void rgwish_c( double G[], double Ts[], double K[], int *b, int *p, double *thre
 					{
 						sigma_start_N_i[ l ] = sigma_start[ i * dim + j ]; 
 						N_i[ l++ ]           = j;
-					}else
+					} else
 						beta_star[ j ] = 0.0; 
 				}
 				// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - |
 				
 				sub_matrix( &sigma[0], &sigma_N_i[0], &N_i[0], &size_node, &dim );
-                                
+                      
                 // This is a dirty fix since CRAN won't easily allow for LAPACK:
-                sigma_N_i_mat.resize(size_node,size_node);
+                sigma_N_i_mat.resize(size_node, size_node);
+                
                 k = 0;
-                for(int i = 0; i < size_node; i++)
+                for(m = 0; m < size_node; m++)
                 {
                     for(int j = 0; j < size_node; j++)
                     {
-                      sigma_mat(i,j) = sigma[k];
-                      sigma_N_i_mat(i,j) = sigma_N_i[k];
+                      sigma_N_i_mat(m,j) = sigma_N_i[k];
                       k++;
                     }
                 }
                 
-                sigma_start_N_i.resize(size_node,1);
                 k = 0;
-                for(int i = 0; i < size_node; i++)
+                for(m = 0; m < dim; m++)
                 {
-                  sigma_start_N_i_mat(i,1) = sigma_start_N_i[k];
+                    for(int j = 0; j < dim; j++)
+                    {
+                      sigma_mat(m,j) = sigma[k];
+                      k++;
+                    }
+                }
+                
+                sigma_start_N_i_mat.resize(size_node,1);
+                k = 0;
+                for(m = 0; m < size_node; m++)
+                {
+                  sigma_start_N_i_mat(m,1) = sigma_start_N_i[k];
                   k++;
                 }
                 
 					
 				// A * X = B   for   sigma_start_N_i := (sigma_N_i)^{-1} * sigma_start_N_i
 //				F77_NAME(dposv)( &uplo, &size_node, &one, &sigma_N_i[0], &size_node, &sigma_start_N_i[0], &size_node, &info FCONE );
-                
-                sigma_start_N_i_mat = sigma_N_i_mat.colPivHouseholderQr().solve(sigma_start_N_i_mat);
-                    
 
-				for( j = 0; j < size_node; j++ ) beta_star[ N_i[ j ] ] = sigma_start_N_i_mat(j,1);
+//                Eigen::MatrixXd sigma_start_N_i_mat_new  = sigma_N_i_mat.colPivHouseholderQr().solve(sigma_start_N_i_mat); //= sigma_start_N_i_mat
+                Eigen::MatrixXd sigma_start_N_i_mat_new  = sigma_N_i_mat.inverse() * sigma_start_N_i_mat;  
+				for( j = 0; j < size_node; j++ ) beta_star[ N_i[ j ] ] = sigma_start_N_i_mat_new(j,1);
                 
-                int k = 0;
-                for(int i = 0; i < size_node; i++)
+                k = 0;
+                for(m = 0; m < dim; m++)
                 {
-                  beta_star_mat(i,1) = beta_star[ k ];
+                  beta_star_mat(m,1) = beta_star[ k ];
                   k++;
                 }
 				
                 // From LAPACK: C := alpha*op( A )*op( B ) + beta*C,
 //				F77_NAME(dgemm)( &transN, &transN, &dim, &one, &dim, &alpha, &sigma[0], &dim, &beta_star[0], &dim, &beta, &sigma_start_i[0], &dim FCONE FCONE );
                 sigma_start_i_mat = sigma_mat * beta_star_mat;
-                
-                k = 0;
-                for(int i = 0; i < dim; i++)
-                {
-                    for(int j = 0; j < dim; j++)
-                    {
-                      sigma_start_i[k] = sigma_start_i_mat(i,j);
-                      k++;
-                    }
+
+                for(m = 0; m < dim; m++) {
+                    sigma_start_i[m] = sigma_start_i_mat(m,1);
                 }
 				
                 
@@ -342,8 +352,14 @@ void rgwish_c( double G[], double Ts[], double K[], int *b, int *p, double *thre
 	  *failed = 1;
 	}
 	
-	
-	 inverse( &sigma[0], K, &dim );
+    inverse( &sigma[0], K, &dim );
+    
+    sigma_start_N_i_mat.resize(0,0);
+    sigma_start_i_mat.resize(0,0);
+    sigma_mat.resize(0,0);
+    beta_star_mat.resize(0,0);
+    sigma_N_i_mat.resize(0,0);
+//    sigma_start_N_i_mat_new.resize(0,0);
 }
   
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - |
@@ -518,42 +534,6 @@ Rcpp::NumericVector rwish_Rcpp( Rcpp::NumericVector Ts, int b, int p) {
   return(K);
 }
 
-//' Samples from a G-Wishart distribution according to the algorithm by Dobra and Lenkowski.
-//' 
-//' @noRd
-//' 
-// [[Rcpp::export]]
-List rgwish_Rcpp( const Rcpp::NumericVector G, 
-                                 const Rcpp::NumericVector D, 
-                                 int b, int p, double threshold) {
-  int pxp = p * p, failed;
-  Rcpp::NumericVector K( pxp );
-  vector<double> inv_Ds( pxp ); 
-  vector<double> copy_Ds( pxp ); 
-  vector<double> Ts_vectorized( pxp );
-  vector<double> Ds_vectorized( pxp );
-  
-  List return_items;
-  
-  // From R, these objects are fed in via row-major order.  Note that the filling below
-  // simply copies the vector -- it does not dictate the major of the order.
-  for( int i = 0; i < p; i++ ){
-    for( int j = 0; j < p; j++ ){
-      Ds_vectorized[ j * p + i ] = D(j * p + i );
-      Ts_vectorized[ j * p + i ] = 0.0;
-    }
-  }
-  
-  // This inverts our D matrix, and cholesky decomposes.
-  get_Ts( &Ds_vectorized[0], &Ts_vectorized[0], &inv_Ds[0], &copy_Ds[0], &p );
-  // This draws from the G Wishart.
-  rgwish_c( REAL(G), &Ts_vectorized[0], REAL(K), &b, &p, &threshold, &failed );
-  
-  return_items["failed"] = failed;
-  return_items["K"]      = K;
-  
-  return(return_items);
-}
 
 //' Approximates the G wishart normalizing using an MCMC algorithm.
 //' 
