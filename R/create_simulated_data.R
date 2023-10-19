@@ -9,7 +9,6 @@ library(MASS)
 #' @noRd
 create_simulated_data = function(){
   job_num = 7
-  set.seed(9)
   parameters_number         = 8
   p                         = 5
   orig_p = p
@@ -41,14 +40,14 @@ create_simulated_data = function(){
   port_number = (job_num-1)*31 + 11001
   
   not.cont = rep(0, times = p)
-
+  
   graph_structure       = matrix(1,p,p) - diag(p)
-
+  
   df      = p + 50
   S1      = CholWishart::rInvWishart(1, df, diag(p)/df )[,,1]
   orig_S2 = S1
   # S1      = S1* 0.25
-
+  
   S2      = S1
   # S2[3,3] = S2[3,3]*2
   # S2[4,4] = S2[4,4]*4
@@ -60,7 +59,7 @@ create_simulated_data = function(){
   mean2[3:4] = mean1[3:4] + mean_shift
   mean2[4]   = mean1[4] + 2*mean_shift
   data_type = "MeanIsDifferent"
-    
+  
   day_dts = seq(as.POSIXct("2020-03-01 01:00:00", tz="CST6CDT"),as.POSIXct("2020-04-22 01:00:00", tz="CST6CDT"),by="1 day")
   day_dts = day_dts[1:(num_of_days+1)]
   
@@ -81,12 +80,10 @@ create_simulated_data = function(){
         data.sim.mixed_group1 = MASS::mvrnorm(2*base_data_size, mu = mean1, Sigma = S1)
         full_data             = data.sim.mixed_group1
         
-
+        
         
         temp_day_log          = full_data
         day_of_observations   = rep(day_dts[day+1], times = nrow(data.sim.mixed_group1))#$data))
-        print(paste("means for day", day, "is:"))
-        print(paste(apply(temp_day_log, 2, mean)))
         
       } else {
         # data.sim.mixed_group1 <- bdgraph.sim( n = base_data_size, p = p,
@@ -110,8 +107,6 @@ create_simulated_data = function(){
         day_of_observations =  c(day_of_observations,rep(day_dts[day+1], times = nrow(data.sim.mixed_group3)))#$data)))
         
         temp_day_log = rbind(temp_day_log, data.sim.mixed_group3)#$data)
-        print(paste("means for day", day, "is:"))
-        print(paste(apply(temp_day_log, 2, mean)))
       }
       
     }else if(count < 15){
@@ -127,10 +122,8 @@ create_simulated_data = function(){
         
         day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group1)))#$data)))
         
-
+        
         temp_day_log = data.sim.mixed_group1#$data
-        print(paste("means for day", day, "is:"))
-        print(paste(apply(temp_day_log, 2, mean)))
         
       } else {
         # data.sim.mixed_group1 <- bdgraph.sim( n = base_data_size, p = p, 
@@ -152,13 +145,11 @@ create_simulated_data = function(){
         day_of_observations =  c(day_of_observations,rep(day_dts[day+1], times = nrow(data.sim.mixed_group3)))#$data)))
         
         temp_day_log = rbind(temp_day_log, data.sim.mixed_group3)#$data)
-        print(paste("means for day", day, "is:"))
-        print(paste(apply(temp_day_log, 2, mean)))
         
       }
       
     } else if(count < 35) {
-
+      
       
       if(modal_type[parameters_number]=='unimodal'){
         # 
@@ -182,13 +173,9 @@ create_simulated_data = function(){
         day_of_observations   = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group2)))#$data)))
         
         temp_day_log = data.sim.mixed_group2#$data
-        print(paste("means for day", day, "is:"))
-        print(paste(apply(temp_day_log, 2, mean)))
-        
         
       } else {
         if(data_type == "MeanIsDifferent"){
-          print("We DID actually shift the means away from one other for the diabolical bimodal example.")
           bimodal_shift = mean_shift
         } else {
           bimodal_shift = 0
@@ -205,7 +192,7 @@ create_simulated_data = function(){
         temp_day_log = data.sim.mixed_group2#$data
         day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group2)))#$data)))
         
-
+        
         # data.sim.mixed_group4 <- bdgraph.sim( n = base_data_size, p = p, 
         #                                       graph = "fixed",
         #                                       sigma=S2, mean = mean2+half_dist_between_modes + bimodal_shift)
@@ -215,7 +202,7 @@ create_simulated_data = function(){
         full_data = rbind(full_data, data.sim.mixed_group4)#$data)
         day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group4)))#$data)))
         
-
+        
         temp_day_log = rbind(temp_day_log, data.sim.mixed_group4)#$data)
       }
       # print(paste("means for day", day, "is:"))
@@ -245,13 +232,10 @@ create_simulated_data = function(){
         day_of_observations = c(day_of_observations, rep(day_dts[day+1], times = nrow(data.sim.mixed_group3)))#$data)))
         
         temp_day_log = data.sim.mixed_group3#$data
-        print(paste("means for day", day, "is:"))
-        print(paste(apply(temp_day_log, 2, mean)))
         
         
       } else {
         if(data_type == "MeanIsDifferent"){
-          print("We DID actually shift the means away from one other for the diabolical bimodal example (next regime change).")
           bimodal_shift = mean_shift*2
         } else {
           bimodal_shift = 0
@@ -378,10 +362,9 @@ create_simulated_data = function(){
     upper_index   = upper_index + 2*base_data_size
   }
   
-  
-  save(full_data, file = "data/example_data.RData")
-  save(day_of_observations, file = "data/day_of_observations.RData")
-  save(day_dts, file = "data/day_dts.RData")
+  # Uncomment these to remake the example data files.
+  # save(full_data, file = "data/example_data.RData")
+  # save(day_of_observations, file = "data/day_of_observations.RData")
+  # save(day_dts, file = "data/day_dts.RData")
   return(list(full_data=full_data, day_of_observations=day_of_observations, day_dts=day_dts))
 }
-

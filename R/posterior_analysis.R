@@ -23,10 +23,8 @@ determine_marginals = function(bayesWatch_object,
   changepoints      = changepoint_probs >= prob_cutoff
   my_states         = rep(0, times = length(changepoints))
   
-  print("MCMC sampling complete.  Performing fault detection calculations...")
   
   if (sum(changepoints) == 0) {
-    print("was unable to perform fault detection because no changepoints were detected!")
     return(NA)
   }
   
@@ -52,7 +50,7 @@ determine_marginals = function(bayesWatch_object,
   }
   
   if (sum(location_of_files_wanted) == 0) {
-    print("no model was saved that has dictated by this p_cutoff!!")
+    stop("no model was saved that has dictated by this p_cutoff!!")
     return(NA)
   }
   

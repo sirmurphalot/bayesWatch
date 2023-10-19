@@ -1,3 +1,5 @@
+//bayesWatch modifies and uses source code released in the supplementary material of the paper "Computational Aspects Related to Inference in Gaussian Graphical Models With the G-Wishart Prior." by Alex Lenkoski and Adrian Dobra.  This code was used for this package, and placed until the GNU license, by direct permission from the authors.  The files that use this code are newgraph.cpp, graph.h, gwish.cpp.
+
 #ifndef GRAPH_H
 #define GRAPH_H
 #endif

@@ -42,7 +42,7 @@ bayeswatch(
   regime_selection_multiplicative_prior = 2,
   split_selection_multiplicative_prior = 2,
   is_initial_fit = TRUE,
-  verbose_logfile = FALSE
+  verbose = FALSE
 )
 }
 \arguments{
@@ -64,11 +64,11 @@ bayeswatch(
 
 \item{upper_bounds}{vector. Upper bounds for each data column.}
 
-\item{ordinal_indicators}{vector.}
+\item{ordinal_indicators}{vector. Discrete values, one for each column, indicating which variables are ordinal.}
 
-\item{list_of_ordinal_levels}{vector.}
+\item{list_of_ordinal_levels}{vector. Discrete values, one for each column, indicating which variables are part of the same ordinal group.}
 
-\item{categorical_indicators}{vector.}
+\item{categorical_indicators}{vector.  Each nominal d categorical variable must be broken down into d different indicator variables.  This vector marks which variables are such indicators.}
 
 \item{previous_states}{vector. Starting regime vector, if known, of the same length as the number of 'days' in time_points.}
 
@@ -120,7 +120,7 @@ bayeswatch(
 
 \item{is_initial_fit}{logical. True when there is no previously fit bayesWatch object fed through the algorithm..}
 
-\item{verbose_logfile}{logical. Writes verbose model output to file for debugging when TRUE.}
+\item{verbose}{logical. Prints verbose model output for debugging when TRUE.  It is highly recommended that you pipe this to a text file.}
 }
 \value{
 bayesWatch object. A model fit for the analysis of posterior change-points and fault detection.
@@ -130,16 +130,18 @@ Main method of package.  MCMC sampling for change-point probabilities with fault
 according to the model by Murph et al. 2023.  Creates a bayesWatch object for analysis of change-points.
 }
 \examples{
-# library(bayesWatch)
-# data("full_data")
-# data("day_of_observations")
-# data("day_dts")
+\donttest{
+library(bayesWatch)
+data("full_data")
+data("day_of_observations")
+data("day_dts")
 
-# x       = bayeswatch(full_data, day_of_observations, day_dts,
-#                     iterations = 500, g.prior = 1, linger_parameter = 20, n.cores=3,
-#                     wishart_df_initial = 3, hyperprior_b = 3, lambda = 5)
+x       = bayeswatch(full_data, day_of_observations, day_dts,
+                   iterations = 500, g.prior = 1, linger_parameter = 20, n.cores=3,
+                   wishart_df_initial = 3, hyperprior_b = 3, lambda = 5)
 
-# print(x)
-# plot(x)
-# detect_faults(x)
+print(x)
+plot(x)
+detect_faults(x)
+}
 }

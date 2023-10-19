@@ -12,7 +12,7 @@ require(parallel)
 #' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
 #' @param n.cores integer. Number of cores available for this calculation.
 #' @param min_regime_length integer. Gibbs sweep will not create a regime smaller than this.
-#' @param verbose_logfile  logical. Will print to logfile if TRUE.
+#' @param verbose  logical. Will print to console if TRUE.
 #'
 #'
 #' @noRd
@@ -26,7 +26,7 @@ update_states_gibbs       = function(my_states,
                                      hyperparameters,
                                      n.cores,
                                      min_regime_length = 1,
-                                     verbose_logfile = FALSE) {
+                                       verbose = FALSE) {
   # We are going to perform sequential Gibbs updates with two restrictions:
   ## 1) This process cannot create a singleton state (UPDATE: cannot move below min_regime_length);
   ## 2) This process will not require the drawing of a new model.
@@ -77,7 +77,7 @@ update_states_gibbs       = function(my_states,
           if ((sum(my_states_temp == my_states[index - 1]) < min_regime_length) |
               (sum(my_states_temp == my_states[index + 1]) < min_regime_length) |
               (sum(my_states_temp == my_states[index]) < min_regime_length)) {
-            if (verbose_logfile)
+            if (  verbose)
               cat(
                 paste(
                   "-----> Gibbs swap attempted at timepoint",
@@ -87,9 +87,7 @@ update_states_gibbs       = function(my_states,
                   "to regime",
                   new_state,
                   "but would have created a regime below the min length.\n"
-                ),
-                file = "verbose_log.txt",
-                append = T
+                )
               )
             next
           }
@@ -145,7 +143,7 @@ update_states_gibbs       = function(my_states,
           if ((sum(my_states_temp == my_states[index - 1]) < min_regime_length) |
               (sum(my_states_temp == my_states[index + 1]) < min_regime_length) |
               (sum(my_states_temp == my_states[index]) < min_regime_length)) {
-            if (verbose_logfile)
+            if (  verbose)
               cat(
                 paste(
                   "-----> Gibbs swap attempted at timepoint",
@@ -155,9 +153,7 @@ update_states_gibbs       = function(my_states,
                   "to regime",
                   new_state,
                   "but would have created a regime below the min length.\n"
-                ),
-                file = "verbose_log.txt",
-                append = T
+                )
               )
             next
           }
@@ -220,16 +216,14 @@ update_states_gibbs       = function(my_states,
         if ((length(prob_of_state_change) == 0) |
             (is.na(prob_of_state_change)) |
             (is.nan(prob_of_state_change))) {
-          if (verbose_logfile)
+          if (  verbose)
             cat(
               paste(
                 "-----> Probability values are poor in the Gibbs sampler",
                 "the value of prob_of_state_change is:",
                 prob_of_state_change,
                 "\n"
-              ),
-              file = "verbose_log.txt",
-              append = T
+              )
             )
           stop("There were precision issues with the Gibbs Swap algorithm.")
         }
@@ -237,10 +231,8 @@ update_states_gibbs       = function(my_states,
           if (rand_value <= prob_of_state_change) {
             old_state             = my_states[index]
             if (old_state != new_state) {
-              if (verbose_logfile)
-                cat("gibbs swap changed the state!",
-                    file = "verbose_log.txt",
-                    append = T)
+              if (  verbose)
+                cat("gibbs swap changed the state!")
               previous_model_fits = update_regime_components(
                 new_state,
                 old_state,
@@ -251,20 +243,16 @@ update_states_gibbs       = function(my_states,
               )
               previous_model_fits = previous_model_fits$previous_model_fits_item
             } else {
-              if (verbose_logfile)
+              if (  verbose)
                 cat(
-                  "I'M PRETTY SURE THAT THIS SHOULD NEVER HAPPEN!!!!",
-                  file = "verbose_log.txt",
-                  append = T
+                  "I'M PRETTY SURE THAT THIS SHOULD NEVER HAPPEN!!!!"
                 )
             }
             my_states             = my_states_temp
             accepted              = 1
           } else {
-            if (verbose_logfile)
-              cat("gibbs swap did not change the state!",
-                  file = "verbose_log.txt",
-                  append = T)
+            if (  verbose)
+              cat("gibbs swap did not change the state!")
             accepted              = 1
           }
         }
@@ -618,7 +606,7 @@ gibbsswap_comps_parallel_helper = function(x,
 #' @param n.cores integer. Number of cores available for this calculation.
 #' @param allow_mixtures logical. Whether or not a mixture model should be fit.
 #' @param min_regime_length integer. Gibbs sweep will not create a regime smaller than this.
-#' @param verbose_logfile logical. Will print to logfile if TRUE.
+#' @param verbose logical. Will print   to console if TRUE.
 #'
 #'
 #' @noRd
@@ -640,7 +628,7 @@ update_states_mergesplit  = function(my_states,
                                      min_regime_length = 1,
                                      regime_selection_multiplicative_prior = NULL,
                                      split_selection_multiplicative_prior = NULL,
-                                     verbose_logfile = FALSE) {
+                                       verbose = FALSE) {
   linger_parameter         = hyperparameters$alpha
   move_parameter           = hyperparameters$beta
   mu_0                     = hyperparameters$mu_0
@@ -696,25 +684,21 @@ update_states_mergesplit  = function(my_states,
     log_prob_of_regime_backward = 0
     
     first_state           = sample(1:(max(my_states)), 1)
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        paste("-----> starting a SPLIT on state", first_state, "\n"),
-        file = "verbose_log.txt",
-        append = T
+        paste("-----> starting a SPLIT on state", first_state, "\n")
       )
     
     # We will begin by automatically rejecting if the state chosen only has a single
     # observation.
     if (length(which(my_states == first_state)) <= 1) {
-      if (verbose_logfile)
+      if (  verbose)
         cat(
           paste(
             "-----> split automatically rejected b/c only a single instance of state",
             first_state,
             "exists\n"
-          ),
-          file = "verbose_log.txt",
-          append = T
+          )
         )
       return(
         list(
@@ -729,15 +713,13 @@ update_states_mergesplit  = function(my_states,
     }
     
     if (max(my_states) == hyperparameters$regime_truncation) {
-      if (verbose_logfile)
+      if (  verbose)
         cat(
           paste(
             "-----> split automatically rejected b/c reached regime truncation value of ",
             hyperparameters$regime_truncation,
             '\n'
-          ),
-          file = "verbose_log.txt",
-          append = T
+          )
         )
       return(
         list(
@@ -767,24 +749,20 @@ update_states_mergesplit  = function(my_states,
       hyperparameters$wishart_scale_matrix,
       hyperparameters$wishart_df,
       split_selection_multiplicative_prior,
-      verbose_logfile = verbose_logfile
+        verbose =   verbose
     )
     
     rescale_log_values     = log(max(split_distribution))
     exp_split_distribution = exp(log(split_distribution) - rescale_log_values)
     
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        "Rescaled and transformed split distribution:\n",
-        file = "verbose_log.txt",
-        append = T
+        "Rescaled and transformed split distribution:\n"
       )
-    if (verbose_logfile)
-      cat(exp_split_distribution,
-          file = "verbose_log.txt",
-          append = T)
-    if (verbose_logfile)
-      cat("\n", file = "verbose_log.txt", append = T)
+    if (  verbose)
+      cat(exp_split_distribution)
+    if (  verbose)
+      cat("\n"  )
     
     suppressWarnings({
       rand_value             = runif(1,
@@ -793,29 +771,19 @@ update_states_mergesplit  = function(my_states,
     })
     
     if (is.na(rand_value)) {
-      if (verbose_logfile) {
+      if (  verbose) {
         cat(
-          "Something was wrong with exp split distribution",
-          file = "verbose_log.txt",
-          append = T
+          "Something was wrong with exp split distribution"
         )
-        cat(indices_of_regime,
-            file = "verbose_log.txt",
-            append = T)
-        cat("\n", file = "verbose_log.txt", append = T)
-        cat(split_distribution,
-            file = "verbose_log.txt",
-            append = T)
-        cat("\n", file = "verbose_log.txt", append = T)
-        cat(rescale_log_values,
-            file = "verbose_log.txt",
-            append = T)
-        cat("\n", file = "verbose_log.txt", append = T)
-        cat(exp_split_distribution,
-            file = "verbose_log.txt",
-            append = T)
-        cat("\n", file = "verbose_log.txt", append = T)
-        cat(rand_value, file = "verbose_log.txt", append = T)
+        cat(indices_of_regime)
+        cat("\n"  )
+        cat(split_distribution)
+        cat("\n"  )
+        cat(rescale_log_values)
+        cat("\n"  )
+        cat(exp_split_distribution)
+        cat("\n"  )
+        cat(rand_value)
       }
     }
     sum_density_values     = 0
@@ -827,11 +795,9 @@ update_states_mergesplit  = function(my_states,
         break
       }
     }
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        paste("-----> Index of split is:", index_of_split, '\n'),
-        file = "verbose_log.txt",
-        append = T
+        paste("-----> Index of split is:", index_of_split, '\n')
       )
     
     indices_of_state           = which(my_states == first_state)
@@ -841,13 +807,11 @@ update_states_mergesplit  = function(my_states,
     my_states_temp[indices_of_state_changed] = max(my_states) + 1
     
     if ((length(which(my_states_temp == 1)) < min_regime_length)) {
-      if (verbose_logfile)
+      if (  verbose)
         cat(
           paste(
             "-----> split automatically rejected b/c it would create a regime less than the minimum regime length.\n"
-          ),
-          file = "verbose_log.txt",
-          append = T
+          )
         )
       return(
         list(
@@ -1006,155 +970,121 @@ update_states_mergesplit  = function(my_states,
     }
     
     log_random_unif = log(runif(1))
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        paste("-----> Metropolis-Hastings Ratio:", MH_ratio, '\n'),
-        file = "verbose_log.txt",
-        append = T
+        paste("-----> Metropolis-Hastings Ratio:", MH_ratio, '\n')
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Portion of this from beta parameters:",
           log_leftover_value_betaterms,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Portion of this from G wishart normalizing terms:",
           log_leftover_value_wishartterms,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Portion of this mixture component swap:",
           log_forward_prob_component_split - log_backward_prob_component_split,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "-----------> Portion of this from forward prob:",
           log_forward_prob_component_split,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "-----------> Portion of this from backwards prob:",-log_backward_prob_component_split,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "-----------> Portion of this from comp prob redraw and component vector likelihood:",
           log_comp_prob_and_assignment_move,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Portion of this from proposal distribution:",-log_prob_of_split,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Portion of this from mu distn normalizing terms:",
           log_leftover_value_mu_distn,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Value of the new likelihood:",
           log_likelihood_new_model,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Value of the old likelihood:",-log_likelihood_old_model,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Total value of likelihood ratio:",
           log_likelihood_new_model - log_likelihood_old_model,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Portion of this from regime selection:",-log(M + 1) + log(M),
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        paste("--------> Pseudoprior terms:", pseudoprior_values, '\n'),
-        file = "verbose_log.txt",
-        append = T
+        paste("--------> Pseudoprior terms:", pseudoprior_values, '\n')
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        paste("--------> Entire log MH ratio:", MH_ratio, '\n'),
-        file = "verbose_log.txt",
-        append = T
+        paste("--------> Entire log MH ratio:", MH_ratio, '\n')
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        paste("-----> Probability of accepting SPLIT:", min(exp(MH_ratio), 1), '\n'),
-        file = "verbose_log.txt",
-        append = T
+        paste("-----> Probability of accepting SPLIT:", min(exp(MH_ratio), 1), '\n')
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        paste("-----> Log uniform random draw:", log_random_unif, '\n'),
-        file = "verbose_log.txt",
-        append = T
+        paste("-----> Log uniform random draw:", log_random_unif, '\n')
       )
     
     if (is.nan(MH_ratio)) {
-      if (verbose_logfile)
+      if (  verbose)
         cat(
           c(
             "[1]  -----> The current probabities are:",
@@ -1162,15 +1092,11 @@ update_states_mergesplit  = function(my_states,
               transition_probabilities, paste, collapse = ' '
             )),
             '\n'
-          ),
-          file = "verbose_log.txt",
-          append = T
+          )
         )
-      if (verbose_logfile)
+      if (  verbose)
         cat(
-          "-----> completed the SPLIT (did not accept)\n",
-          file = "verbose_log.txt",
-          append = T
+          "-----> completed the SPLIT (did not accept)\n"
         )
       return(
         list(
@@ -1183,7 +1109,7 @@ update_states_mergesplit  = function(my_states,
         )
       )
     } else if (laplace_nonconverge_flag) {
-      if (verbose_logfile)
+      if (  verbose)
         cat(
           c(
             "[1]  -----> The current probabities are:",
@@ -1191,15 +1117,11 @@ update_states_mergesplit  = function(my_states,
               transition_probabilities, paste, collapse = ' '
             )),
             '\n'
-          ),
-          file = "verbose_log.txt",
-          append = T
+          )
         )
-      if (verbose_logfile)
+      if (  verbose)
         cat(
-          "-----> completed the SPLIT (did not accept because the laplace algorithm failed to converge) \n",
-          file = "verbose_log.txt",
-          append = T
+          "-----> completed the SPLIT (did not accept because the laplace algorithm failed to converge) \n"
         )
       return(
         list(
@@ -1214,13 +1136,11 @@ update_states_mergesplit  = function(my_states,
     }
     
     if (log_random_unif <= MH_ratio) {
-      if (verbose_logfile)
-        cat("-----> completed the SPLIT (accepted) \n",
-            file = "verbose_log.txt",
-            append = T)
+      if (  verbose)
+        cat("-----> completed the SPLIT (accepted) \n")
       my_states                = my_states_temp
       previous_model_fits      = previous_model_fits_temp
-      if (verbose_logfile)
+      if (  verbose)
         cat(
           c(
             "[1]  -----> The current probabities are:",
@@ -1228,9 +1148,7 @@ update_states_mergesplit  = function(my_states,
               transition_probabilities, paste, collapse = ' '
             )),
             '\n'
-          ),
-          file = "verbose_log.txt",
-          append = T
+          )
         )
       
       return(
@@ -1244,7 +1162,7 @@ update_states_mergesplit  = function(my_states,
         )
       )
     } else {
-      if (verbose_logfile)
+      if (  verbose)
         cat(
           c(
             "[1]  -----> The current probabities are:",
@@ -1252,15 +1170,11 @@ update_states_mergesplit  = function(my_states,
               transition_probabilities, paste, collapse = ' '
             )),
             '\n'
-          ),
-          file = "verbose_log.txt",
-          append = T
+          )
         )
-      if (verbose_logfile)
+      if (  verbose)
         cat(
-          "-----> completed the SPLIT (did not accept)\n",
-          file = "verbose_log.txt",
-          append = T
+          "-----> completed the SPLIT (did not accept)\n"
         )
       return(
         list(
@@ -1278,11 +1192,9 @@ update_states_mergesplit  = function(my_states,
     # We will begin by automatically rejecting if there is only one state, and
     # therefore no possible merges.
     if (max(my_states) == 1) {
-      if (verbose_logfile)
+      if (  verbose)
         cat(
-          "Cannot perform a merge b/c there is only one state! (reject automatically)\n",
-          file = "verbose_log.txt",
-          append = T
+          "Cannot perform a merge b/c there is only one state! (reject automatically)\n"
         )
       return(
         list(
@@ -1330,11 +1242,9 @@ update_states_mergesplit  = function(my_states,
     
     first_state                              = sample(1:(max(my_states) -
                                                            1), 1)
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        paste("-----> starting a MERGE on state", first_state, '\n'),
-        file = "verbose_log.txt",
-        append = T
+        paste("-----> starting a MERGE on state", first_state, '\n')
       )
     
     # Merge this state with the state above it, making them all equal to first_state.
@@ -1361,25 +1271,21 @@ update_states_mergesplit  = function(my_states,
       hyperparameters$wishart_scale_matrix,
       hyperparameters$wishart_df,
       split_selection_multiplicative_prior,
-      verbose_logfile = verbose_logfile
+        verbose =   verbose
     )
     
     rescale_log_values     = log(max(split_distribution))
     exp_split_distribution = exp(log(split_distribution) - rescale_log_values)
     
     
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        "Rescaled and transformed split distribution:\n",
-        file = "verbose_log.txt",
-        append = T
+        "Rescaled and transformed split distribution:\n"
       )
-    if (verbose_logfile)
-      cat(exp_split_distribution,
-          file = "verbose_log.txt",
-          append = T)
-    if (verbose_logfile)
-      cat("\n", file = "verbose_log.txt", append = T)
+    if (  verbose)
+      cat(exp_split_distribution)
+    if (  verbose)
+      cat("\n"  )
     suppressWarnings({
       rand_value             = runif(1,
                                      min = 0,
@@ -1387,30 +1293,26 @@ update_states_mergesplit  = function(my_states,
     })
     
     if (is.na(rand_value)) {
-      if (verbose_logfile)
+      if (  verbose)
         cat(
-          "Something was wrong with exp split distribution\n",
-          file = "verbose_log.txt",
-          append = T
+          "Something was wrong with exp split distribution\n"
         )
-      if (verbose_logfile)
-        cat(split_distribution, file = "verbose_log.txt", append = T)
-      if (verbose_logfile)
-        cat("\n", file = "verbose_log.txt", append = T)
-      if (verbose_logfile)
-        cat(rescale_log_values, file = "verbose_log.txt", append = T)
-      if (verbose_logfile)
-        cat("\n", file = "verbose_log.txt", append = T)
-      if (verbose_logfile)
-        cat(exp_split_distribution,
-            file = "verbose_log.txt",
-            append = T)
-      if (verbose_logfile)
-        cat("\n", file = "verbose_log.txt", append = T)
-      if (verbose_logfile)
-        cat(rand_value, file = "verbose_log.txt", append = T)
-      if (verbose_logfile)
-        cat("\n", file = "verbose_log.txt", append = T)
+      if (  verbose)
+        cat(split_distribution)
+      if (  verbose)
+        cat("\n"  )
+      if (  verbose)
+        cat(rescale_log_values)
+      if (  verbose)
+        cat("\n"  )
+      if (  verbose)
+        cat(exp_split_distribution)
+      if (  verbose)
+        cat("\n"  )
+      if (  verbose)
+        cat(rand_value)
+      if (  verbose)
+        cat("\n"  )
     }
     log_prob_of_split      = log(exp_split_distribution[length(indices_of_state_unchanged)])
     
@@ -1545,142 +1447,112 @@ update_states_mergesplit  = function(my_states,
       log_forward_prob_component_split + log_backward_prob_component_split + log_comp_prob_and_assignment_move + pseudoprior_values
     if (is.infinite(log_forward_prob_component_split - log_backward_prob_component_split) |
         is.na(log_forward_prob_component_split - log_backward_prob_component_split)) {
-      if (verbose_logfile)
+      if (  verbose)
         cat(
-          "We're getting some weird values for the component reassignments\n",
-          file = "verbose_log.txt",
-          append = T
+          "We're getting some weird values for the component reassignments\n"
         )
       MH_ratio      = -Inf
     }
     
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        paste("-----> Metropolis-Hastings Ratio:", MH_ratio, '\n'),
-        file = "verbose_log.txt",
-        append = T
+        paste("-----> Metropolis-Hastings Ratio:", MH_ratio, '\n')
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Portion of this from beta parameters:",
           log_leftover_value_betaterms,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Portion of this from G wishart parameters:",
           log_leftover_value_wishartterms,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Portion of this mixture component swap:",
           log_forward_prob_component_split - log_backward_prob_component_split,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "-----------> Portion of this from forward prob:",
           log_forward_prob_component_split,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "-----------> Portion of this from backwards prob:",-log_backward_prob_component_split,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "-----------> Portion of this from comp prob redraw and component vector likelihood:",
           log_comp_prob_and_assignment_move,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Portion of this from proposal distribution:",
           log_prob_of_split,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Portion of this from mu distn normalizing terms:",
           log_leftover_mu_distn,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Portion of this from regime selection:",
           log(M) - log(M - 1),
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
         paste(
           "--------> Portion from psuedoprior:",
           pseudoprior_values,
           '\n'
-        ),
-        file = "verbose_log.txt",
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        paste("--------> The full MH ratio is:", MH_ratio, '\n'),
-        file = "verbose_log.txt",
-        append = T
+        paste("--------> The full MH ratio is:", MH_ratio, '\n')
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        paste("-----> Probability of accepting MERGE:", min(exp(MH_ratio), 1), '\n'),
-        file = "verbose_log.txt",
-        append = T
+        paste("-----> Probability of accepting MERGE:", min(exp(MH_ratio), 1), '\n')
       )
     log_random_unif       = log(runif(1))
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        paste("-----> Log uniform random draw:", log_random_unif, '\n'),
-        file = "verbose_log.txt",
-        append = T
+        paste("-----> Log uniform random draw:", log_random_unif, '\n')
       )
     
     if (is.na(MH_ratio)) {
-      if (verbose_logfile)
+      if (  verbose)
         cat(
           c(
             "[1]  -----> The current probabities are:",
@@ -1688,15 +1560,11 @@ update_states_mergesplit  = function(my_states,
               transition_probabilities, paste, collapse = ' '
             )),
             '\n'
-          ),
-          file = "verbose_log.txt",
-          append = T
+          )
         )
-      if (verbose_logfile)
+      if (  verbose)
         cat(
-          "-----> completed the MERGE (did not accept)\n",
-          file = "verbose_log.txt",
-          append = T
+          "-----> completed the MERGE (did not accept)\n"
         )
       return(
         list(
@@ -1709,7 +1577,7 @@ update_states_mergesplit  = function(my_states,
         )
       )
     } else if (laplace_nonconverge_flag) {
-      if (verbose_logfile)
+      if (  verbose)
         cat(
           c(
             "[1]  -----> The current probabities are:",
@@ -1717,15 +1585,11 @@ update_states_mergesplit  = function(my_states,
               transition_probabilities, paste, collapse = ' '
             )),
             '\n'
-          ),
-          file = "verbose_log.txt",
-          append = T
+          )
         )
-      if (verbose_logfile)
+      if (  verbose)
         cat(
-          "-----> completed the MERGE (did not accept because laplace approx failed to converge)\n",
-          file = "verbose_log.txt",
-          append = T
+          "-----> completed the MERGE (did not accept because laplace approx failed to converge)\n"
         )
       return(
         list(
@@ -1740,16 +1604,14 @@ update_states_mergesplit  = function(my_states,
     }
     
     if (log_random_unif <= MH_ratio) {
-      if (verbose_logfile)
-        cat("-----> completed the MERGE (accepted) \n",
-            file = "verbose_log.txt",
-            append = T)
+      if (  verbose)
+        cat("-----> completed the MERGE (accepted) \n")
       # Accept the merge!
       # Finish by shifting the states.
       data_shifted             = shift_states(my_states_temp, previous_model_fits_temp)
       my_states                = my_states_temp
       previous_model_fits      = previous_model_fits_temp
-      if (verbose_logfile)
+      if (  verbose)
         cat(
           c(
             "[1]  -----> The current probabities are:",
@@ -1757,9 +1619,7 @@ update_states_mergesplit  = function(my_states,
               transition_probabilities, paste, collapse = ' '
             )),
             '\n'
-          ),
-          file = "verbose_log.txt",
-          append = T
+          )
         )
       return(
         list(
@@ -1772,13 +1632,11 @@ update_states_mergesplit  = function(my_states,
         )
       )
     } else {
-      if (verbose_logfile)
+      if (  verbose)
         cat(
-          "-----> completed the MERGE (did not accept)\n",
-          file = "verbose_log.txt",
-          append = T
+          "-----> completed the MERGE (did not accept)\n"
         )
-      if (verbose_logfile)
+      if (  verbose)
         cat(
           c(
             "[1]  -----> The current probabities are:",
@@ -1786,9 +1644,7 @@ update_states_mergesplit  = function(my_states,
               transition_probabilities, paste, collapse = ' '
             )),
             '\n'
-          ),
-          file = "verbose_log.txt",
-          append = T
+          )
         )
       return(
         list(
@@ -2116,7 +1972,7 @@ redraw_transition_probs   = function(my_states, my_alpha, my_beta, n.cores) {
 #' @param transition_probs vector. Current estimate of unknown transition probabilities for Markov chain.
 #' @param previous_model_fits rlist. The parameter fit at this MCMC iteration.
 #' @param my_states vector. Current regime vector.
-#' @param verbose_logfile logical. Will print to logfile if TRUE.
+#' @param verbose logical. Will print   to console if TRUE.
 #'
 #'
 #' @noRd
@@ -2126,7 +1982,7 @@ redraw_hyperparameters    = function(hyperparameters,
                                      transition_probs,
                                      previous_model_fits,
                                      my_states,
-                                     verbose_logfile = FALSE) {
+                                       verbose = FALSE) {
   rate_of_sampling_distn <- NULL
   # | ---------------------- Gather Data ---------------------------- |
   threshold      = 1e-8
@@ -2209,24 +2065,20 @@ redraw_hyperparameters    = function(hyperparameters,
   
   if (is.na(log_prob_mass)) {
     #
-    if (verbose_logfile)
-      cat("ERROR: Got an NA for Log Probability Mass.\n",
-          file = "verbose_log.txt",
-          append = T)
-    if (verbose_logfile)
-      cat(new_alpha, file = "verbose_log.txt", append = T)
-    if (verbose_logfile)
-      cat("\n", file = "verbose_log.txt", append = T)
-    if (verbose_logfile)
-      cat(new_beta, file = "verbose_log.txt", append = T)
-    if (verbose_logfile)
-      cat("\n", file = "verbose_log.txt", append = T)
-    if (verbose_logfile)
-      cat(transition_probabilities,
-          file = "verbose_log.txt",
-          append = T)
-    if (verbose_logfile)
-      cat("\n", file = "verbose_log.txt", append = T)
+    if (  verbose)
+      cat("Got an NA for Log Probability Mass.\n")
+    if (  verbose)
+      cat(new_alpha)
+    if (  verbose)
+      cat("\n"  )
+    if (  verbose)
+      cat(new_beta)
+    if (  verbose)
+      cat("\n"  )
+    if (  verbose)
+      cat(transition_probabilities)
+    if (  verbose)
+      cat("\n"  )
     log_prob_mass = -Inf
   }
   
@@ -2338,29 +2190,23 @@ redraw_hyperparameters    = function(hyperparameters,
           (laplace_failure_flag == 0)) {
         hyperparameters$wishart_df = new_df
       } else if (laplace_failure_flag) {
-        if (verbose_logfile)
+        if (  verbose)
           cat(
-            "MH ratio failed automatically since the flag was triggered\n",
-            file = "verbose_log.txt",
-            append = T
+            "MH ratio failed automatically since the flag was triggered\n"
           )
       }
     }
   } else{
-    if (verbose_logfile)
-      cat("new df was nan!!\n", file = "verbose_log.txt", append = T)
-    if (verbose_logfile)
+    if (  verbose)
+      cat("new df was nan!!\n"  )
+    if (  verbose)
       cat(
-        "rate of the gamma sampling distribution was likley invalid.  It was:\n",
-        file = "verbose_log.txt",
-        append = T
+        "rate of the gamma sampling distribution was likley invalid.  It was:\n"
       )
-    if (verbose_logfile)
-      cat(rate_of_sampling_distn,
-          file = "verbose_log.txt",
-          append = T)
-    if (verbose_logfile)
-      cat("\n", file = "verbose_log.txt", append = T)
+    if (  verbose)
+      cat(rate_of_sampling_distn)
+    if (  verbose)
+      cat("\n"  )
   }
   
   # | ---------------------- Redraw lambda ---------------------------- |
@@ -2378,21 +2224,15 @@ redraw_hyperparameters    = function(hyperparameters,
   posterior_shape        = shape_0 + 0.5 * p * count_components
   new_lambda             = rgamma(1, shape = posterior_shape, rate = posterior_rate)
   if (!is.na(new_lambda)) {
-    if (verbose_logfile)
-      cat(paste("NEW LAMBDA IS:", new_lambda, '\n'),
-          file = "verbose_log.txt",
-          append = T)
-    if (verbose_logfile)
+    if (  verbose)
+      cat(paste("NEW LAMBDA IS:", new_lambda, '\n'))
+    if (  verbose)
       cat(
-        paste("posterior rate:", posterior_rate, '\n'),
-        file = "verbose_log.txt",
-        append = T
+        paste("posterior rate:", posterior_rate, '\n')
       )
-    if (verbose_logfile)
+    if (  verbose)
       cat(
-        paste("posterior shape:", posterior_shape, '\n'),
-        file = "verbose_log.txt",
-        append = T
+        paste("posterior shape:", posterior_shape, '\n')
       )
     hyperparameters$lambda = new_lambda
   }
@@ -2489,7 +2329,7 @@ draw_mvn_parameters       = function(current_G,
 #' @param components_of_regime vector. Mixture component assignments for current regime.
 #' @param scale_matrix_of_regime matrix. Hyperparameter for NI-G-W
 #' @param df_of_regime float. DF of NI-G-W.
-#' @param verbose_logfile logical. Will print to logfile if TRUE.
+#' @param verbose logical. Will print   to console if TRUE.
 #'
 #'
 #' @noRd
@@ -2505,7 +2345,7 @@ get_split_distribution    = function(current_G,
                                      scale_matrix_of_regime,
                                      df_of_regime,
                                      split_selection_multiplicative_prior = NULL,
-                                     verbose_logfile = FALSE) {
+                                       verbose = FALSE) {
   # This method assumes that the number of indices in the regime is at least 2.
   # I'll likely do at least 3, since the split point for 2 is deterministic.
   # This value can be tuned for a precision vs. runtime tradeoff.
@@ -2584,19 +2424,15 @@ get_split_distribution    = function(current_G,
       
       if (is.na(max(abs(parameters_before$final_K)))) {
         likelihood_value = -1e200
-        if (verbose_logfile)
+        if (  verbose)
           cat(
-            "SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S)\n",
-            file = "verbose_log.txt",
-            append = T
+            "SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S)\n"
           )
       } else if ((max(abs(parameters_before$final_K)) > 1e100)) {
         likelihood_value = -1e200
-        if (verbose_logfile)
+        if (  verbose)
           cat(
-            "SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S)\n",
-            file = "verbose_log.txt",
-            append = T
+            "SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S)\n"
           )
       } else {
         precision   = parameters_before$final_K
@@ -2639,19 +2475,15 @@ get_split_distribution    = function(current_G,
       
       if (is.na(max(abs(parameters_after$final_K)))) {
         likelihood_value = -1e200
-        if (verbose_logfile)
+        if (  verbose)
           cat(
-            "SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S)\n",
-            file = "verbose_log.txt",
-            append = T
+            "SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S)\n"
           )
       } else if ((max(abs(parameters_after$final_K)) > 1e100)) {
         likelihood_value = -1e200
-        if (verbose_logfile)
+        if (  verbose)
           cat(
-            "SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S) \n",
-            file = "verbose_log.txt",
-            append = T
+            "SPLIT DISTRIBUTION SUGGESTED OUTLANDISH PRECISION VALUE(S) \n"
           )
       } else {
         precision        = parameters_after$final_K
@@ -2726,7 +2558,7 @@ get_split_distribution    = function(current_G,
 #' @param hyperparameters rlist. Various hyperparameters according to Bayesian setup.
 #' @param Z_timepoint_indices rlist. Indices of data_points_Z corresponded to different days.
 #' @param data_points_Z matrix.  The latent data at this MCMC iteration
-#' @param verbose_logfile logical. Will print to logfile if TRUE.
+#' @param verbose logical. Will print   to console if TRUE.
 #'
 #'
 #' @noRd
@@ -2739,7 +2571,7 @@ splitmerge_gibbs_comps    = function(my_states,
                                      hyperparameters,
                                      Z_timepoint_indices,
                                      data_points_Z,
-                                     verbose_logfile = FALSE) {
+                                       verbose = FALSE) {
   # Method to perform the split-merge algorithm for the regime components, according to STORLIE
   num_of_gibbs_sweeps     = 2
   cluster_assignments     = previous_model_fits[[current_state]]$cluster_assignments
@@ -2900,7 +2732,6 @@ splitmerge_gibbs_comps    = function(my_states,
     } else if (MH_prob >= log_unif) {
       # Accept the new state vector.
       previous_model_fits = previous_model_fits_temp
-      print(previous_model_fits_temp[[current_state]]$cluster_assignments)
     }
   } else {
     # If the uniform draws are not equal, we perform a merge action.
@@ -3037,18 +2868,14 @@ splitmerge_gibbs_comps    = function(my_states,
     if (is.na(MH_prob)) {
       # Catch this case first, don't accept.
     } else if (laplace_nonconverge_flag) {
-      print("mixture components failed to accept because the laplace failed to converge.")
     } else if (MH_prob >= log_unif) {
       previous_model_fits = previous_model_fits_temp
-      print("A MERGE WAS ACTUALLY ACCEPTED!")
     } else {
-      print("MERGE WAS NOT ACCEPTED!")
     }
     
   }
   
   ## PERFORM THE FINAL GIBBS SWEEP
-  print("Starting to perform the final gibbs sweep!!")
   temp_component_sticks = rep(0, times = hyperparameters$component_truncation)
   i                     = current_state
   cluster_assignments   = previous_model_fits[[i]]$cluster_assignments
@@ -3597,7 +3424,6 @@ get_mix_log_dens_at_obs   = function(index_of_observation,
       stop("no mu vector")
     }
     if (is.nan(log_dmvnrm_arma_regular(data_of_cluster, current_mu, current_precision))) {
-      print(log_dmvnrm_arma_regular(data_of_cluster, current_mu, current_precision))
       stop("issue with log normal density evaluation")
     }
     current_density_value = current_density_value + log_dmvnrm_arma_regular(data_of_cluster, current_mu, current_precision)

@@ -67,25 +67,27 @@ print.bayesWatch = function(x, ...)
 #' @param regime_selection_multiplicative_prior float. Must be >=1.  Gives additional probability to the most recent day for the selection of a new split point.
 #' @param split_selection_multiplicative_prior float. 
 #' @param is_initial_fit logical. True when there is no previously fit bayesWatch object fed through the algorithm..
-#' @param verbose_logfile logical. Writes verbose model output to file for debugging when TRUE.
+#' @param verbose logical. Prints verbose model output for debugging when TRUE.  It is highly recommended that you pipe this to a text file.
 #'
 #' @return bayesWatch object. A model fit for the analysis of posterior change-points and fault detection.
 #' @import parallel
 #' @export
 #'
 #' @examples
-#' # library(bayesWatch)
-#' # data("full_data")
-#' # data("day_of_observations")
-#' # data("day_dts")
+#' \donttest{
+#' library(bayesWatch)
+#' data("full_data")
+#' data("day_of_observations")
+#' data("day_dts")
 #'
-#' # x       = bayeswatch(full_data, day_of_observations, day_dts,
-#' #                     iterations = 500, g.prior = 1, linger_parameter = 20, n.cores=3,
-#' #                     wishart_df_initial = 3, hyperprior_b = 3, lambda = 5)
+#' x       = bayeswatch(full_data, day_of_observations, day_dts,
+#'                    iterations = 500, g.prior = 1, linger_parameter = 20, n.cores=3,
+#'                    wishart_df_initial = 3, hyperprior_b = 3, lambda = 5)
 #'
-#' # print(x)
-#' # plot(x)
-#' # detect_faults(x)
+#' print(x)
+#' plot(x)
+#' detect_faults(x)
+#' }
 bayeswatch = function(data_woTimeValues,
                       time_of_observations,
                       time_points,
@@ -123,19 +125,11 @@ bayeswatch = function(data_woTimeValues,
                       regime_selection_multiplicative_prior = 2,
                       split_selection_multiplicative_prior = 2,
                       is_initial_fit = TRUE,
-                      verbose_logfile = FALSE) {
+                      verbose = FALSE) {
   scale_matrix = NULL
   # If the user wants a verbose output of the entire model, this is saved to a log file (it is very very long).
-  if (verbose_logfile) {
-    if (file.exists('verbose_log.txt')) {
-      file.remove("verbose_log.txt")
-    }
-    file.create("verbose_log.txt")
-    cat("This log outlines a VERY verbose log for debugging.\n",
-        file = "verbose_log.txt")
-    cat("It is suggested that you CTRL+F for issues.\n",
-        file = "verbose_log.txt",
-        append = TRUE)
+  if (verbose) {
+    cat("It is recommended that you pipe this output to a text file.\n")
   }
   
   # If you are performing fault detection, logs of the models drawn must be saved.  The graph
@@ -167,10 +161,8 @@ bayeswatch = function(data_woTimeValues,
   }
   # | --------------------- Establish Initial Hyperparameters -------------------------- |
   p = ncol(data_woTimeValues)
-  if (verbose_logfile)
-    cat("inside the fit function \n",
-        file = "verbose_log.txt",
-        append = T)
+  if (verbose)
+    cat("inside the fit function \n")
   # Sort days and observations
   data_woTimeValues    = data_woTimeValues[order(time_of_observations),]
   time_of_observations = time_of_observations[order(time_of_observations)]
@@ -184,22 +176,20 @@ bayeswatch = function(data_woTimeValues,
   for (i in 1:(length(time_points) - 1)) {
     if (i == 1) {
       if (length(which(time_of_observations <= time_points[i + 1 - negative_count])) < p) {
-        if (verbose_logfile)
+        if (verbose)
           cat(
             paste(
               "There are not enough observations for time point,",
               i - negative_count,
               "\n"
-            ),
-            file = "verbose_log.txt",
-            append = T
+            )
           )
         index_to_remove = i - negative_count + 1
         time_points     = time_points[-index_to_remove]
         negative_count  = negative_count + 1
         next
       }
-      if (verbose_logfile)
+      if (verbose)
         cat(
           paste(
             "Number of timepoints in day",
@@ -209,9 +199,7 @@ bayeswatch = function(data_woTimeValues,
               time_of_observations <= time_points[i + 1 - negative_count]
             )),
             '\n'
-          ),
-          file = "verbose_log.txt",
-          append = T
+          )
         )
       
       Z_timepoint_indices[[i - negative_count]]$timepoint_first_index = 1
@@ -223,22 +211,20 @@ bayeswatch = function(data_woTimeValues,
                                                                (time_of_observations <= time_points[i +
                                                                                                       1 - negative_count]))
       if (length(indices_of_timepoint) < p) {
-        if (verbose_logfile)
+        if (verbose)
           cat(
             paste(
               "There are not enough observations for time point,",
               i - negative_count,
               '\n'
-            ),
-            file = 'verbose_log.txt',
-            append = T
+            )
           )
         index_to_remove = i - negative_count + 1
         time_points         = time_points[-index_to_remove]
         negative_count  = negative_count + 1
         next
       }
-      if (verbose_logfile)
+      if (verbose)
         cat(
           paste(
             "Number of timepoints in day",
@@ -246,9 +232,7 @@ bayeswatch = function(data_woTimeValues,
             "is:",
             length(indices_of_timepoint),
             '\n'
-          ),
-          file = 'verbose_log.txt',
-          append = T
+          )
         )
       Z_timepoint_indices[[i - negative_count]]                       = list(timepoint_first_index = NA,
                                                                              timepoint_last_index = NA)
@@ -267,13 +251,11 @@ bayeswatch = function(data_woTimeValues,
   }
   
   my_states = previous_states
-  if (verbose_logfile)
+  if (verbose)
     cat(
       c("[1]  -----> current states are:",
         my_states,
-        "\n"),
-      file = 'verbose_log.txt',
-      append = T
+        "\n")
     )
   
   p              = ncol(data_woTimeValues)
@@ -295,21 +277,17 @@ bayeswatch = function(data_woTimeValues,
     covMatrix           = cov(temp_data, use = "pairwise.complete.obs")
     
     if ((sum(eigen(covMatrix)$values <= 0) > 0)) {
-      if (verbose_logfile)
+      if (verbose)
         cat(
-          "NOTE: We were not able to get a good initial guess for the precision matrix.",
-          file = 'verbose_log.txt',
-          append = T
+          "NOTE: We were not able to get a good initial guess for the precision matrix."
         )
       covMatrix         = empirical_cov_w_missing(temp_data, Z_timepoint_indices, previous_states)
     }
     
     if (sum(eigen(covMatrix)$values <= 0) > 0) {
-      if (verbose_logfile)
+      if (verbose)
         cat(
-          "Was unable to get a starting covariance matrix for this data.  Starting with an identity matrix.",
-          file = 'verbose_log.txt',
-          append = T
+          "Was unable to get a starting covariance matrix for this data.  Starting with an identity matrix."
         )
       my_func_1             = function(x) {
         sd(x, na.rm = T) ^ 2
@@ -318,14 +296,12 @@ bayeswatch = function(data_woTimeValues,
     }
     
   }
-  if (verbose_logfile)
-    cat("Empirical Covariance Estimate: \n",
-        file = 'verbose_log.txt',
-        append = T)
-  if (verbose_logfile)
-    cat(covMatrix, file = 'verbose_log.txt', append = T)
-  if (verbose_logfile)
-    cat("\n", file = 'verbose_log.txt', append = T)
+  if (verbose)
+    cat("Empirical Covariance Estimate: \n")
+  if (verbose)
+    cat(covMatrix)
+  if (verbose)
+    cat("\n")
   hyperparameters        = list(
     hyperprior_b = hyperprior_b,
     alpha = linger_parameter,
@@ -417,10 +393,8 @@ bayeswatch = function(data_woTimeValues,
   
   # If I don't have the sampling distribution over the graph structure set, start it with a
   # uniform distribution.
-  if (verbose_logfile)
-    cat("establishing the starting graph structure.\n",
-        file = 'verbose_log.txt',
-        append = T)
+  if (verbose)
+    cat("establishing the starting graph structure.\n")
   
   if ((is.null(set_G)) & (g.prior < 1)) {
     # If G is not set, I'll draw from the distribution over all possible graphs determined by g.prior,
@@ -539,22 +513,18 @@ bayeswatch = function(data_woTimeValues,
                                     rep(NA, times = (
                                       length(my_states)  - length(transition_probabilities_temp)
                                     )))
-  if (verbose_logfile)
-    cat("starting to fit the models for each state \n",
-        file = 'verbose_log.txt',
-        append = T)
+  if (verbose)
+    cat("starting to fit the models for each state \n")
   
-  if (verbose_logfile)
+  if (verbose)
     cat(
-      "data has been subset -- setting up parallelization \n",
-      file = 'verbose_log.txt',
-      append = T
+      "data has been subset -- setting up parallelization \n"
     )
   # n.cores_eachparent = max(min(regime_truncation, floor(n.cores/4)), 1)
   # n.cores_eachchild  = max(4, floor(n.cores/n.cores_eachparent))
   n.cores_eachparent = max(n.cores - 1, 1)
   n.cores_eachchild  = 1
-  if (verbose_logfile)
+  if (verbose)
     cat(
       paste(
         "Setting up",
@@ -562,9 +532,7 @@ bayeswatch = function(data_woTimeValues,
         "children, each can fork",
         n.cores_eachchild,
         "additional children.\n"
-      ),
-      file = 'verbose_log.txt',
-      append = T
+      )
     )
   
   if (is.null(previous_model_fits)) {
@@ -672,10 +640,8 @@ bayeswatch = function(data_woTimeValues,
       )
     }
     
-    if (verbose_logfile)
-      cat("initial model fits complete.",
-          file = 'verbose_log.txt',
-          append = T)
+    if (verbose)
+      cat("initial model fits complete.")
     
     # Now we fill in the results from our setup into previous_model_fits,
     # and do our data subset now to save on time:
@@ -745,9 +711,9 @@ bayeswatch = function(data_woTimeValues,
   alphabeta_accepted    = 0
   record_count          = 1
   
-  if (verbose_logfile)
-    cat("Beginning MCMC Chain \n", file = 'verbose_log.txt', append = T)
-  if (verbose_logfile)
+  if (verbose)
+    cat("Beginning MCMC Chain \n")
+  if (verbose)
     cat(
       paste(
         "-----> alpha:",
@@ -757,27 +723,19 @@ bayeswatch = function(data_woTimeValues,
         ", lambda:",
         hyperparameters$lambda,
         '\n'
-      ),
-      file = 'verbose_log.txt',
-      append = T
+      )
     )
   for (iter in 1:iterations) {
-    if (verbose_logfile)
-      cat(paste("Starting Iteration", iter, "\n"),
-          file = 'verbose_log.txt',
-          append = T)
+    if (verbose)
+      cat(paste("Starting Iteration", iter, "\n"))
     # | --------------------------- Redraw the Latent Data ------------------------------------- |
-    if (verbose_logfile)
+    if (verbose)
       cat(
-        "-----> setting up first-level parallelization to draw from latent data\n",
-        file = 'verbose_log.txt',
-        append = T
+        "-----> setting up first-level parallelization to draw from latent data\n"
       )
-    if (verbose_logfile)
+    if (verbose)
       cat(
-        paste("-----> Setting up", n.cores, "cores.\n"),
-        file = 'verbose_log.txt',
-        append = T
+        paste("-----> Setting up", n.cores, "cores.\n")
       )
     
     myfunc_2       = function(x_num) {
@@ -805,26 +763,22 @@ bayeswatch = function(data_woTimeValues,
     for (i in 1:max(my_states)) {
       full_data_Z = rbind(full_data_Z, data_subsets_z[[i]])
     }
-    if (verbose_logfile)
+    if (verbose)
       cat(
-        paste("-----> Redraw latent data complete.\n"),
-        file = 'verbose_log.txt',
-        append = T
+        paste("-----> Redraw latent data complete.\n")
       )
     
     # | ------------------------------ Update States: Merge-Split --------------------------------- |
-    if (verbose_logfile)
+    if (verbose)
       cat(
-        paste("-----> Redraw hyperparameters before Merge-Split.\n"),
-        file = 'verbose_log.txt',
-        append = T
+        paste("-----> Redraw hyperparameters before Merge-Split.\n")
       )
     new_hyperparameters                         = redraw_hyperparameters(
       hyperparameters,
       transition_probabilities,
       previous_model_fits,
       my_states,
-      verbose_logfile = verbose_logfile
+      verbose = verbose
     )
     hyperparameters                             = new_hyperparameters$hyperparameters_item
     previous_model_fits                         = new_hyperparameters$previous_model_fits_item
@@ -840,11 +794,9 @@ bayeswatch = function(data_woTimeValues,
         log = TRUE
       )
     )
-    if (verbose_logfile)
+    if (verbose)
       cat(
-        paste("-----> Hyperparameters redraw completed.\n"),
-        file = 'verbose_log.txt',
-        append = T
+        paste("-----> Hyperparameters redraw completed.\n")
       )
     
     if (iter < floor(iterations / 5)) {
@@ -853,11 +805,9 @@ bayeswatch = function(data_woTimeValues,
       launching = FALSE
     }
     
-    if (verbose_logfile)
+    if (verbose)
       cat(
-        paste("-----> Starting the Merge-Split Algorithm.\n"),
-        file = 'verbose_log.txt',
-        append = T
+        paste("-----> Starting the Merge-Split Algorithm.\n")
       )
     states_update            = update_states_mergesplit(
       my_states,
@@ -875,13 +825,11 @@ bayeswatch = function(data_woTimeValues,
       min_regime_length = 1,
       regime_selection_multiplicative_prior = regime_selection_multiplicative_prior,
       split_selection_multiplicative_prior = split_selection_multiplicative_prior,
-      verbose_logfile = verbose_logfile
+      verbose = verbose
     )
-    if (verbose_logfile)
+    if (verbose)
       cat(
-        paste("-----> Merge-Split Algorithm complete.\n"),
-        file = 'verbose_log.txt',
-        append = T
+        paste("-----> Merge-Split Algorithm complete.\n")
       )
     previous_model_fits      = states_update$previous_model_fits_item
     my_states                = states_update$my_states_item
@@ -892,10 +840,8 @@ bayeswatch = function(data_woTimeValues,
                                  states_update$G_Wish_portion_of_MH)
     
     # | --------------------------- Update States: Gibbs Sampler ------------------------------ |
-    if (verbose_logfile)
-      cat(paste("-----> Starting the Gibbs Sweep.\n"),
-          file = 'verbose_log.txt',
-          append = T)
+    if (verbose)
+      cat(paste("-----> Starting the Gibbs Sweep.\n"))
     
     states_update            = update_states_gibbs(
       my_states,
@@ -906,7 +852,7 @@ bayeswatch = function(data_woTimeValues,
       hyperparameters,
       n.cores - 1,
       min_regime_length = 2,
-      verbose_logfile = verbose_logfile
+      verbose = verbose
     )
     
     previous_model_fits      = states_update$previous_model_fits_item
@@ -916,15 +862,12 @@ bayeswatch = function(data_woTimeValues,
                                                        hyperparameters$beta,
                                                        n.cores - 1)
     gibbswap_accepted        = states_update$accepted_item
-    if (verbose_logfile)
-      cat(paste("-----> Gibbs Sweep complete.\n"),
-          file = 'verbose_log.txt',
-          append = T)
+    if (verbose)
+      cat(paste("-----> Gibbs Sweep complete.\n"))
     
     my_states_all_equal = unique(my_states)
     values_between      = 1:max(my_states)
     if (all.equal(my_states_all_equal, values_between) != TRUE) {
-      print(my_states)
       stop("Gibbs update caused an error with state relabeling.")
     }
     
@@ -936,11 +879,9 @@ bayeswatch = function(data_woTimeValues,
          (iter %% 5 == 1)) |
         ((allow_for_mixture_models) &
          (iter < floor(iterations / 4)))) {
-      if (verbose_logfile)
+      if (verbose)
         cat(
-          "about to merge-split-gibbs the mixture components \n",
-          file = 'verbose_log.txt',
-          append = T
+          "about to merge-split-gibbs the mixture components \n"
         )
       myfunc_3               = function(x) {
         return(
@@ -963,13 +904,10 @@ bayeswatch = function(data_woTimeValues,
         previous_model_fits[[i]]$component_log_probs = new_mixture_components[[i]]$component_probs
         previous_model_fits[[i]]$component_sticks    = new_mixture_components[[i]]$component_sticks
         previous_model_fits                          = shift_components(i, previous_model_fits)
-        if (verbose_logfile)
+        if (verbose)
           cat(
-            paste("cluster assignments for regime", i, "are:\n"),
-            file = 'verbose_log.txt',
-            append = T
+            paste("cluster assignments for regime", i, "are:\n")
           )
-        print(previous_model_fits[[i]]$cluster_assignments)
         if (min(previous_model_fits[[i]]$cluster_assignments) > 1) {
           stop("Component shift failed!!")
         }
@@ -999,11 +937,9 @@ bayeswatch = function(data_woTimeValues,
     
     # | -------------------------------Double Reversible Jump Graph Resampling---------------------------------------- |
     # First, resample everything based on the posteriors.
-    if (verbose_logfile)
+    if (verbose)
       cat(
-        paste("-----> Starting to refit the model parameters.\n"),
-        file = 'verbose_log.txt',
-        append = T
+        paste("-----> Starting to refit the model parameters.\n")
       )
     
     # Randomly select an edge based on the sampling distribution on the graph structure.
@@ -1016,14 +952,12 @@ bayeswatch = function(data_woTimeValues,
       })
       
       if (is.na(sum(g_sampling_distribution))) {
-        if (verbose_logfile)
+        if (verbose)
           cat(
-            "Something is wrong with the g sampling distribution! \n",
-            file = 'verbose_log.txt',
-            append = T
+            "Something is wrong with the g sampling distribution! \n"
           )
-        if (verbose_logfile)
-          cat('\n', file = 'verbose_log.txt', append = T)
+        if (verbose)
+          cat('\n')
         stop("Check the BDgraph package access.")
       }
       done = FALSE
@@ -1057,11 +991,9 @@ bayeswatch = function(data_woTimeValues,
       # Next, we fix this graph G and sample new precision matrices K1,...,Km for each regime.
       # n.cores_eachparent = max(min(max(my_states), n.cores - 1), 1)
       # n.cores_eachchild  = max(floor((n.cores - n.cores_eachparent) / n.cores_eachparent), 1)
-      if (verbose_logfile)
+      if (verbose)
         cat(
-          "-----> Setting up to draw new proposal precision matrices \n",
-          file = 'verbose_log.txt',
-          append = T
+          "-----> Setting up to draw new proposal precision matrices \n"
         )
       
       ## First, we'll just draw new parameter values for every state, which we will accept deterministically by conjugate update.
@@ -1114,23 +1046,16 @@ bayeswatch = function(data_woTimeValues,
             log_unif                             = log(runif(1))
             
             if (is.na(log_MHratio_all_models)) {
-              if (verbose_logfile)
+              if (verbose)
                 cat(
-                  "-----> DRJ model fits complete (did not accept).  Missing values! \n",
-                  file = 'verbose_log.txt',
-                  append = T
+                  "-----> DRJ model fits complete (did not accept).  Missing values! \n"
                 )
-              for (index in 1:max(my_states)) {
-                print(models_temp[[index]]$MH_value_item)
-              }
               DRJ_accepted                             = 0
             } else if ((log_unif <= log_MHratio_all_models) &
                        (!is.infinite(log_MHratio_all_models))) {
-              if (verbose_logfile)
+              if (verbose)
                 cat(
-                  "-----> DRJ model fits complete (accepted).",
-                  file = 'verbose_log.txt',
-                  append = T
+                  "-----> DRJ model fits complete (accepted)."
                 )
               
               # Here, we ACCEPT
@@ -1142,80 +1067,65 @@ bayeswatch = function(data_woTimeValues,
               #
               DRJ_accepted                             = 1
               
-              if (verbose_logfile)
+              if (verbose)
                 cat(
                   paste(
                     "-----> DRJ model fits DRJ-MH ratio:",
                     log_MHratio_all_models
-                  ),
-                  file = 'verbose_log.txt',
-                  append = T
+                  )
                 )
             } else {
               # Note that I'm rejecting all infinite MH ratio values.
-              if (verbose_logfile)
+              if (verbose)
                 cat(
-                  "-----> DRJ model fits complete (did not accept).",
-                  file = 'verbose_log.txt',
-                  append = T
+                  "-----> DRJ model fits complete (did not accept)."
                 )
               
               DRJ_accepted                             = 0
-              if (verbose_logfile)
+              if (verbose)
                 cat(
                   paste(
                     "-----> DRJ model fits DRJ-MH ratio:",
                     log_MHratio_all_models
-                  ),
-                  file = 'verbose_log.txt',
-                  append = T
+                  )
                 )
             }
           } else {
-            if (verbose_logfile)
+            if (verbose)
               cat(
-                "-----> Cholesky Failed!  DRJ model fits incomplete. (did not accept).",
-                file = 'verbose_log.txt',
-                append = T
+                "-----> Cholesky Failed!  DRJ model fits incomplete. (did not accept)."
               )
             cholesky_failed_prec     = c(cholesky_failed_prec, 0)
             log_MHratio_all_models   = NA
           }
         },
         error = function(cond) {
-          if (verbose_logfile)
+          if (verbose)
             cat(
-              "-----> DRJ model fits complete (did not accept due to error).",
-              file = 'verbose_log.txt',
-              append = T
+              "-----> DRJ model fits complete (did not accept due to error)."
             )
           log_MHratio_all_models = -Inf
           DRJ_accepted                             = 0
-          if (verbose_logfile)
+          if (verbose)
             cat(
               paste(
                 "-----> DRJ model fits DRJ-MH ratio:",
                 log_MHratio_all_models
-              ),
-              file = 'verbose_log.txt',
-              append = T
+              )
             )
         })
         
       } else {
         nondecomposable_count = nondecomposable_count + 1
-        if (verbose_logfile)
-          cat("proposed graph was nondecomposable!",
-              file = 'verbose_log.txt',
-              append = T)
-        print(nondecomposable_count)
+        if (verbose)
+          cat("proposed graph was nondecomposable!")
       }
       
     }
     hyperparameters$G                      = previous_G
     
     # | ----------------------------- Print Hyperparameters ---------------------------------------- |
-    if (verbose_logfile)
+    if (verbose)
       cat(
         paste(
           "-----> alpha:",
@@ -1225,67 +1135,53 @@ bayeswatch = function(data_woTimeValues,
           ", lambda:",
           hyperparameters$lambda,
           '\n'
-        ),
-        file = 'verbose_log.txt',
-        append = T
+        )
       )
-    if (verbose_logfile)
+    if (verbose)
       cat(
         c("[1]  -----> current mu_0 is:", hyperparameters$mu_0),
-        "\n",
-        file = 'verbose_log.txt',
-        append = T
+        "\n"
       )
     if (length(my_states) > 30) {
-      if (verbose_logfile)
+      if (verbose)
         cat(
           c("[1]  -----> current states are:",
             paste(
               sapply(my_states, paste, collapse = ' ')
             ),
-            "\n"),
-          file = 'verbose_log.txt',
-          append = T
+            "\n")
         )
     } else {
-      if (verbose_logfile)
+      if (verbose)
         cat(
           c("[1]  -----> current states are:",
             paste(
               sapply(my_states, paste, collapse = ' ')
             ),
-            "\n"),
-          file = 'verbose_log.txt',
-          append = T
+            "\n")
         )
     }
     # | ----------------------------- Record MCMC Information ---------------------------------------- |
     mergesplit_accepts                      = c(mergesplit_accepts, mergesplit_accepted)
-    if (verbose_logfile)
-      cat("MERGSPLIT ACCEPTS \n", file = 'verbose_log.txt', append = T)
-    cat(mergesplit_accepts,
-        file = 'verbose_log.txt',
-        append = T)
-    cat("\n",
-        file = 'verbose_log.txt',
-        append = T)
+    if (verbose){
+      cat("MERGSPLIT ACCEPTS \n")
+      cat(mergesplit_accepts)
+      cat("\n")
+    }
     DRJ_accepts                             = c(DRJ_accepts, DRJ_accepted)
-    if (verbose_logfile)
-      cat("NUMBER OF DRJ ACCEPTS IS:\n",
-          file = 'verbose_log.txt',
-          append = T)
-    if (verbose_logfile)
-      cat(sum(DRJ_accepts), file = 'verbose_log.txt', append = T)
-    if (verbose_logfile)
-      cat("\n", file = 'verbose_log.txt', append = T)
+    if (verbose){
+      cat("NUMBER OF DRJ ACCEPTS IS:\n")
+    }
+    if (verbose)
+      cat(sum(DRJ_accepts))
+    if (verbose)
+      cat("\n")
     gibbswap_accepts                        = c(gibbswap_accepts, gibbswap_accepted)
     alphabeta_accepts                       = c(alphabeta_accepts, alphabeta_accepted)
     transition_probabilities_states[[iter]] = transition_probabilities
     
-    if (verbose_logfile)
-      cat(paste("saving data at location", iter, "\n"),
-          file = 'verbose_log.txt',
-          append = T)
+    if (verbose)
+      cat(paste("saving data at location", iter, "\n"))
     if ((iter %% model_params_save_every == 0) & (iter > burnin)) {
       # I want to save model parameters associated with different state vectors for later analysis.
       # I am only going to save the model parameters for the final two regimes.
@@ -1336,7 +1232,7 @@ bayeswatch = function(data_woTimeValues,
         '.RData',
         sep = ""
       )
-      saveRDS(previous_model_fits, file = data_name)
+      # saveRDS(previous_model_fits, file = data_name)
     }
     
     model_states[[iter]]         = my_states
