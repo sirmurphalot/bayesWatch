@@ -7,9 +7,10 @@ void inplace_tri_mat_mult(arma::rowvec &x, arma::mat const &trimat){
   
   for(unsigned j = n; j-- > 0;){
     double tmp(0.);
-    for(unsigned i = 0; i <= j; ++i)
+    for(unsigned i = 0; i <= j; ++i){
       tmp += trimat.at(i, j) * x[i];
-      x[j] = tmp;
+    }
+    x[j] = tmp;
   }
 }
 

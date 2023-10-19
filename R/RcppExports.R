@@ -109,6 +109,10 @@ get_justmissings_density <- function(current_data, current_precision, current_mu
     .Call(`_bayesWatch_get_justmissings_density`, current_data, current_precision, current_mu, p, lower_bounds, upper_bounds, lower_bound_is_equal, upper_bound_is_equal, is_missing, is_continuous, cores)
 }
 
+#' Calculates the normalizing constant for a G-Wishart with fixed graph structure using a Laplace approximation.
+#' 
+#' @noRd
+#' 
 log_normalizing_g_wishart_posterior_laplace <- function(graph, D_post, Delta, n, p) {
     .Call(`_bayesWatch_log_normalizing_g_wishart_posterior_laplace`, graph, D_post, Delta, n, p)
 }
@@ -151,6 +155,14 @@ rmvn_Rcpp <- function(mus, K, p) {
 #' 
 rwish_Rcpp <- function(Ts, b, p) {
     .Call(`_bayesWatch_rwish_Rcpp`, Ts, b, p)
+}
+
+#' Samples from a G-Wishart distribution according to the algorithm by Dobra and Lenkowski.
+#' 
+#' @noRd
+#' 
+rgwish_Rcpp <- function(G, D, b, p, threshold) {
+    .Call(`_bayesWatch_rgwish_Rcpp`, G, D, b, p, threshold)
 }
 
 #' Approximates the G wishart normalizing using an MCMC algorithm.

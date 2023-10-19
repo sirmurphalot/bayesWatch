@@ -74,7 +74,7 @@ arma::vec draw_values_parallel(const arma::vec& data_vector, const arma::mat& pr
   for(int index = 0; index < p; index++){
     
     // ---------------- If the variable is discrete, binary ---------------- //
-    if( ((int)is_continuous.at(index) == 0) & ((int)row_is_missing.at(index) == 0) ){
+    if( ((int)is_continuous.at(index) == 0) && ((int)row_is_missing.at(index) == 0) ){
       nondiscrete_data_indicator(index) = 0;
       discrete_data_indicator(index)    = 1;
       
@@ -126,7 +126,7 @@ arma::vec draw_values_parallel(const arma::vec& data_vector, const arma::mat& pr
       discrete_data_indicator(index)    = 0;
       
       // ---------------- If the variable is discrete, categorical. ---------------- //
-    } else if(((int)is_continuous.at(index) == 0) & ((int)row_is_missing.at(index) == 0) & ((int)is_ordinal.at(index) == 0) & ((int)level_indicator_for_var > 0) ){
+    } else if(((int)is_continuous.at(index) == 0) && ((int)row_is_missing.at(index) == 0) && ((int)is_ordinal.at(index) == 0) && ((int)level_indicator_for_var > 0) ){
       // Unlike the previous times I've done this, I want the nondiscrete_data_indicator to include each variable that corresponds to the levels
       // of the categorical variable.
       nondiscrete_data_indicator(index) = 0;
@@ -189,7 +189,7 @@ arma::vec draw_values_parallel(const arma::vec& data_vector, const arma::mat& pr
       discrete_data_indicator(index)    = 0;
       
       // ---------------- If the variable is discrete, ordinal. ---------------- //
-    } else if( ((int)is_continuous.at(index) == 0) & ((int)row_is_missing.at(index) == 0) & ((int)is_ordinal.at(index) == 1) ){
+    } else if( ((int)is_continuous.at(index) == 0) && ((int)row_is_missing.at(index) == 0) && ((int)is_ordinal.at(index) == 1) ){
       // Gather necessary data values to determine location of variable and location of level within
       // level vector.
       nondiscrete_data_indicator(index) = 0;
@@ -343,9 +343,9 @@ arma::mat redraw_Z_arma(const arma::mat& current_data, const arma::mat& current_
   int n                             = current_data.n_rows;
   arma::mat new_data                = current_data;
 
-   #pragma omp parallel
-   {
-     #pragma omp for
+//   #pragma omp parallel
+//   {
+//     #pragma omp for
       for( int index = 0; index < n; index++){
         arma::vec grab_col                 = new_data.row(index).t();
         arma::vec lower_bound_is_equal_row = lower_bound_is_equal.row(index).t();
@@ -361,7 +361,7 @@ arma::mat redraw_Z_arma(const arma::mat& current_data, const arma::mat& current_
                                                                   ordinal_levels, is_ordinal, discrete_levels_indicator);
         new_data.row(index)                = drawn_data_temp.t();
       }
-   }
+//   }
   
   return(new_data);
 }
@@ -376,13 +376,16 @@ List redraw_Z_arma_justmissings(const arma::mat& current_data, const arma::mat& 
                                 const arma::mat& lower_bound_is_equal, const arma::mat& upper_bound_is_equal, const arma::mat& is_missing, 
                                 const arma::vec& is_continuous, int cores) {
   //  omp_set_num_threads( cores );
+  double temp_log_proposal_density;
+  double log_proposal_density = 0.0;
+    
   int n                             = current_data.n_rows;
   arma::mat new_data                = current_data;
   arma::vec log_proposal_density_values(n);
   List return_items;
-   #pragma omp parallel
-   {
-   #pragma omp for
+//   #pragma omp parallel
+//   {
+//   #pragma omp for
   for( int index = 0; index < n; index++){
     arma::vec grab_col                 = new_data.row(index).t();
     arma::vec data_vector_copy         = grab_col;
@@ -390,9 +393,7 @@ List redraw_Z_arma_justmissings(const arma::mat& current_data, const arma::mat& 
     arma::vec upper_bound_is_equal_row = upper_bound_is_equal.row(index).t();
     arma::vec row_is_missing           = is_missing.row(index).t();
     
-    double temp_log_proposal_density   = 0.0;
-    double log_proposal_density   = 0.0;
-    
+    temp_log_proposal_density   = 0.0;
     
     int total_number_missing = (int)accu(row_is_missing), count_redraw = 0, count_nonredraw = 0, total_number_nonmissing = p - total_number_missing;
     if(total_number_missing > 0){
@@ -416,15 +417,15 @@ List redraw_Z_arma_justmissings(const arma::mat& current_data, const arma::mat& 
       arma::vec std_norm_vals                = arma::randn<arma::vec>(unknown_mu.n_elem);
       arma::mat chol_decomp                  = arma::chol(conditional_covariance , "lower");
       arma::vec latent_vars_raw              = conditional_mean + chol_decomp * std_norm_vals;
-      log_proposal_density                  += log_mvn_pdf(latent_vars_raw, conditional_mean, conditional_covariance, submatrix_unknown, p);
+      temp_log_proposal_density              += log_mvn_pdf(latent_vars_raw, conditional_mean, conditional_covariance, submatrix_unknown, p);
       data_vector_copy(location_of_missings) = latent_vars_raw;
     }
     
     new_data.row(index)                = data_vector_copy.t();
     log_proposal_density_values(index) = temp_log_proposal_density;
   }
-   }
-  double log_proposal_density = arma::accu(log_proposal_density_values);
+//   }
+  log_proposal_density = arma::accu(log_proposal_density_values);
   return_items["new_data"] = new_data;
   return_items["log_proposal_density"] = log_proposal_density;
   return return_items;
@@ -441,13 +442,15 @@ List get_justmissings_density(const arma::mat& current_data, const arma::mat& cu
                                 const arma::mat& lower_bound_is_equal, const arma::mat& upper_bound_is_equal, const arma::mat& is_missing, 
                                 const arma::vec& is_continuous, int cores) {
   //  omp_set_num_threads( cores );
+  double temp_log_proposal_density;
+  double log_proposal_density   = 0.0;
   int n                             = current_data.n_rows;
   arma::mat new_data                = current_data;
   arma::vec log_proposal_density_values(n);
   List return_items;
-  #pragma omp parallel
-  {
-  #pragma omp for
+//  #pragma omp parallel
+//  {
+//  #pragma omp for
     for( int index = 0; index < n; index++){
       arma::vec grab_col                 = new_data.row(index).t();
       arma::vec data_vector_copy         = grab_col;
@@ -455,9 +458,7 @@ List get_justmissings_density(const arma::mat& current_data, const arma::mat& cu
       arma::vec upper_bound_is_equal_row = upper_bound_is_equal.row(index).t();
       arma::vec row_is_missing           = is_missing.row(index).t();
       
-      double temp_log_proposal_density   = 0.0;
-      double log_proposal_density   = 0.0;
-      
+      temp_log_proposal_density   = 0.0;
       
       int total_number_missing = (int)accu(row_is_missing), count_redraw = 0, count_nonredraw = 0, total_number_nonmissing = p - total_number_missing;
       if(total_number_missing > 0){
@@ -481,15 +482,15 @@ List get_justmissings_density(const arma::mat& current_data, const arma::mat& cu
         arma::vec std_norm_vals                = arma::randn<arma::vec>(unknown_mu.n_elem);
         arma::mat chol_decomp                  = arma::chol(conditional_covariance , "lower");
         arma::vec latent_vars_raw              = data_vector_copy(location_of_missings);
-        log_proposal_density                  += log_mvn_pdf(latent_vars_raw, conditional_mean, conditional_covariance, submatrix_unknown, p);
+        temp_log_proposal_density             += log_mvn_pdf(latent_vars_raw, conditional_mean, conditional_covariance, submatrix_unknown, p);
         data_vector_copy(location_of_missings) = latent_vars_raw;
       }
       
       new_data.row(index)                = data_vector_copy.t();
       log_proposal_density_values(index) = temp_log_proposal_density;
     }
-  }
-  double log_proposal_density = arma::accu(log_proposal_density_values);
+//  }
+  log_proposal_density = arma::accu(log_proposal_density_values);
   return_items["new_data"] = new_data;
   return_items["log_proposal_density"] = log_proposal_density;
   return return_items;

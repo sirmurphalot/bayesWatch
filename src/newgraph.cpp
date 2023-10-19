@@ -980,8 +980,8 @@ void Graph::GetMPSubgraphs()
    {
       //identify a terminal clique Cj
       int edg;
-      int Ci;
-      int Cj;
+      int Ci = 0;
+      int Cj = 0;
       for(edg=0;edg<gfill->nTreeEdges;edg++)
       {
 	 //if we already used that edge, go to the next one

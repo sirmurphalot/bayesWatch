@@ -132,9 +132,8 @@ extern "C" {
     vector<int> index_row( qp );
     vector<int> index_col( qp );
     counter = 0;
-    for( j = 1; j < dim; j++ )
-      for( i = 0; i < j; i++ )
-      {
+    for( j = 1; j < dim; j++ ) {
+      for( i = 0; i < j; i++ ) {
         ij = g_prior[ j * dim + i ];
         if( ( ij != 0.0 ) or ( ij != 1.0 ) )
         {
@@ -143,7 +142,9 @@ extern "C" {
           counter++;
         }
       }
-      int sub_qp = counter;
+    }
+    
+    int sub_qp = counter;
     GetRNGstate();
     // Murph Note: Since I am grabbing an edge random and uniformly, this should cancel
     //             in the MH ratio.  If I do something more principled with this in the 
@@ -154,7 +155,7 @@ extern "C" {
     *selected_edge_j = index_col[ selected_edge ];
     
     PutRNGstate();
-  }
+}
   
 } // End of extern "C"
 

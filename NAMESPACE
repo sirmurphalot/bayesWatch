@@ -6,8 +6,7 @@ importFrom("stats", "dbeta", "density", "dgamma", "dnorm",
              "rbeta", "rbinom", "rgamma", "rnorm", "rpois", "runif",
              "sd", "cov", "var")
 importFrom("methods", "is")
-importFrom("BDgraph", "adj2link", "graph.sim", "rgwish")
-importFrom("igraph", "graph_from_adjacency_matrix")
+importFrom("BDgraph", "adj2link", "graph.sim")
 
 S3method(plot,bayesWatch)
 S3method(print,bayesWatch)

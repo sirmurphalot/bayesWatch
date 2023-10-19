@@ -332,6 +332,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rgwish_Rcpp
+List rgwish_Rcpp(const Rcpp::NumericVector G, const Rcpp::NumericVector D, int b, int p, double threshold);
+RcppExport SEXP _bayesWatch_rgwish_Rcpp(SEXP GSEXP, SEXP DSEXP, SEXP bSEXP, SEXP pSEXP, SEXP thresholdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type G(GSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type D(DSEXP);
+    Rcpp::traits::input_parameter< int >::type b(bSEXP);
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
+    rcpp_result_gen = Rcpp::wrap(rgwish_Rcpp(G, D, b, p, threshold));
+    return rcpp_result_gen;
+END_RCPP
+}
 // log_wishart_normalizingConstant_mc_Rcpp
 Rcpp::NumericVector log_wishart_normalizingConstant_mc_Rcpp(const Rcpp::NumericVector G, const Rcpp::NumericVector nu, const int b, const Rcpp::NumericVector H, const int check_H, const int mc_iters, const int p);
 RcppExport SEXP _bayesWatch_log_wishart_normalizingConstant_mc_Rcpp(SEXP GSEXP, SEXP nuSEXP, SEXP bSEXP, SEXP HSEXP, SEXP check_HSEXP, SEXP mc_itersSEXP, SEXP pSEXP) {
@@ -370,6 +385,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bayesWatch_gibbs_swap_comps", (DL_FUNC) &_bayesWatch_gibbs_swap_comps, 7},
     {"_bayesWatch_rmvn_Rcpp", (DL_FUNC) &_bayesWatch_rmvn_Rcpp, 3},
     {"_bayesWatch_rwish_Rcpp", (DL_FUNC) &_bayesWatch_rwish_Rcpp, 3},
+    {"_bayesWatch_rgwish_Rcpp", (DL_FUNC) &_bayesWatch_rgwish_Rcpp, 5},
     {"_bayesWatch_log_wishart_normalizingConstant_mc_Rcpp", (DL_FUNC) &_bayesWatch_log_wishart_normalizingConstant_mc_Rcpp, 7},
     {NULL, NULL, 0}
 };

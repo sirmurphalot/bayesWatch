@@ -97,7 +97,7 @@ List gibbs_swap_btwn_two(const arma::mat& first_precision, const arma::mat& seco
 // [[Rcpp::export]]
 arma::vec gibbs_swap_comps(const arma::mat& data_points_of_state, arma::vec& cluster_assignments, const arma::vec& regime_comp_log_probs,
                            List precisions, List mus, int assignments_maximum, int gibbs_sweeps){
-  int index_of_split;
+  int index_of_split = 0;
   arma::vec log_prob_of_each_comp;
   arma::vec exp_distribution;
   arma::vec data_value;
@@ -112,9 +112,9 @@ arma::vec gibbs_swap_comps(const arma::mat& data_points_of_state, arma::vec& clu
   
   
   for(int gibbs_index = 0; gibbs_index < gibbs_sweeps; gibbs_index++){
-    #pragma omp parallel
-    {
-    #pragma omp for
+//    #pragma omp parallel
+//    {
+//    #pragma omp for
       for(int data_value_index = 0; data_value_index< n_full; data_value_index++){
         data_value                   = data_points_of_state.row(data_value_index).t();
         log_prob_of_each_comp        = arma::zeros(assignments_maximum);
@@ -148,7 +148,7 @@ arma::vec gibbs_swap_comps(const arma::mat& data_points_of_state, arma::vec& clu
         }
         cluster_assignments.at(data_value_index) = index_of_split+1;
       }
-    }
+//    }
   }
   return cluster_assignments;
 }

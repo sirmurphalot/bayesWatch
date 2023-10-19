@@ -23,7 +23,7 @@ extern "C" {
 	    
 	void get_bounds_NA( double Z[], int R[], double *lb, double *ub, int *i, int *j, int *n );
 
-	void copula_NA( double Z[], double K[], int R[], int not_continuous[], int *n, int *p );
+//	void copula_NA( double Z[], double K[], int R[], int not_continuous[], int *n, int *p );
 
 	void get_Ds( double Z[], double D[], double Ds[], double S[], int *n, int *p );
 

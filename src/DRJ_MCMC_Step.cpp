@@ -25,9 +25,9 @@ arma::mat complete_lambda(const arma::mat& orig_chol_mat, const arma::mat& curre
       }
     } else {
       rplus1 = r + 1;
-     #pragma omp parallel
-     {
-     #pragma omp for
+//     #pragma omp parallel
+//     {
+//     #pragma omp for
         for(int s = rplus1; s < p; s++){
           double chol_rs  = 0;
           if(current_G(r, s) == 0){
@@ -38,7 +38,7 @@ arma::mat complete_lambda(const arma::mat& orig_chol_mat, const arma::mat& curre
             chol_mat(r,s) = chol_rs;
           }
         }
-     }
+//     }
     }
   }
   

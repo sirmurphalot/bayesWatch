@@ -67,4 +67,4 @@ ggplot2, gridExtra, parallel, Rcpp, Matrix, CholWishart, Hotelling, MASS, ess, s
 
 ## Citation
 
-A. C. Murph, C. B. Storlie, J. Hannig, J. P. Williams, and P. Wilson (2023). Bayes Watch: Bayesian Change-point Detection for Process Monitoring with Fault Detection. In review. 
+Alexander C. Murph, Curtis B. Storlie, Patrick M. Wilson, Jonathan P. Williams, & Jan Hannig. (2023). Bayes Watch: Bayesian Change-point Detection for Process Monitoring with Fault Detection. 
