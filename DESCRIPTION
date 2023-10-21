@@ -7,15 +7,15 @@ Authors@R: c(person("Alexander C.", "Murph", email = "murph290@gmail.com",
                   role = c("aut", "cre"),
                   comment = c(ORCID = "0000-0001-7170-867X")),
 	   person("Reza", "Mohammadi",
-                  role = c("ctb"),
+                  role = c("ctb", "cph"),
                   comment = c(ORCID = "0000-0001-9538-0648")),
 	   person("Alex", "Lenkoski",
-                  role = c("ctb"),
+                  role = c("ctb", "cph"),
                   comment = c(ORCID = "0000-0002-6664-0292")))
 Maintainer: Alexander C. Murph <murph290@gmail.com>
 Description: Bayes Watch fits an array of Gaussian Graphical Mixture Models to groupings of homogeneous data in time, called regimes, which are modeled as the observed states of a Markov process with unknown transition probabilities.  In doing so, Bayes Watch defines a posterior distribution on a vector of regime assignments, which gives meaningful expressions on the probability of every possible change-point.  Bayes Watch also allows for an effective and efficient fault detection system that assesses what features in the data where the most responsible for a given change-point.  For further details, see: Alexander C. Murph et al. (2023) <arXiv:2310.02940>.
 Copyright: file COPYRIGHTS
-License: file LICENSE
+License: GPL-3
 Imports: Rcpp (>= 1.0.7), parallel (>= 3.6.2), Matrix, Hotelling, CholWishart, 
           ggplot2, gridExtra (>= 0.9.1), BDgraph, methods, MASS, stats, ess
 LinkingTo: Rcpp, RcppArmadillo, RcppEigen, Matrix, CholWishart
