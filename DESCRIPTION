@@ -1,8 +1,8 @@
 Package: bayesWatch
 Type: Package
 Title: Bayesian Change-Point Detection for Process Monitoring with Fault Detection
-Version: 0.1.0
-Date: 2023-10-18
+Version: 0.1.1
+Date: 2023-10-29
 Authors@R: c(person("Alexander C.", "Murph", email = "murph290@gmail.com",
                   role = c("aut", "cre"),
                   comment = c(ORCID = "0000-0001-7170-867X")),
