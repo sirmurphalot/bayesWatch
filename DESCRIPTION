@@ -18,7 +18,7 @@ Copyright: file COPYRIGHTS
 License: GPL-3
 Imports: Rcpp (>= 1.0.7), parallel (>= 3.6.2), Matrix, Hotelling, CholWishart, 
           ggplot2, gridExtra (>= 0.9.1), BDgraph, methods, MASS, stats, ess
-LinkingTo: Rcpp, RcppArmadillo, RcppEigen, Matrix, CholWishart
+LinkingTo: Rcpp, RcppArmadillo, RcppEigen, Matrix, CholWishart, BH
 Depends: R (>= 3.5.0)
 Encoding: UTF-8
 LazyData: true
